@@ -108,10 +108,10 @@ public class InteractionServiceBean implements InteractionService {
         if(messageToSend.getEphemeral()) {
             Interaction interaction = interactionHook.getInteraction();
             interactionHook.setEphemeral(messageToSend.getEphemeral());
-            if(ContextUtils.isGuildKnown(interaction)) {
+            if(ContextUtils.hasGuild(interaction)) {
                 log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
                         interaction.getGuild().getIdLong(), interaction.getChannel().getId(),
-                        interaction.getMember().getIdLong());
+                        interaction.getUser().getIdLong());
             }
             metricService.incrementCounter(EPHEMERAL_MESSAGES_SEND);
         }
@@ -175,10 +175,10 @@ public class InteractionServiceBean implements InteractionService {
 
         if(messageToSend.getEphemeral()) {
             Interaction interaction = interactionHook.getInteraction();
-            if(ContextUtils.isGuildKnown(interaction)) {
+            if(ContextUtils.hasGuild(interaction)) {
                 log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
                         interaction.getGuild().getIdLong(), interaction.getChannel().getId(),
-                        interaction.getMember().getIdLong());
+                        interaction.getUser().getIdLong());
             } else {
                 log.info("Sending ephemeral message to interaction for user {}", interactionHook.getInteraction().getUser().getIdLong());
             }
@@ -223,18 +223,20 @@ public class InteractionServiceBean implements InteractionService {
                 action = interactionHook.editOriginal(".");
             }
             action = action.setComponents(actionRows);
+            AServer server;
             if(ContextUtils.isGuildKnown(interactionHook.getInteraction())) {
-                AServer server = serverManagementService.loadServer(serverId);
-                actionRows.forEach(components -> components.forEach(component -> {
-                    if(component instanceof ActionComponent) {
-                        String id = ((ActionComponent)component).getId();
-                        MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
-                        if(payload != null && payload.getPersistCallback()) {
-                            componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
-                        }
+                server = serverManagementService.loadServer(serverId);
+            } else {
+                server = null; }
+            actionRows.forEach(components -> components.forEach(component -> {
+                if(component instanceof ActionComponent) {
+                    String id = ((ActionComponent)component).getId();
+                    MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
+                    if(payload != null && payload.getPersistCallback()) {
+                        componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
                     }
-                }));
-            }
+                }
+            }));
         }
 
         if(action == null) {
@@ -280,26 +282,28 @@ public class InteractionServiceBean implements InteractionService {
                 action = callback.reply(".");
             }
             action = action.setComponents(actionRows);
+            AServer server;
             if(ContextUtils.isGuildKnown(callback)) {
-                Long serverId = callback.getGuild().getIdLong();
-                AServer server = serverManagementService.loadServer(serverId);
-                actionRows.forEach(components -> components.forEach(component -> {
-                    if(component instanceof ActionComponent) {
-                        String id = ((ActionComponent)component).getId();
-                        MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
-                        if(payload != null && payload.getPersistCallback()) {
-                            componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
-                        }
-                    }
-                }));
+                server = serverManagementService.loadServer(callback.getGuild().getIdLong());
+            } else {
+               server = null;
             }
+            actionRows.forEach(components -> components.forEach(component -> {
+                if(component instanceof ActionComponent) {
+                    String id = ((ActionComponent)component).getId();
+                    MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
+                    if(payload != null && payload.getPersistCallback()) {
+                        componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
+                    }
+                }
+            }));
         }
 
         if(messageToSend.getEphemeral()) {
-            if(ContextUtils.isGuildKnown(callback)) {
+            if(ContextUtils.hasGuild(callback)) {
                 log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
                         callback.getGuild().getIdLong(), callback.getChannel().getId(),
-                        callback.getMember().getIdLong());
+                        callback.getUser().getIdLong());
             } else {
                 log.info("Sending ephemeral message to user {}.", callback.getUser().getIdLong());
             }

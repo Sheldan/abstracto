@@ -120,8 +120,8 @@ public class Reminders extends AbstractConditionableCommand {
         if(ContextUtils.isUserCommand(event)) {
             messageToSend = getUserReminders(event.getUser());
         } else {
-            Long serverId = event.getGuild().getIdLong();
             Member member = event.getMember();
+            Long serverId = event.getGuild().getIdLong();
             messageToSend = getServerReminders(serverId, member);
         }
         return interactionService.replyMessageToSend(messageToSend, event)

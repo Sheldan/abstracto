@@ -54,7 +54,7 @@ public class ExceptionPostExecution implements PostCommandExecution {
         if(result.equals(ResultState.ERROR)) {
             Throwable throwable = commandResult.getThrowable();
             if(throwable != null) {
-                if(throwable instanceof CommandNotFoundException && ContextUtils.isGuildKnown(interaction)){
+                if(throwable instanceof CommandNotFoundException && ContextUtils.isNotUserCommand(interaction)){
                     String configValue = configService.getStringValueOrConfigDefault(CoreFeatureConfig.NO_COMMAND_REPORTING_CONFIG_KEY, interaction.getGuild().getIdLong());
                     if(!BooleanUtils.toBoolean(configValue)) {
                         return;

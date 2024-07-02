@@ -20,6 +20,6 @@ public class ButtonClickedListenerModel implements FeatureAwareListenerModel {
 
     @Override
     public Long getServerId() {
-        return ContextUtils.isGuildKnown(event) ? event.getGuild().getIdLong() : null;
+        return ContextUtils.hasGuild(event) ? event.getGuild().getIdLong() : null;
     }
 }

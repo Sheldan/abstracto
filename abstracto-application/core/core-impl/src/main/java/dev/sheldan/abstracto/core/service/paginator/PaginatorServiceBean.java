@@ -279,7 +279,9 @@ public class PaginatorServiceBean implements PaginatorService {
         // TODO not sure how this is supposed to work, maybe .... not sure
         log.info("Cleaning up paginator {} in server {} channel {} message {}.", paginatorInfo.getPaginatorId(),
                 paginatorInfo.getServerId(), paginatorInfo.getChannelId(), paginatorInfo.getMessageId());
-        messageService.deleteMessageInChannelInServer(paginatorInfo.getServerId(), paginatorInfo.getChannelId(), paginatorInfo.getMessageId());
+        if(paginatorInfo.getServerId() != null) { // user commands store them with null, and we cannot cleanup those
+            messageService.deleteMessageInChannelInServer(paginatorInfo.getServerId(), paginatorInfo.getChannelId(), paginatorInfo.getMessageId());
+        }
         componentPayloadManagementService.deletePayloads(paginatorInfo.getPayloadIds());
     }
 

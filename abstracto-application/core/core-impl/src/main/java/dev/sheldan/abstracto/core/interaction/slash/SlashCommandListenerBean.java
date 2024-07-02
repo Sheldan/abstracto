@@ -81,8 +81,8 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         try {
             if(commands == null || commands.isEmpty()) return;
-            if(ContextUtils.isGuildKnown(event.getInteraction())) {
-                log.debug("Executing slash command in guild {} from user {}.", event.getGuild().getIdLong(), event.getMember().getIdLong());
+            if(ContextUtils.hasGuild(event.getInteraction())) {
+                log.debug("Executing slash command in guild {} from user {}.", event.getGuild().getIdLong(), event.getUser().getIdLong());
             } else {
                 log.debug("Executing slash command by user {}", event.getUser().getIdLong());
             }
@@ -140,7 +140,7 @@ public class SlashCommandListenerBean extends ListenerAdapter {
                 List<String> replies = fullRepliesList.subList(0, Math.min(fullRepliesList.size(), OptionData.MAX_CHOICES));
                 event.replyChoiceStrings(replies).queue(unused -> {},
                         throwable -> {
-                            if(ContextUtils.isGuildKnown(event)) {
+                            if(ContextUtils.hasGuild(event)) {
                                 log.error("Failed to respond to complete of command {} in guild {} by user {}.",
                                         command.getConfiguration().getName(), event.getGuild().getIdLong(), event.getUser().getIdLong());
                             } else {
@@ -158,7 +158,7 @@ public class SlashCommandListenerBean extends ListenerAdapter {
         CompletableFuture<CommandResult> commandOutput;
         if(conditionResult.isResult()) {
             commandOutput = command.executeSlash(event).thenApply(commandResult -> {
-                if(ContextUtils.isGuildKnown(event)) {
+                if(ContextUtils.hasGuild(event)) {
                     log.info("Command {} in server {} was executed by user {}.", command.getConfiguration().getName(), event.getGuild().getIdLong(), event.getUser().getIdLong());
                 } else {
                     log.info("Command {} was executed by user {}.", command.getConfiguration().getName(), event.getUser().getId());

@@ -125,15 +125,15 @@ public class Remind extends AbstractConditionableCommand {
         String reminderText = slashCommandParameterService.getCommandOption(REMIND_TEXT_PARAMETER, event, String.class, String.class);
         String joinButtonId;
         Reminder createdReminder;
-        if(!ContextUtils.isUserCommand(event)) {
+        if(ContextUtils.isUserCommand(event)) {
+            joinButtonId = null;
+            AUser aUser = userManagementService.loadOrCreateUser(event.getUser().getIdLong());
+            createdReminder = remindService.createReminderInForUser(aUser, reminderText, duration);
+        } else {
             joinButtonId = componentService.generateComponentId();
             Long snowFlake = SnowflakeUtils.createSnowFlake();
             AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(event.getMember());
             createdReminder = remindService.createReminderInForUser(aUserInAServer, reminderText, duration, event.getChannel().getIdLong(), snowFlake);
-        } else {
-            joinButtonId = null;
-            AUser aUser = userManagementService.loadOrCreateUser(event.getUser().getIdLong());
-            createdReminder = remindService.createReminderInForUser(aUser, reminderText, duration);
         }
         ReminderModel remindModel = ReminderModel
                 .builder()
@@ -143,7 +143,7 @@ public class Remind extends AbstractConditionableCommand {
                 .reminder(ReminderDisplay.fromReminder(createdReminder))
                 .build();
 
-        if(!ContextUtils.isUserCommand(event)) {
+        if(ContextUtils.isNotUserCommand(event)) {
             Long serverId = event.getGuild().getIdLong();
             AServer server = serverManagementService.loadServer(serverId);
             JoinReminderPayload payload = JoinReminderPayload

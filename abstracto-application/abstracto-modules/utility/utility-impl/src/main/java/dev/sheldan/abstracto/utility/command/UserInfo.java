@@ -97,18 +97,18 @@ public class UserInfo extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         boolean userCommand = ContextUtils.isUserCommandInGuild(event);
-        boolean guildAware = ContextUtils.isGuildKnown(event);
+        boolean knownGuild = ContextUtils.isGuildKnown(event);
         UserInfoModel model = UserInfoModel
                 .builder()
                 .build();
-        if(guildAware) {
+        if(knownGuild) {
             Member memberToShow;
             if(slashCommandParameterService.hasCommandOption(MEMBER_PARAMETER, event)) {
                 memberToShow = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER, event, Member.class);
             } else {
                 memberToShow = event.getMember();
             }
-            if(ContextUtils.isGuildKnown(event) && !memberToShow.getGuild().equals(event.getGuild())) {
+            if(!memberToShow.getGuild().equals(event.getGuild())) {
                 throw new EntityGuildMismatchException();
             }
             if(!memberToShow.hasTimeJoined()) {

@@ -50,7 +50,7 @@ public class MinesButtonClickedListener implements ButtonClickedListener {
         GameService.MineResult mineResult = gameService.uncoverField(mineBoard, payload.getX(), payload.getY());
         mineBoard.setState(mineResult);
         if(mineBoard.getState() != GameService.MineResult.CONTINUE) {
-            if(ContextUtils.isGuildKnown(model.getEvent())) {
+            if(ContextUtils.isNotUserCommand(model.getEvent())) {
                 if(featureFlagService.getFeatureFlagValue(EntertainmentFeatureDefinition.ECONOMY, model.getServerId())){
                     gameService.evaluateCreditChanges(mineBoard);
                 }

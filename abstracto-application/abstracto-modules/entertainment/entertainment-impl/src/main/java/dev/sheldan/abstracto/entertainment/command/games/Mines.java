@@ -85,7 +85,7 @@ public class Mines extends AbstractConditionableCommand {
         Integer credit = null;
         Long serverId;
         boolean economyEnabled = false;
-        if(ContextUtils.isGuildKnown(event)) {
+        if(ContextUtils.isNotUserCommand(event)) {
             serverId = event.getGuild().getIdLong();
             economyEnabled = featureFlagService.getFeatureFlagValue(EntertainmentFeatureDefinition.ECONOMY, serverId);
             if(economyEnabled){

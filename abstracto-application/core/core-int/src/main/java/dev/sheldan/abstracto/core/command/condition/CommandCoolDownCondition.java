@@ -40,7 +40,7 @@ public class CommandCoolDownCondition implements CommandCondition {
 
     @Override
     public ConditionResult shouldExecute(SlashCommandInteractionEvent slashCommandInteractionEvent, Command command) {
-        if(ContextUtils.isGuildNotKnown(slashCommandInteractionEvent)) {
+        if(ContextUtils.isUserCommand(slashCommandInteractionEvent)) {
             return ConditionResult.SUCCESS;
         }
         commandCoolDownService.takeLock();

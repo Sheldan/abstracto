@@ -46,10 +46,10 @@ public class CreateCustomCommand extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String name = slashCommandParameterService.getCommandOption(CUSTOM_COMMAND_NAME_PARAMETER, event, String.class);
         String content = slashCommandParameterService.getCommandOption(CUSTOM_COMMAND_CONTENT_PARAMETER, event, String.class);
-        if(ContextUtils.isGuildKnown(event)) {
-            customCommandService.createCustomCommand(name, content, event.getMember());
-        } else {
+        if(ContextUtils.isUserCommand(event)) {
             customCommandService.createUserCustomCommand(name, content, event.getUser());
+        } else {
+            customCommandService.createCustomCommand(name, content, event.getMember());
         }
         return interactionService.replyEmbed(CREATE_CUSTOM_COMMAND_RESPONSE_TEMPLATE_KEY, event)
                 .thenApply(interactionHook -> CommandResult.fromSuccess());

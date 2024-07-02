@@ -45,6 +45,7 @@ public class CustomCommandManagementServiceBean implements CustomCommandManageme
                 .additionalMessage(content)
                 .server(creator.getServerReference())
                 .creator(creator)
+                .userSpecific(false)
                 .creatorUser(creator.getUserReference())
                 .build();
         return repository.save(customCommand);

@@ -46,7 +46,7 @@ public class RequiresModMailCondition implements ModMailContextCondition {
 
     @Override
     public ConditionResult shouldExecute(SlashCommandInteractionEvent slashCommandInteractionEvent, Command command) {
-        if(ContextUtils.isGuildNotKnown(slashCommandInteractionEvent)) {
+        if(ContextUtils.isUserCommand(slashCommandInteractionEvent)) {
             return ConditionResult.SUCCESS;
         }
         Optional<ModMailThread> threadOptional = modMailThreadManagementService.getByChannelOptional(channelManagementService.loadChannel(slashCommandInteractionEvent.getChannel()));
