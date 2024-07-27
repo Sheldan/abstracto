@@ -102,7 +102,7 @@ public class ParseUtils {
                     throw new AbstractoTemplatedException("No channel found with name.", "no_channel_found_by_name_exception");
                 }
                 if(potentialMatches.size() > 1) {
-                    throw new AbstractoTemplatedException("Multiple channels found..", "multiple_channels_found_by_name_exception");
+                    throw new AbstractoTemplatedException("Multiple channels found.", "multiple_channels_found_by_name_exception");
                 }
                 return guild.getGuildChannelById(potentialMatches.get(0).getId());
             }

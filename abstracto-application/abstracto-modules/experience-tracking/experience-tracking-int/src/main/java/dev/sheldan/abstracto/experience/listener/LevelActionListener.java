@@ -4,9 +4,7 @@ import dev.sheldan.abstracto.experience.model.LevelActionPayload;
 import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.model.database.LevelAction;
 import net.dv8tion.jda.api.entities.Guild;
-import org.springframework.stereotype.Component;
 
-@Component
 public interface LevelActionListener {
     String getName();
 
