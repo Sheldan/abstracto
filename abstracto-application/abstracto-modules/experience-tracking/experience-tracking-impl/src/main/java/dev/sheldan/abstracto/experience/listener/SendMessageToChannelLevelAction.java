@@ -73,8 +73,15 @@ public class SendMessageToChannelLevelAction implements LevelActionListener {
     }
 
     @Override
-    public boolean shouldExecute(AUserExperience aUserExperience, LevelAction levelAction) {
-        return aUserExperience.getLevelOrDefault() >= levelAction.getLevel().getLevel();
+    public boolean shouldExecute(AUserExperience aUserExperience, Integer oldLevel, LevelAction levelAction) {
+        if(!oldLevel.equals(aUserExperience.getLevelOrDefault())) { // this means the user changed level now, this is the path from gaining a lot of experience
+            boolean jumpedLevelToMatch = oldLevel < levelAction.getLevel().getLevel() && aUserExperience.getLevelOrDefault() >= levelAction.getLevel().getLevel();
+            // this boolean means that the user did NOT have the action earlier, but does now (and more than that)
+            return jumpedLevelToMatch || aUserExperience.getLevelOrDefault().equals(levelAction.getLevel().getLevel()); // or the user matches the level _exactly_, this is the path from normally gaining experience
+        } else {
+            // This case is useful for re-joining, because this means, that the user did _not_ change level, and already is somewhere way above
+            return aUserExperience.getLevelOrDefault() >= levelAction.getLevel().getLevel();
+        }
     }
 
     @Override

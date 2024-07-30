@@ -10,7 +10,7 @@ public interface LevelActionListener {
 
     void apply(AUserExperience userExperience, LevelAction levelAction, MemberActionModification container);
 
-    boolean shouldExecute(AUserExperience aUserExperience, LevelAction levelAction);
+    boolean shouldExecute(AUserExperience aUserExperience, Integer oldLevel, LevelAction levelAction);
 
     void prepareAction(LevelAction levelAction);
 

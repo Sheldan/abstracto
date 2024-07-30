@@ -48,7 +48,7 @@ public class AddRoleLevelAction implements LevelActionListener {
     }
 
     @Override
-    public boolean shouldExecute(AUserExperience aUserExperience, LevelAction levelAction) {
+    public boolean shouldExecute(AUserExperience aUserExperience, Integer oldLevel, LevelAction levelAction) {
         return aUserExperience.getLevelOrDefault() >= levelAction.getLevel().getLevel();
     }
 

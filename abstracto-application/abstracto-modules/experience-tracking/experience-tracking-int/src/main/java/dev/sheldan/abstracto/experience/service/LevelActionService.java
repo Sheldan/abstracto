@@ -12,6 +12,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface LevelActionService {
     CompletableFuture<Void> applyLevelActionsToUser(AUserExperience user);
+    CompletableFuture<Void> applyLevelActionsToUser(AUserExperience user, Integer oldLevel);
     List<String> getAvailableLevelActions();
     Optional<LevelActionListener> getLevelActionListenerForName(String name);
 

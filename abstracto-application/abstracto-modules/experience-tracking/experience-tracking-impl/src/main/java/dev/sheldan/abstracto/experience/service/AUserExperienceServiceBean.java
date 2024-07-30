@@ -337,8 +337,8 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                     .builder()
                     .build();
             boolean userChangesLevel = !Objects.equals(newLevel.getLevel(), aUserExperience.getCurrentLevel().getLevel());
+            Integer oldLevel = aUserExperience.getCurrentLevel() != null ? aUserExperience.getCurrentLevel().getLevel() : 0;
             if(userChangesLevel) {
-                Integer oldLevel = aUserExperience.getCurrentLevel() != null ? aUserExperience.getCurrentLevel().getLevel() : 0;
                 log.info("User {} in server {} changed level. New {}, Old {}.", member.getIdLong(),
                         member.getGuild().getIdLong(), newLevel.getLevel(),
                         oldLevel);
@@ -373,7 +373,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
             }
             aUserExperience.setMessageCount(aUserExperience.getMessageCount() + 1L);
             if(userChangesLevel && featureModeService.featureModeActive(ExperienceFeatureDefinition.EXPERIENCE, server, ExperienceFeatureMode.LEVEL_ACTION)) {
-                levelActionService.applyLevelActionsToUser(aUserExperience)
+                levelActionService.applyLevelActionsToUser(aUserExperience, oldLevel)
                     .thenAccept(unused -> {
                         log.info("Executed level actions for user {}.", userInServerId);
                     })

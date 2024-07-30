@@ -49,6 +49,11 @@ public class LevelActionServiceBean implements LevelActionService {
 
     @Override
     public CompletableFuture<Void> applyLevelActionsToUser(AUserExperience user) {
+        return applyLevelActionsToUser(user,  user.getLevelOrDefault());
+    }
+
+    @Override
+    public CompletableFuture<Void> applyLevelActionsToUser(AUserExperience user, Integer oldLevel) {
         if(levelActions == null || levelActions.isEmpty()) {
             return CompletableFuture.completedFuture(null);
         }
@@ -60,8 +65,16 @@ public class LevelActionServiceBean implements LevelActionService {
 
         Map<Integer, List<LevelAction>> actionConfigMap = new HashMap<>();
 
+        Map<String, LevelActionListener> actionStringListenerMap = levelActions
+                .stream()
+                .collect(Collectors.toMap(a -> a.getName().toLowerCase(), Function.identity()));
+
         levelActionsOfUserInServer.forEach(levelAction -> {
-            if(levelAction.getLevel().getLevel() > user.getLevelOrDefault()) {
+            LevelActionListener listener = actionStringListenerMap.get(levelAction.getAction());
+            if(listener == null) { // if for some reason the config is still in the database, but we don't have code for it anymore
+                return;
+            }
+            if(!listener.shouldExecute(user, oldLevel, levelAction)) {
                 return;
             }
             if(actionConfigMap.containsKey(levelAction.getLevel().getLevel())) {
@@ -73,9 +86,6 @@ public class LevelActionServiceBean implements LevelActionService {
             }
         });
 
-        Map<String, LevelActionListener> actionStringListenerMap = levelActions
-                .stream()
-                .collect(Collectors.toMap(a -> a.getName().toLowerCase(), Function.identity()));
 
         List<Integer> levels = actionConfigMap
                 .keySet()
