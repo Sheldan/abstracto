@@ -4,7 +4,7 @@
     <parent>
         <artifactId>image-generation</artifactId>
         <groupId>dev.sheldan.abstracto.modules</groupId>
-        <version>1.5.39</version>
+        <version>1.5.40-SNAPSHOT</version>
     </parent>
 
     <artifactId>image-generation-int</artifactId>
