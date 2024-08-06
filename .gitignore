@@ -14,7 +14,6 @@ target/
 
 # Package Files #
 *.jar
-*.war
 *.nar
 *.zip
 *.tar.gz
