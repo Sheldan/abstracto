@@ -4,7 +4,8 @@ import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.experience.model.LeaderBoard;
 import dev.sheldan.abstracto.experience.model.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.model.template.LeaderBoardEntryModel;
-import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +30,7 @@ public class LeaderBoardModelConverter {
     private MemberService memberService;
 
     @Autowired
-    private UserExperienceManagementService userExperienceManagementService;
-
-    @Autowired
-    private LeaderBoardModelConverter self;
+    private Tracer tracer;
 
     /**
      * Converts the complete {@link LeaderBoard leaderBoard} into a list of {@link LeaderBoardEntryModel leaderbaordEntryModels} which contain additional
@@ -62,12 +60,15 @@ public class LeaderBoardModelConverter {
                             .build();
                 })
                 .collect(Collectors.toMap(LeaderBoardEntryModel::getUserId, Function.identity()));
+        Span span = tracer.currentSpan();
         return memberService.getMembersInServerAsync(serverId, userIds).thenApply(members -> {
-            members.forEach(member -> models.get(member.getIdLong()).setMember(member));
-            return new ArrayList<>(models.values())
-                    .stream()
-                    .sorted(Comparator.comparing(LeaderBoardEntryModel::getRank)).
-                            collect(Collectors.toList());
+            try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
+                members.forEach(member -> models.get(member.getIdLong()).setMember(member));
+                return new ArrayList<>(models.values())
+                        .stream()
+                        .sorted(Comparator.comparing(LeaderBoardEntryModel::getRank)).
+                        collect(Collectors.toList());
+            }
         });
     }
 }

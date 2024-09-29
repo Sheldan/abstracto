@@ -8,6 +8,8 @@ import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmoteType;
 import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +32,13 @@ public class EmoteTrackingListener implements AsyncMessageReceivedListener {
     @Autowired
     private GuildService guildService;
 
-    @Override
-    public FeatureDefinition getFeature() {
-        return StatisticFeatureDefinition.EMOTE_TRACKING;
-    }
+    @Autowired
+    private Tracer tracer;
 
     @Override
     public DefaultListenerResult execute(MessageReceivedModel model) {
+        Span newSpan = tracer.nextSpan().name("experience-tracker");
+        try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
         Message message = model.getMessage();
         if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem()) {
             return DefaultListenerResult.IGNORED;
@@ -50,5 +52,15 @@ public class EmoteTrackingListener implements AsyncMessageReceivedListener {
             trackedEmoteService.addEmoteToRuntimeStorage(groupedEmotes.get(0), guildService.getGuildById(model.getServerId()), (long) groupedEmotes.size(), UsedEmoteType.MESSAGE)
         );
         return DefaultListenerResult.PROCESSED;
+        } finally {
+            newSpan.end();
+        }
     }
+
+
+    @Override
+    public FeatureDefinition getFeature() {
+        return StatisticFeatureDefinition.EMOTE_TRACKING;
+    }
+
 }

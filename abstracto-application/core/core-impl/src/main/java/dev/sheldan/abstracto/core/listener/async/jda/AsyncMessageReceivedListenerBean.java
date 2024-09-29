@@ -1,12 +1,10 @@
 package dev.sheldan.abstracto.core.listener.async.jda;
 
-import dev.sheldan.abstracto.core.command.service.ExceptionService;
 import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
-import dev.sheldan.abstracto.core.service.BotService;
-import dev.sheldan.abstracto.core.service.FeatureConfigService;
-import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.MessageCache;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -29,32 +27,27 @@ public class AsyncMessageReceivedListenerBean extends ListenerAdapter {
     private List<AsyncMessageReceivedListener> listenerList;
 
     @Autowired
-    private FeatureConfigService featureConfigService;
-
-    @Autowired
-    private FeatureFlagService featureFlagService;
-
-    @Autowired
-    private BotService botService;
-
-    @Autowired
-    private ExceptionService exceptionService;
-
-    @Autowired
     @Qualifier("messageReceivedExecutor")
     private TaskExecutor messageReceivedExecutor;
 
     @Autowired
     private ListenerService listenerService;
 
+    @Autowired
+    private ObservationRegistry observationRegistry;
+
     @Override
     @Transactional
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
         if(listenerList == null) return;
         if(!event.isFromGuild()) return;
-        messageCache.putMessageInCache(event.getMessage());
-        MessageReceivedModel model = getModel(event);
-        listenerList.forEach(leaveListener -> listenerService.executeFeatureAwareListener(leaveListener, model, messageReceivedExecutor));
+        Observation observation = Observation.createNotStarted("async-message-received", this.observationRegistry);
+        observation.lowCardinalityKeyValue("some-tag", "some-value");
+        observation.observe(() -> {
+            messageCache.putMessageInCache(event.getMessage());
+            MessageReceivedModel model = getModel(event);
+            listenerList.forEach(leaveListener -> listenerService.executeFeatureAwareListener(leaveListener, model, messageReceivedExecutor));
+        });
     }
 
     private MessageReceivedModel getModel(MessageReceivedEvent event) {

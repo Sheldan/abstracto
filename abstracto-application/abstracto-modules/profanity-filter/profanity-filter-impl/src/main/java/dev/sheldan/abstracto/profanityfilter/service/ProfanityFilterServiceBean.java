@@ -238,22 +238,23 @@ public class ProfanityFilterServiceBean implements ProfanityFilterService {
         return roleImmunityService.isImmune(member, PROFANITY_FILTER_EFFECT_KEY);
     }
 
-    public void handleProfaneMessage(Message message, ProfanityRegex foundProfanityGroup) {
+    public CompletableFuture<Void> handleProfaneMessage(Message message, ProfanityRegex foundProfanityGroup) {
         metricService.incrementCounter(PROFANITIES_DETECTED_METRIC);
         if(featureModeService.featureModeActive(ProfanityFilterFeatureDefinition.PROFANITY_FILTER, message.getGuild().getIdLong(), ProfanityFilterMode.PROFANITY_REPORT)) {
-            createProfanityReport(message, foundProfanityGroup).exceptionally(throwable -> {
+            return createProfanityReport(message, foundProfanityGroup).exceptionally(throwable -> {
                 log.error("Failed to report or persist profanities in server {} for message {} in channel {}.",
                         message.getGuild().getIdLong(), message.getChannel().getIdLong(), message.getIdLong(), throwable);
                 return null;
             });
         }
         if(featureModeService.featureModeActive(ProfanityFilterFeatureDefinition.PROFANITY_FILTER, message.getGuild().getIdLong(), ProfanityFilterMode.AUTO_DELETE_PROFANITIES)) {
-            messageService.deleteMessage(message).exceptionally(throwable -> {
+            return messageService.deleteMessage(message).exceptionally(throwable -> {
                 log.error("Failed to delete profanity message with id {} in channel {} in server {}.",
                         message.getIdLong(), message.getChannel().getIdLong(), message.getGuild().getIdLong(), throwable);
                 return null;
             });
         }
+        return CompletableFuture.completedFuture(null);
     }
 
     @PostConstruct

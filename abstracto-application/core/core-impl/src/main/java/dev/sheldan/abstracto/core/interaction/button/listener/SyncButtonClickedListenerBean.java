@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.interaction.InteractionResult;
 import dev.sheldan.abstracto.core.interaction.button.ButtonPostInteractionExecution;
+import dev.sheldan.abstracto.core.metric.service.MetricUtils;
 import dev.sheldan.abstracto.core.models.database.ComponentPayload;
 import dev.sheldan.abstracto.core.interaction.button.ButtonPayload;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
@@ -63,7 +64,7 @@ public class SyncButtonClickedListenerBean extends ListenerAdapter {
     @Override
     public void onButtonInteraction(@Nonnull ButtonInteractionEvent event) {
         if(listenerList == null) return;
-        CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), buttonClickedExecutor).exceptionally(throwable -> {
+        CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), MetricUtils.wrapExecutor(buttonClickedExecutor)).exceptionally(throwable -> {
             log.error("Failed to execute listener logic in async button event.", throwable);
             return null;
         });

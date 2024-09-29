@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface AUserExperienceService {
     String EXPERIENCE_GAIN_CHANNEL_GROUP_KEY = "experienceGain";
-    void addExperience(Member member, Message message);
+    CompletableFuture<Void> addExperience(Member member, Message message);
 
     /**
      * Calculates the appropriate level for the given experience amount according to the given {@link AExperienceLevel levels}

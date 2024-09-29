@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.interaction.context.message.listener.MessageCo
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
+import dev.sheldan.abstracto.core.metric.service.MetricUtils;
 import dev.sheldan.abstracto.core.models.listener.interaction.MessageContextInteractionModel;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
@@ -65,7 +66,7 @@ public class MessageContextCommandListenerBean extends ListenerAdapter {
     @Override
     public void onMessageContextInteraction(MessageContextInteractionEvent event) {
         if(listenerList == null) return;
-        CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), messageContextCommandExecutor).exceptionally(throwable -> {
+        CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), MetricUtils.wrapExecutor(messageContextCommandExecutor)).exceptionally(throwable -> {
             log.error("Failed to execute listener logic in async message context event.", throwable);
             return null;
         });

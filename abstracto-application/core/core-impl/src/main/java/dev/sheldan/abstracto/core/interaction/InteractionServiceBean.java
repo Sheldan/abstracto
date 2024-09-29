@@ -11,6 +11,8 @@ import dev.sheldan.abstracto.core.templating.model.AttachedFile;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.ContextUtils;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -57,6 +59,9 @@ public class InteractionServiceBean implements InteractionService {
 
     @Autowired
     private TemplateService templateService;
+
+    @Autowired
+    private Tracer tracer;
 
     public static final CounterMetric EPHEMERAL_MESSAGES_SEND = CounterMetric
             .builder()
@@ -259,6 +264,8 @@ public class InteractionServiceBean implements InteractionService {
     }
 
     public CompletableFuture<InteractionHook> replyMessageToSend(MessageToSend messageToSend, IReplyCallback callback) {
+        Span newSpan = tracer.nextSpan().name("send-message-to-interaction");
+        try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
         ReplyCallbackAction action = null;
         if(messageToSend.getUseComponentsV2()) {
             action = callback.replyComponents(messageToSend.getComponents()).useComponentsV2();
@@ -333,10 +340,12 @@ public class InteractionServiceBean implements InteractionService {
             }
         }
 
-        if(action == null) {
-            throw new AbstractoRunTimeException("The callback did not result in any message.");
+            if (action == null) {
+                throw new AbstractoRunTimeException("The callback did not result in any message.");
+            }
+            return action.submit();
         }
-        return action.submit();
+        }
     }
 
     @Override

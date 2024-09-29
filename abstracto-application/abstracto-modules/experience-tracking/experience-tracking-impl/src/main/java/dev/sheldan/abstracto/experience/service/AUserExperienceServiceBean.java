@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.experience.service;
 
+import dev.sheldan.abstracto.core.metric.service.MetricUtils;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
 import dev.sheldan.abstracto.core.models.template.display.RoleDisplay;
@@ -25,6 +26,8 @@ import dev.sheldan.abstracto.experience.service.management.DisabledExpRoleManage
 import dev.sheldan.abstracto.experience.service.management.ExperienceLevelManagementService;
 import dev.sheldan.abstracto.experience.service.management.ExperienceRoleManagementService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -114,8 +117,11 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     @Qualifier("experienceUpdateExecutor")
     private TaskExecutor experienceUpdateExecutor;
 
+    @Autowired
+    private Tracer tracer;
+
     @Override
-    public void addExperience(Member member, Message message) {
+    public CompletableFuture<Void> addExperience(Member member, Message message) {
         runTimeExperienceService.takeLock();
         try {
             Map<Long, Map<Long, Instant>> runtimeExperience = runTimeExperienceService.getRuntimeExperience();
@@ -141,7 +147,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 // we store when the user is eligible for experience _again_
                 Long maxSeconds = configService.getLongValueOrConfigDefault(EXP_COOLDOWN_SECONDS_KEY, serverId);
                 serverExperience.put(userId, Instant.now().plus(maxSeconds, ChronoUnit.SECONDS));
-                CompletableFuture.runAsync(() -> self.addExperienceToMember(member, message), experienceUpdateExecutor).exceptionally(throwable -> {
+                return CompletableFuture.runAsync(() -> self.addExperienceToMember(member, message), MetricUtils.wrapExecutor(experienceUpdateExecutor)).exceptionally(throwable -> {
                     log.error("Failed to add experience to member {} in server {}.", message.getAuthor().getId(), message.getGuild().getIdLong(), throwable);
                     return null;
                 });
@@ -149,6 +155,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         } finally {
             runTimeExperienceService.releaseLock();
         }
+        return CompletableFuture.completedFuture(null);
     }
 
 
@@ -297,37 +304,43 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     }
 
     @Transactional
-    public void addExperienceToMember(Member member, Message message) {
-        long serverId = member.getGuild().getIdLong();
-        AServer server = serverManagementService.loadOrCreate(serverId);
-        List<ADisabledExpRole> disabledExpRoles = disabledExpRoleManagementService.getDisabledRolesForServer(server);
-        List<ARole> disabledRoles = disabledExpRoles
-                .stream()
-                .map(ADisabledExpRole::getRole)
-                .collect(Collectors.toList());
-        if(roleService.hasAnyOfTheRoles(member, disabledRoles)) {
-            log.debug("User {} has a experience disable role in server {} - not giving any experience.", member.getIdLong(), serverId);
-            return;
-        }
-        AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(member);
-        Long userInServerId = userInAServer.getUserInServerId();
-        Optional<AUserExperience> aUserExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(userInAServer.getUserInServerId());
-        AUserExperience aUserExperience = aUserExperienceOptional.orElseGet(() -> userExperienceManagementService.createUserInServer(userInAServer));
-        if(Boolean.FALSE.equals(aUserExperience.getExperienceGainDisabled())) {
-            List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
-            levels.sort(Comparator.comparing(AExperienceLevel::getExperienceNeeded));
+    public CompletableFuture<Void> addExperienceToMember(Member member, Message message) {
+        CompletableFuture<Void> notificationFuture = CompletableFuture.completedFuture(null);
+        CompletableFuture<Void> levelActionFuture = CompletableFuture.completedFuture(null);
+        CompletableFuture<Void> roleFuture = CompletableFuture.completedFuture(null);
+        Span newSpan = tracer.nextSpan().name("experience-adding");
+        try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
+            long serverId = member.getGuild().getIdLong();
+            AServer server = serverManagementService.loadOrCreate(serverId);
+            List<ADisabledExpRole> disabledExpRoles = disabledExpRoleManagementService.getDisabledRolesForServer(server);
+            List<ARole> disabledRoles = disabledExpRoles
+                    .stream()
+                    .map(ADisabledExpRole::getRole)
+                    .collect(Collectors.toList());
+            if (roleService.hasAnyOfTheRoles(member, disabledRoles)) {
+                log.debug("User {} has a experience disable role in server {} - not giving any experience.", member.getIdLong(), serverId);
+                newSpan.end();
+                return CompletableFuture.completedFuture(null);
+            }
+            AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(member);
+            Long userInServerId = userInAServer.getUserInServerId();
+            Optional<AUserExperience> aUserExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(userInAServer.getUserInServerId());
+            AUserExperience aUserExperience = aUserExperienceOptional.orElseGet(() -> userExperienceManagementService.createUserInServer(userInAServer));
+            if (Boolean.FALSE.equals(aUserExperience.getExperienceGainDisabled())) {
+                List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
+                levels.sort(Comparator.comparing(AExperienceLevel::getExperienceNeeded));
 
-            Long minExp = configService.getLongValueOrConfigDefault(ExperienceFeatureConfig.MIN_EXP_KEY, serverId);
-            Long maxExp = configService.getLongValueOrConfigDefault(ExperienceFeatureConfig.MAX_EXP_KEY, serverId);
-            Double multiplier = configService.getDoubleValueOrConfigDefault(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, serverId);
-            Long experienceRange = maxExp - minExp + 1;
-            Long gainedExperience = (secureRandom.nextInt(experienceRange.intValue()) + minExp);
-            gainedExperience = (long) Math.floor(gainedExperience * multiplier);
+                Long minExp = configService.getLongValueOrConfigDefault(ExperienceFeatureConfig.MIN_EXP_KEY, serverId);
+                Long maxExp = configService.getLongValueOrConfigDefault(ExperienceFeatureConfig.MAX_EXP_KEY, serverId);
+                Double multiplier = configService.getDoubleValueOrConfigDefault(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, serverId);
+                Long experienceRange = maxExp - minExp + 1;
+                Long gainedExperience = (secureRandom.nextInt(experienceRange.intValue()) + minExp);
+                gainedExperience = (long) Math.floor(gainedExperience * multiplier);
 
-            List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
-            roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
+                List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
+                roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
 
-            log.debug("Handling {}. The user gains {}.", userInServerId, gainedExperience);
+                log.debug("Handling {}. The user gains {}.", userInServerId, gainedExperience);
 
             Long oldExperience = aUserExperience.getExperience();
             Long newExperienceCount = oldExperience + gainedExperience;
@@ -415,6 +428,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         } else {
             log.debug("Experience gain was disabled. User did not gain any experience.");
         }
+        return CompletableFuture.allOf(notificationFuture, levelActionFuture, roleFuture).whenComplete((unused, throwable) -> {
+            newSpan.end();
+        });
     }
 
     @Override

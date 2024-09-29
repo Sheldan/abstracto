@@ -14,6 +14,8 @@ import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FileService;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -35,6 +37,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,6 +79,9 @@ public class ChannelServiceBean implements ChannelService {
 
     @Autowired
     private ServerManagementService serverManagementService;
+
+    @Autowired
+    private Tracer tracer;
 
     public static final CounterMetric CHANNEL_CREATE_METRIC = CounterMetric
             .builder()
@@ -209,6 +215,9 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     public List<CompletableFuture<Message>> sendMessageToSendToChannel(MessageToSend messageToSend, MessageChannel textChannel) {
+        Span newSpan = tracer.nextSpan().name("send-message");
+        try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
+            newSpan.tag("channel.id", textChannel.getIdLong());
         messageToSend.setEphemeral(false);
         if(textChannel instanceof GuildMessageChannel guildMessageChannel) {
             long maxFileSize = guildMessageChannel.getGuild().getMaxFileSize();

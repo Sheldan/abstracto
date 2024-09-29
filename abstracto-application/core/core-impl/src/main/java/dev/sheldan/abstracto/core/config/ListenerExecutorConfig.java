@@ -207,4 +207,9 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("voiceChatLeftListener");
     }
 
+    @Bean(name = "genericExecutor")
+    public TaskExecutor genericExecutor() {
+        return executorService.setupExecutorFor("genericExecutor");
+    }
+
 }

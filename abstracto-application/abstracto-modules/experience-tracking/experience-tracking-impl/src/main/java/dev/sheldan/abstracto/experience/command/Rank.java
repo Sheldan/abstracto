@@ -27,6 +27,8 @@ import dev.sheldan.abstracto.experience.service.ExperienceLevelService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -83,11 +85,14 @@ public class Rank extends AbstractConditionableCommand {
     @Value("${abstracto.experience.leaderboard.externalUrl}")
     private String leaderboardExternalURL;
 
+    @Autowired
+    private Tracer tracer;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member targetMember = !parameters.isEmpty() ? (Member) parameters.get(0) : commandContext.getAuthor();
-        if(!targetMember.getGuild().equals(commandContext.getGuild())) {
+        if (!targetMember.getGuild().equals(commandContext.getGuild())) {
             throw new EntityGuildMismatchException();
         }
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(targetMember);
@@ -97,10 +102,13 @@ public class Rank extends AbstractConditionableCommand {
                 .builder()
                 .member(targetMember)
                 .build();
+        Span span = tracer.currentSpan();
         return future.thenCompose(leaderBoardEntryModel -> {
+            try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
                 MessageToSend messageToSend = self.renderMessageToSend(targetMember, rankModel, leaderBoardEntryModel.get(0));
                 return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()));
-            }).thenApply(result -> CommandResult.fromIgnored());
+            }
+        }).thenApply(result -> CommandResult.fromIgnored());
     }
 
     @Transactional
@@ -133,7 +141,7 @@ public class Rank extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         Member targetMember;
-        if(slashCommandParameterService.hasCommandOption(MEMBER_PARAMETER, event)) {
+        if (slashCommandParameterService.hasCommandOption(MEMBER_PARAMETER, event)) {
             targetMember = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER, event, Member.class);
         } else {
             targetMember = event.getMember();
@@ -145,9 +153,12 @@ public class Rank extends AbstractConditionableCommand {
                 .builder()
                 .member(targetMember)
                 .build();
+        Span span = tracer.currentSpan();
         return future.thenCompose(leaderBoardEntryModel -> {
-            MessageToSend messageToSend = self.renderMessageToSend(targetMember, rankModel, leaderBoardEntryModel.get(0));
-            return interactionService.replyMessageToSend(messageToSend, event);
+            try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
+                MessageToSend messageToSend = self.renderMessageToSend(targetMember, rankModel, leaderBoardEntryModel.get(0));
+                return interactionService.replyMessageToSend(messageToSend, event);
+            }
         }).thenApply(result -> CommandResult.fromIgnored());
     }
 

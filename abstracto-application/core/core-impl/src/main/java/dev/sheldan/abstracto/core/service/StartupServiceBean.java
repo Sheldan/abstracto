@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.listener.AsyncStartupListener;
+import dev.sheldan.abstracto.core.metric.service.MetricUtils;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelType;
 import dev.sheldan.abstracto.core.models.database.ARole;
@@ -21,6 +22,8 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.collections4.SetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,6 +68,10 @@ public class StartupServiceBean implements Startup {
     @Autowired
     private ProfanityService profanityService;
 
+    @Autowired
+    @Qualifier("genericExecutor")
+    private TaskExecutor genericExecutor;
+
     @Override
     public void startBot() throws LoginException {
         service.login();
@@ -95,7 +102,7 @@ public class StartupServiceBean implements Startup {
                 } catch (Exception e) {
                     log.error("Startup listener {} failed.", asyncStartupListener, e);
                 }
-            }).thenAccept(unused -> log.info("Startup listener {} finished.", asyncStartupListener))
+            }, MetricUtils.wrapExecutor(genericExecutor)).thenAccept(unused -> log.info("Startup listener {} finished.", asyncStartupListener))
             .exceptionally(throwable -> {
                 log.error("Startup listener {} failed.", asyncStartupListener, throwable);
                 return null;

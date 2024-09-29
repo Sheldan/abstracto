@@ -32,6 +32,8 @@ import dev.sheldan.abstracto.core.utils.FileService;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -96,6 +98,10 @@ public class TemplateServiceBean implements TemplateService {
 
     @Autowired
     private FileService fileService;
+
+    @Autowired
+    private Tracer tracer;
+
 
     /**
      * Formats the passed count with the embed used for formatting pages.
