@@ -12,11 +12,17 @@ RUN apt-get update \
 # Install liquibase
 RUN mkdir -p /liqiubase \
 && wget -nv https://github.com/liquibase/liquibase/releases/download/v${liquibase_version}/liquibase-${liquibase_version}.zip -O /tmp/liquibase.zip \
-&& unzip /tmp/liquibase.zip -d /liquibase
+&& unzip /tmp/liquibase.zip -d /liquibase \
+# Split copying to workaround upload limits (increases amount of layers)
+&& mv /liquibase/internal/lib/snowflake-jdbc.jar /liquibase-internal-lib-snowflake-jdbc.jar \
+&& mv /liquibase/internal/lib /liquibase-internal-lib
 
 RUN mkdir -p /java \
-&& wget -nv https://corretto.aws/downloads/latest/amazon-corretto-8-x64-linux-jdk.tar.gz -O /tmp/java.tar.gz \
-&& tar -xf /tmp/java.tar.gz --strip-components=1 -C /java
+&& wget -nv https://corretto.aws/downloads/latest/amazon-corretto-17-x64-linux-jdk.tar.gz -O /tmp/java.tar.gz \
+&& tar -xf /tmp/java.tar.gz --strip-components=1 -C /java \
+&& mv /java/lib/server /java-lib-server \
+&& mv /java/lib/src.zip /java-lib-src.zip \
+&& mv /java/lib/ /java-lib
 
 # Install postgres driver
 RUN mkdir -p /postgres \
@@ -37,8 +43,13 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 RUN pip3 install --no-cache-dir psycopg2-binary==${psycopg2_version} SQLAlchemy==${sql_alchemy_version} jinja2==${jinja_version}
 COPY --from=base /liquibase /liquibase
+COPY --from=base /liquibase-internal-lib /liquibase/internal/lib
+COPY --from=base /liquibase-internal-lib-snowflake-jdbc.jar /liquibase/internal/lib/snowflake-jdbc.jar
 COPY --from=base /postgres /postgres
 COPY --from=base /java /java
+COPY --from=base /java-lib /java/lib
+COPY --from=base /java-lib-server /java/lib/server
+COPY --from=base /java-lib-src.zip /java/lib/src.zip
 ENV JAVA_HOME=/java/jre
 ADD python /python
 ADD wrapper /
