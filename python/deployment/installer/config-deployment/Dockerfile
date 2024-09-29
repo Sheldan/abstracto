@@ -18,11 +18,10 @@ RUN mkdir -p /liqiubase \
 && mv /liquibase/internal/lib /liquibase-internal-lib
 
 RUN mkdir -p /java \
-&& wget -nv https://corretto.aws/downloads/latest/amazon-corretto-17-x64-linux-jdk.tar.gz -O /tmp/java.tar.gz \
+&& wget -nv https://corretto.aws/downloads/latest/amazon-corretto-8-x64-linux-jdk.tar.gz -O /tmp/java.tar.gz \
 && tar -xf /tmp/java.tar.gz --strip-components=1 -C /java \
-&& mv /java/lib/server /java-lib-server \
-&& mv /java/lib/src.zip /java-lib-src.zip \
-&& mv /java/lib/ /java-lib
+&& mv /java/jre /java-jre \
+&& mv /java/src.zip /java-src.zip
 
 # Install postgres driver
 RUN mkdir -p /postgres \
@@ -47,9 +46,8 @@ COPY --from=base /liquibase-internal-lib /liquibase/internal/lib
 COPY --from=base /liquibase-internal-lib-snowflake-jdbc.jar /liquibase/internal/lib/snowflake-jdbc.jar
 COPY --from=base /postgres /postgres
 COPY --from=base /java /java
-COPY --from=base /java-lib /java/lib
-COPY --from=base /java-lib-server /java/lib/server
-COPY --from=base /java-lib-src.zip /java/lib/src.zip
+COPY --from=base /java-jre /java/jre
+COPY --from=base /java-src.zip /java/src.zip
 ENV JAVA_HOME=/java/jre
 ADD python /python
 ADD wrapper /
