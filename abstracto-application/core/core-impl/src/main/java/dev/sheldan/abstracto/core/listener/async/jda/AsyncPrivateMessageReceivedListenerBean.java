@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.listener.async.jda;
 
 import dev.sheldan.abstracto.core.command.service.ExceptionService;
+import dev.sheldan.abstracto.core.metric.service.MetricUtils;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.CacheEntityService;
@@ -54,7 +55,7 @@ public class AsyncPrivateMessageReceivedListenerBean extends ListenerAdapter {
         cacheEntityService.buildCachedMessageFromMessage(event.getMessage()).thenAccept(cachedMessage ->
             privateMessageReceivedListeners.forEach(messageReceivedListener -> CompletableFuture.runAsync(() ->
                 self.executeIndividualPrivateMessageReceivedListener(cachedMessage, messageReceivedListener, event)
-                , privateMessageReceivedExecutor)
+                , MetricUtils.wrapExecutor(privateMessageReceivedExecutor))
                 .exceptionally(throwable -> {
                     log.error("Async private message receiver listener {} failed.", messageReceivedListener, throwable);
                     return null;

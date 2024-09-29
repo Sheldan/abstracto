@@ -3,9 +3,9 @@ package dev.sheldan.abstracto.core.interaction.menu;
 import com.google.gson.Gson;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.interaction.ComponentPayloadManagementService;
-import dev.sheldan.abstracto.core.interaction.InteractionResult;
 import dev.sheldan.abstracto.core.interaction.menu.listener.StringSelectMenuListener;
 import dev.sheldan.abstracto.core.interaction.menu.listener.StringSelectMenuListenerModel;
+import dev.sheldan.abstracto.core.metric.service.MetricUtils;
 import dev.sheldan.abstracto.core.models.database.ComponentPayload;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
@@ -60,7 +60,7 @@ public class StringSelectMenuListenerBean extends ListenerAdapter {
     public void onStringSelectInteraction(@Nonnull StringSelectInteractionEvent event) {
         if(listenerList == null) return;
         event.deferEdit().queue();
-        CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), buttonClickedExecutor).exceptionally(throwable -> {
+        CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), MetricUtils.wrapExecutor(buttonClickedExecutor)).exceptionally(throwable -> {
             log.error("Failed to execute listener logic in async button event.", throwable);
             return null;
         });

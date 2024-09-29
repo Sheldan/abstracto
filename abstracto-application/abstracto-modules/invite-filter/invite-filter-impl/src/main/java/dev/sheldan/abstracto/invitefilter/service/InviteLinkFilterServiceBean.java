@@ -303,12 +303,13 @@ public class InviteLinkFilterServiceBean implements InviteLinkFilterService {
         return foundInvites;
     }
 
-    public void resolveAndCheckInvites(Message message, List<String> foundInvites) {
+    public CompletableFuture<Void> resolveAndCheckInvites(Message message, List<String> foundInvites) {
         List<CompletableFuture<Invite>> inviteList = new ArrayList<>();
         JDA jda = message.getJDA();
         foundInvites.forEach(s -> inviteList.add(resolveInvite(jda, s)));
 
         CompletableFutureList<Invite> list = new CompletableFutureList<>(inviteList);
+        CompletableFuture<Void> returningFuture = new CompletableFuture<>();
         list.getMainFuture().whenComplete((unused, throwable) -> {
             List<Invite> invites = list.getObjects();
             Long serverId = message.getGuild().getIdLong();
@@ -353,24 +354,31 @@ public class InviteLinkFilterServiceBean implements InviteLinkFilterService {
             }
             if(toDelete) {
                 metricService.incrementCounter(MESSAGE_INVITE_FILTERED);
-                messageService.deleteMessage(message);
+
+                CompletableFuture<Void> deletionFuture = messageService.deleteMessage(message);
+                CompletableFuture<Void> notificationFuture = CompletableFuture.completedFuture(null);
                 boolean trackUsages = featureModeService.featureModeActive(InviteFilterFeatureDefinition.INVITE_FILTER, serverId, InviteFilterMode.TRACK_USES);
                 if(trackUsages) {
                     targetServers.forEach((targetServerId, serverName) -> storeFilteredInviteLinkUsage(targetServerId, serverName, author));
                 }
                 boolean sendNotification = featureModeService.featureModeActive(InviteFilterFeatureDefinition.INVITE_FILTER, serverId, InviteFilterMode.FILTER_NOTIFICATIONS);
                 if(sendNotification) {
-                    sendDeletionNotification(deletedInvites, message)
+                    notificationFuture = sendDeletionNotification(deletedInvites, message)
                     .thenAccept(unused1 -> log.info("Sent invite deletion notification.")).exceptionally(throwable1 -> {
                         log.error("Failed to send invite deletion notification.");
                         return null;
                     });
                 }
+                CompletableFuture.allOf(deletionFuture, notificationFuture).whenComplete((unused1, throwable1) -> {
+                    returningFuture.complete(null);
+                });
             }
         }).exceptionally(throwable -> {
             log.error("Invite matching failed.", throwable);
+            returningFuture.complete(null);
             return null;
         });
+        return returningFuture;
     }
 
     @PostConstruct

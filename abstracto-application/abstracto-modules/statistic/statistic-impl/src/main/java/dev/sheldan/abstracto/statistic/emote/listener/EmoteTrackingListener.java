@@ -7,6 +7,8 @@ import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,25 +31,35 @@ public class EmoteTrackingListener implements AsyncMessageReceivedListener {
     @Autowired
     private GuildService guildService;
 
+    @Autowired
+    private Tracer tracer;
+
+    @Override
+    public DefaultListenerResult execute(MessageReceivedModel model) {
+        Span newSpan = tracer.nextSpan().name("experience-tracker");
+        try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
+            Message message = model.getMessage();
+            if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem()) {
+                return DefaultListenerResult.IGNORED;
+            }
+            Map<Long, List<CustomEmoji>> collect = message
+                    .getMentions()
+                    .getCustomEmojisBag()
+                    .stream()
+                    .collect(Collectors.groupingBy(CustomEmoji::getIdLong));
+            collect.values().forEach(groupedEmotes ->
+                trackedEmoteService.addEmoteToRuntimeStorage(groupedEmotes.get(0), guildService.getGuildById(model.getServerId()), (long) groupedEmotes.size())
+            );
+            return DefaultListenerResult.PROCESSED;
+        } finally {
+            newSpan.end();
+        }
+    }
+
+
     @Override
     public FeatureDefinition getFeature() {
         return StatisticFeatureDefinition.EMOTE_TRACKING;
     }
 
-    @Override
-    public DefaultListenerResult execute(MessageReceivedModel model) {
-        Message message = model.getMessage();
-        if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem()) {
-            return DefaultListenerResult.IGNORED;
-        }
-        Map<Long, List<CustomEmoji>> collect = message
-                .getMentions()
-                .getCustomEmojisBag()
-                .stream()
-                .collect(Collectors.groupingBy(CustomEmoji::getIdLong));
-        collect.values().forEach(groupedEmotes ->
-            trackedEmoteService.addEmoteToRuntimeStorage(groupedEmotes.get(0), guildService.getGuildById(model.getServerId()), (long) groupedEmotes.size())
-        );
-        return DefaultListenerResult.PROCESSED;
-    }
 }

@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.interaction.ComponentPayloadManagementService;
 import dev.sheldan.abstracto.core.interaction.InteractionResult;
 import dev.sheldan.abstracto.core.interaction.modal.ModalPayload;
 import dev.sheldan.abstracto.core.interaction.modal.ModalPostInteractionExecution;
+import dev.sheldan.abstracto.core.metric.service.MetricUtils;
 import dev.sheldan.abstracto.core.models.database.ComponentPayload;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
@@ -62,7 +63,7 @@ public class ModalInteractionListenerBean extends ListenerAdapter {
     @Override
     public void onModalInteraction(@Nonnull ModalInteractionEvent event) {
         if(listenerList == null) return;
-        CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), modalInteractionExecutor).exceptionally(throwable -> {
+        CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), MetricUtils.wrapExecutor(modalInteractionExecutor)).exceptionally(throwable -> {
             log.error("Failed to execute listener logic in modal interaction event.", throwable);
             return null;
         });

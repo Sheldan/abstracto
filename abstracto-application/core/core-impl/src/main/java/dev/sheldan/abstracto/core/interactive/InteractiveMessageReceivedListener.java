@@ -6,6 +6,9 @@ import dev.sheldan.abstracto.core.interactive.setup.callback.MessageInteractionC
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageReceivedListener;
 import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -19,6 +22,9 @@ public class InteractiveMessageReceivedListener implements AsyncMessageReceivedL
     // server -> channel -> user
     // TODO timeout
     private Map<Long, Map<Long, Map<Long, MessageInteractionCallback>>> callbacks = new HashMap<>();
+
+    @Autowired
+    private Tracer tracer;
 
     private static final Lock runTimeLock = new ReentrantLock();
 
@@ -40,7 +46,8 @@ public class InteractiveMessageReceivedListener implements AsyncMessageReceivedL
 
     public boolean executeCallback(MessageReceivedModel model) {
         runTimeLock.lock();
-        try {
+        Span newSpan = tracer.nextSpan().name("interactive-message-tracker");
+        try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())){
             if(callbacks.containsKey(model.getServerId())) {
                 Map<Long, Map<Long, MessageInteractionCallback>> channelMap = callbacks.get(model.getServerId());
                 if(channelMap.containsKey(model.getMessage().getChannel().getIdLong())) {
@@ -56,6 +63,7 @@ public class InteractiveMessageReceivedListener implements AsyncMessageReceivedL
                 }
             }
         } finally {
+            newSpan.end();
             runTimeLock.unlock();
         }
         return false;

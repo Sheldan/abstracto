@@ -2,9 +2,10 @@ package dev.sheldan.abstracto.core.templating.loading;
 
 import dev.sheldan.abstracto.core.config.ServerContext;
 import dev.sheldan.abstracto.core.templating.model.EffectiveTemplate;
-import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.templating.service.management.EffectiveTemplateManagementService;
 import freemarker.cache.TemplateLoader;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,13 +22,13 @@ import java.util.Optional;
 public class DatabaseTemplateLoader implements TemplateLoader {
 
     @Autowired
-    private TemplateService templateService;
-
-    @Autowired
     private EffectiveTemplateManagementService effectiveTemplateManagementService;
 
     @Autowired
     private ServerContext serverContext;
+
+    @Autowired
+    private Tracer tracer;
 
     /**
      * Loads the content of the template object
@@ -37,13 +38,20 @@ public class DatabaseTemplateLoader implements TemplateLoader {
     @Override
     public Object findTemplateSource(String s) throws IOException {
         Optional<EffectiveTemplate> templateByKey;
-        if(s.contains("/")) {
-            String[] parts = s.split("/");
-            templateByKey = effectiveTemplateManagementService.getTemplateByKeyAndServer(parts[1], Long.parseLong(parts[0]));
-        } else {
-            templateByKey = effectiveTemplateManagementService.getTemplateByKey(s);
+        Span newSpan = tracer.nextSpan().name("load-template");
+        try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
+            newSpan.tag("template.key", s);
+            if(s.contains("/")) {
+                String[] parts = s.split("/");
+                templateByKey = effectiveTemplateManagementService.getTemplateByKeyAndServer(parts[1], Long.parseLong(parts[0]));
+            } else {
+                templateByKey = effectiveTemplateManagementService.getTemplateByKey(s);
+            }
+            return templateByKey.orElseThrow(() -> new IOException(String.format("Failed to load template. %s", s)));
+        } finally {
+            newSpan.end();
         }
-        return templateByKey.orElseThrow(() -> new IOException(String.format("Failed to load template. %s", s)));
+
     }
 
     @Override

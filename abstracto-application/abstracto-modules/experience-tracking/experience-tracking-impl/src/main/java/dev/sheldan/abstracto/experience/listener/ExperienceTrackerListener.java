@@ -7,6 +7,8 @@ import dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListener;
 import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,17 +25,26 @@ public class ExperienceTrackerListener implements AsyncMessageReceivedListener {
     @Autowired
     private AUserExperienceService userExperienceService;
 
+    @Autowired
+    private Tracer tracer;
+
     @Override
     public DefaultListenerResult execute(MessageReceivedModel model) {
-        Message message = model.getMessage();
-        if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem() || message.getAuthor().isBot()) {
-            return DefaultListenerResult.IGNORED;
-        }
-        if(userExperienceService.experienceGainEnabledInChannel(message.getChannel())) {
-            userExperienceService.addExperience(message.getMember(), model.getMessage());
-            return DefaultListenerResult.PROCESSED;
-        } else  {
-            return DefaultListenerResult.IGNORED;
+        Span newSpan = tracer.nextSpan().name("experience-tracker");
+        try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
+            Message message = model.getMessage();
+            if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem() || message.getAuthor().isBot()) {
+                newSpan.end();
+                return DefaultListenerResult.IGNORED;
+            }
+            if(userExperienceService.experienceGainEnabledInChannel(message.getChannel())) {
+                userExperienceService.addExperience(message.getMember(), model.getMessage()).whenComplete((unused, throwable) -> {
+                    newSpan.end();
+                });
+                return DefaultListenerResult.PROCESSED;
+            } else  {
+                return DefaultListenerResult.IGNORED;
+            }
         }
     }
 

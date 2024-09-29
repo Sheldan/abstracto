@@ -14,6 +14,8 @@ import dev.sheldan.abstracto.core.utils.FileService;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -66,6 +68,10 @@ public class TemplateServiceBean implements TemplateService {
 
     @Autowired
     private FileService fileService;
+
+    @Autowired
+    private Tracer tracer;
+
 
     /**
      * Formats the passed passed count with the embed used for formatting pages.
@@ -773,9 +779,15 @@ public class TemplateServiceBean implements TemplateService {
      */
     private String renderTemplateToString(String key, Object model) throws IOException, TemplateException {
         StringWriter result = new StringWriter();
-        Template template = configuration.getTemplate(key, null, serverContext.getServerId(), null, true, false);
-        template.process(model, result);
-        return result.toString();
+        Span newSpan = tracer.nextSpan().name("render-template");
+        try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
+            newSpan.tag("rootTemplate.key", key);
+            Template template = configuration.getTemplate(key, null, serverContext.getServerId(), null, true, false);
+            template.process(model, result);
+            return result.toString();
+        } finally {
+            newSpan.end();
+        }
     }
 
     /**

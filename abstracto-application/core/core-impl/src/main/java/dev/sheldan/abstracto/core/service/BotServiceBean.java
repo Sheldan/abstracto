@@ -3,6 +3,10 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.logging.OkHttpLogger;
 import dev.sheldan.abstracto.core.metric.OkHttpMetrics;
 import dev.sheldan.abstracto.core.models.SystemInfo;
+import io.micrometer.context.ContextExecutorService;
+import io.micrometer.context.ContextSnapshotFactory;
+import io.micrometer.core.instrument.binder.okhttp3.OkHttpObservationInterceptor;
+import io.micrometer.observation.ObservationRegistry;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -11,9 +15,13 @@ import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.internal.utils.IOUtil;
+import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
+import okhttp3.internal.Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.lang.management.ManagementFactory;
@@ -24,6 +32,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -45,6 +56,18 @@ public class BotServiceBean implements BotService {
 
     @Value("${abstracto.memberCachePolicy:ALL}")
     private String memberCachePolicy;
+
+    @Autowired
+    @Qualifier("genericExecutor")
+    private TaskExecutor genericExecutor;
+
+    @Autowired
+    private ObservationRegistry observationRegistry;
+
+    private OkHttpObservationInterceptor.Builder defaultInterceptorBuilder() {
+        return OkHttpObservationInterceptor.builder(observationRegistry, "okhttp.requests")
+                .uriMapper(req -> req.url().encodedPath());
+    }
 
     private static final Map<String, MemberCachePolicy> POSSIBLE_MEMBER_CACHE_POLICIES = new HashMap<>();
 
@@ -84,6 +107,10 @@ public class BotServiceBean implements BotService {
         OkHttpClient.Builder defaultBuilder = IOUtil.newHttpClientBuilder();
         defaultBuilder.addInterceptor(okHttpMetrics);
         defaultBuilder.addInterceptor(okHttpLogger);
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
+                new SynchronousQueue<>(), Util.threadFactory("OkHttp Dispatcher", false));
+        defaultBuilder.dispatcher(new Dispatcher(ContextExecutorService.wrap(executor, ContextSnapshotFactory.builder().build()::captureAll)));
+        defaultBuilder.addInterceptor(defaultInterceptorBuilder().build());
         builder.setHttpClientBuilder(defaultBuilder);
 
         this.instance = builder.build();

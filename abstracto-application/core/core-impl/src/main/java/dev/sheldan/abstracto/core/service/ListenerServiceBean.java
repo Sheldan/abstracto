@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.listener.*;
+import dev.sheldan.abstracto.core.metric.service.MetricUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
@@ -84,7 +85,7 @@ public class ListenerServiceBean implements ListenerService {
             return;
         }
         try {
-            CompletableFuture.runAsync(() -> self.executeFeatureListenerInTransaction(listener, model), executor).exceptionally(throwable -> {
+            CompletableFuture.runAsync(() -> self.executeFeatureListenerInTransaction(listener, model), MetricUtils.wrapExecutor(executor)).exceptionally(throwable -> {
                 log.error("Feature aware async Listener {} failed with async exception:", listener.getClass().getName(), throwable);
                 return null;
             });
@@ -111,7 +112,7 @@ public class ListenerServiceBean implements ListenerService {
     @Override
     public <T extends ListenerModel, R extends ListenerExecutionResult> void executeListener(AbstractoListener<T, R> listener, T model, TaskExecutor executor) {
         try {
-            CompletableFuture.runAsync(() -> self.executeListenerInTransaction(listener, model), executor).exceptionally(throwable -> {
+            CompletableFuture.runAsync(() -> self.executeListenerInTransaction(listener, model), MetricUtils.wrapExecutor(executor)).exceptionally(throwable -> {
                 log.error("Async Listener {} failed with async exception:", listener.getClass().getName(), throwable);
                 return null;
             });

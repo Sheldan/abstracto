@@ -10,6 +10,11 @@ import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
+import dev.sheldan.abstracto.core.metric.service.MetricUtils;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
@@ -60,6 +65,12 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     @Autowired
     private MetricService metricService;
 
+    @Autowired
+    private ObservationRegistry observationRegistry;
+
+    @Autowired
+    private Tracer tracer;
+
     public static final CounterMetric SLASH_COMMANDS_PROCESSED_COUNTER = CounterMetric
             .builder()
             .name(CommandReceivedHandler.COMMAND_PROCESSED)
@@ -78,45 +89,63 @@ public class SlashCommandListenerBean extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        try {
-            if(commands == null || commands.isEmpty()) return;
-            log.debug("Executing slash command in guild {} from user {}.", event.getGuild().getIdLong(), event.getMember().getIdLong());
-            CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), slashCommandExecutor).exceptionally(throwable -> {
-                log.error("Failed to execute listener logic in async slash command event.", throwable);
-                return null;
-            });
-        } catch (Exception exception) {
-            log.error("Failed to process slash command interaction event.", exception);
-        }
-    }
-
-    @Transactional
-    public void executeListenerLogic(SlashCommandInteractionEvent event) {
-        Optional<Command> potentialCommand = findCommand(event);
-        potentialCommand.ifPresent(command -> {
-            metricService.incrementCounter(SLASH_COMMANDS_PROCESSED_COUNTER);
+        Observation observation = Observation.createNotStarted("slash-command-received", this.observationRegistry);
+        observation.observe(() -> {
             try {
-                commandService.isCommandExecutable(command, event).thenAccept(conditionResult -> {
-                    self.executeCommand(event, command, conditionResult);
-                }).exceptionally(throwable -> {
-                    log.error("Error while executing command {}", command.getConfiguration().getName(), throwable);
-                    CommandResult commandResult = CommandResult.fromError(throwable.getMessage(), throwable);
-                    self.executePostCommandListener(command, event, commandResult);
+                if(commands == null || commands.isEmpty()) return;
+                log.debug("Executing slash command in guild {} from user {}.", event.getGuild().getIdLong(), event.getMember().getIdLong());
+                Span span = tracer.currentSpan();
+                CompletableFuture.runAsync(() -> {
+                    try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
+                        self.executeListenerLogic(event).whenComplete((unused, throwable) -> {
+                            span.end();
+                        });
+                    }
+                }, slashCommandExecutor).exceptionally(throwable -> {
+                    log.error("Failed to execute listener logic in async slash command event.", throwable);
                     return null;
                 });
             } catch (Exception exception) {
-                log.error("Error while checking if command {} is executable.", command.getConfiguration().getName(), exception);
-                CommandResult commandResult = CommandResult.fromError(exception.getMessage(), exception);
-                self.executePostCommandListener(command, event, commandResult);
+                log.error("Failed to process slash command interaction event.", exception);
             }
         });
+    }
+
+    @Transactional
+    public CompletableFuture<Void> executeListenerLogic(SlashCommandInteractionEvent event) {
+        Optional<Command> potentialCommand = findCommand(event);
+        if(potentialCommand.isPresent()) {
+            Command command = potentialCommand.get();
+                metricService.incrementCounter(SLASH_COMMANDS_PROCESSED_COUNTER);
+                try {
+                    Span span = tracer.currentSpan();
+                    span.tag("command-name", command.getConfiguration().getName());
+                    return commandService.isCommandExecutable(command, event).thenCompose(conditionResult -> {
+                        try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
+                            return self.executeCommand(event, command, conditionResult);
+                        }
+                    }).exceptionally(throwable -> {
+                        log.error("Error while executing command {}", command.getConfiguration().getName(), throwable);
+                        CommandResult commandResult = CommandResult.fromError(throwable.getMessage(), throwable);
+                        self.executePostCommandListener(command, event, commandResult);
+                        return null;
+                    });
+                } catch (Exception exception) {
+                    log.error("Error while checking if command {} is executable.", command.getConfiguration().getName(), exception);
+                    CommandResult commandResult = CommandResult.fromError(exception.getMessage(), exception);
+                    self.executePostCommandListener(command, event, commandResult);
+                    return CompletableFuture.completedFuture(null);
+                }
+        } else {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     @Override
     public void onCommandAutoCompleteInteraction(@Nonnull CommandAutoCompleteInteractionEvent event) {
         try {
             if(commands == null || commands.isEmpty()) return;
-            CompletableFuture.runAsync(() ->  self.executeAutCompleteListenerLogic(event), slashCommandAutoCompleteExecutor).exceptionally(throwable -> {
+            CompletableFuture.runAsync(() ->  self.executeAutCompleteListenerLogic(event), MetricUtils.wrapExecutor(slashCommandAutoCompleteExecutor)).exceptionally(throwable -> {
                 log.error("Failed to execute listener logic in async auto complete interaction event.", throwable);
                 return null;
             });
@@ -141,18 +170,24 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     }
 
     @Transactional(rollbackFor = AbstractoRunTimeException.class)
-    public void executeCommand(SlashCommandInteractionEvent event, Command command, ConditionResult conditionResult) {
+    public CompletableFuture<Void> executeCommand(SlashCommandInteractionEvent event, Command command, ConditionResult conditionResult) {
         CompletableFuture<CommandResult> commandOutput;
         if(conditionResult.isResult()) {
-            commandOutput = command.executeSlash(event).thenApply(commandResult -> {
-                log.info("Command {} in server {} was executed.", command.getConfiguration().getName(), event.getGuild().getIdLong());
-                return commandResult;
-            });
+            Span newSpan = tracer.nextSpan().name("execute-command");
+            try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
+                commandOutput = command.executeSlash(event).thenApply(commandResult -> {
+                    log.info("Command {} in server {} was executed.", command.getConfiguration().getName(), event.getGuild().getIdLong());
+                    return commandResult;
+                });
+            }
         } else {
             commandOutput = CompletableFuture.completedFuture(CommandResult.fromCondition(conditionResult));
         }
-        commandOutput.thenAccept(commandResult -> {
-            self.executePostCommandListener(command, event, commandResult);
+        Span span = tracer.currentSpan();
+        return commandOutput.thenAccept(commandResult -> {
+            try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
+                self.executePostCommandListener(command, event, commandResult);
+            }
         }).exceptionally(throwable -> {
             log.error("Error while handling post execution of command {}", command.getConfiguration().getName(), throwable);
             CommandResult commandResult = CommandResult.fromError(throwable.getMessage(), throwable);
