@@ -77,7 +77,10 @@ public class Remind extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Duration remindTime = (Duration) parameters.get(0);
-        String text = (String) parameters.get(1);
+        String text = null;
+        if(parameters.size() > 1) {
+            text = (String) parameters.get(1);
+        }
         Long serverId = commandContext.getGuild().getIdLong();
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
         Reminder createdReminder = remindService.createReminderInForUser(aUserInAServer, text, remindTime, commandContext.getMessage());
@@ -110,8 +113,11 @@ public class Remind extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String durationString = slashCommandParameterService.getCommandOption(DURATION_PARAMETER, event, Duration.class, String.class);
         Duration duration = ParseUtils.parseDuration(durationString);
-        String reminderText = slashCommandParameterService.getCommandOption(REMIND_TEXT_PARAMETER, event, String.class, String.class);
+        String reminderText = null;
         Long serverId = event.getGuild().getIdLong();
+        if(slashCommandParameterService.hasCommandOption(REMIND_TEXT_PARAMETER, event)) {
+            reminderText = slashCommandParameterService.getCommandOption(REMIND_TEXT_PARAMETER, event, String.class, String.class);
+        }
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(event.getMember());
         Long snowFlake = SnowflakeUtils.createSnowFlake();
         String joinButtonId = componentService.generateComponentId();
@@ -152,6 +158,7 @@ public class Remind extends AbstractConditionableCommand {
                 .name(REMIND_TEXT_PARAMETER)
                 .type(String.class)
                 .templated(true)
+                .optional(true)
                 .remainder(true)
                 .build();
         List<Parameter> parameters = Arrays.asList(durationParameter, remindTextParameter);

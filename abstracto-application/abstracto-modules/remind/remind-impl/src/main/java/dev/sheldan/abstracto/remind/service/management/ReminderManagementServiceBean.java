@@ -39,11 +39,6 @@ public class ReminderManagementServiceBean implements ReminderManagementService 
     }
 
     @Override
-    public Reminder createReminder(AServerAChannelAUser userToBeReminded, String text, Instant timeToBeRemindedAt) {
-        return null;
-    }
-
-    @Override
     public Optional<Reminder> loadReminderOptional(Long reminderId) {
         return reminderRepository.findById(reminderId);
     }
