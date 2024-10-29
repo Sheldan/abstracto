@@ -105,7 +105,9 @@ public class EntertainmentServiceBean implements EntertainmentService {
 
     @Override
     public Integer getLoveCalcValue(String firstPart, String secondPart) {
-        return secureRandom.nextInt(100);
+        String fullInput = firstPart.toLowerCase() + secondPart.toLowerCase();
+        Random random = new Random(fullInput.hashCode());
+        return random.nextInt(100);
     }
 
     @Override
