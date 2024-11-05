@@ -6,6 +6,11 @@ export interface ExperienceMember {
     messages: bigint;
     member: Member | null;
     role: Role | null;
+    experienceToNextLevel: number;
+    experienceOnCurrentLevel: number;
+    percentage: number;
+    nextLevelExperienceNeeded: number;
+    currentLevelExperienceNeeded: number;
 }
 
 export interface Member {

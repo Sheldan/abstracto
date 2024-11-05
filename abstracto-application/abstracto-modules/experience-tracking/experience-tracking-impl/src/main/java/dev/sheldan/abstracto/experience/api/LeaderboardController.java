@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.experience.model.api.UserExperienceDisplay;
 import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.model.database.AUserExperience;
+import dev.sheldan.abstracto.experience.service.ExperienceLevelService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -37,6 +38,9 @@ public class LeaderboardController {
     @Autowired
     private GuildService guildService;
 
+    @Autowired
+    private ExperienceLevelService experienceLevelService;
+
     @GetMapping(value = "/leaderboards/{serverId}", produces = "application/json")
     public Page<UserExperienceDisplay> getLeaderboard(@PathVariable("serverId") Long serverId,
                                                       @PageableDefault(value = 25, page = 0)
@@ -55,6 +59,8 @@ public class LeaderboardController {
         AExperienceRole experienceRole = aUserExperience.getCurrentExperienceRole();
         UserDisplay userDisplay = null;
         RoleDisplay roleDisplay = null;
+        Long experienceNeededToNextLevel = experienceLevelService.calculateExperienceToNextLevel(aUserExperience.getCurrentLevel().getLevel(), aUserExperience.getExperience());
+        Long nextLevelExperience = experienceLevelService.calculateNextLevel(aUserExperience.getCurrentLevel().getLevel()).getExperienceNeeded();
         if(experienceRole != null) {
             Role role = guild.getRoleById(experienceRole.getRole().getId());
             if(role != null) {
@@ -66,6 +72,9 @@ public class LeaderboardController {
         if(member != null) {
             userDisplay = UserDisplay.fromMember(member);
         }
+        Long currentExpNeeded = aUserExperience.getCurrentLevel().getExperienceNeeded();
+        Long experienceWithinLevel = aUserExperience.getExperience() - currentExpNeeded;
+        Long experienceNeededForCurrentLevel = nextLevelExperience - currentExpNeeded;
         return UserExperienceDisplay
                 .builder()
                 .id(String.valueOf(userId))
@@ -73,6 +82,11 @@ public class LeaderboardController {
                 .level(aUserExperience.getLevelOrDefault())
                 .rank((int) pageable.getOffset() + page.getContent().indexOf(aUserExperience) + 1)
                 .experience(aUserExperience.getExperience())
+                .experienceToNextLevel(experienceNeededToNextLevel)
+                .currentLevelExperienceNeeded(experienceNeededForCurrentLevel)
+                .experienceOnCurrentLevel(experienceWithinLevel)
+                .percentage(((float) experienceWithinLevel / experienceNeededForCurrentLevel) * 100)
+                .nextLevelExperienceNeeded(nextLevelExperience)
                 .role(roleDisplay)
                 .member(userDisplay)
                 .build();

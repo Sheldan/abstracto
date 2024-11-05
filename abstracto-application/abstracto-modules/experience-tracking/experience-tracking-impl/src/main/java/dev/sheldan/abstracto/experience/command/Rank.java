@@ -107,13 +107,13 @@ public class Rank extends AbstractConditionableCommand {
         Long currentExpNeeded = experienceObj.getCurrentLevel().getExperienceNeeded();
         Long experienceNeededToNextLevel = experienceLevelService.calculateExperienceToNextLevel(experienceObj.getCurrentLevel().getLevel(), experienceObj.getExperience());
         Long nextLevelExperience = experienceLevelService.calculateNextLevel(experienceObj.getCurrentLevel().getLevel()).getExperienceNeeded();
-        Long levelExperience = nextLevelExperience - currentExpNeeded;
-        Long inLevelExperience = experienceObj.getExperience() - currentExpNeeded;
+        Long experienceNeededForCurrentLevel = nextLevelExperience - currentExpNeeded;
+        Long experienceWithinLevel = experienceObj.getExperience() - currentExpNeeded;
         rankModel.setExperienceForCurrentLevel(currentExpNeeded);
-        rankModel.setCurrentLevelPercentage(((float) inLevelExperience / levelExperience) * 100);
-        rankModel.setLevelExperience(levelExperience);
+        rankModel.setCurrentLevelPercentage(((float) experienceWithinLevel / experienceNeededForCurrentLevel) * 100);
+        rankModel.setLevelExperience(experienceNeededForCurrentLevel);
         rankModel.setExperienceToNextLevel(experienceNeededToNextLevel);
-        rankModel.setInLevelExperience(inLevelExperience);
+        rankModel.setInLevelExperience(experienceWithinLevel);
         rankModel.setNextLevelExperience(nextLevelExperience);
         return templateService.renderEmbedTemplate(RANK_POST_EMBED_TEMPLATE, rankModel, toRender.getGuild().getIdLong());
     }

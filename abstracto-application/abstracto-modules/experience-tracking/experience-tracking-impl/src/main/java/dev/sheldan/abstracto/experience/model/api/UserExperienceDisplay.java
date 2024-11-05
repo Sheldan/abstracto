@@ -16,4 +16,9 @@ public class UserExperienceDisplay {
     private Long experience;
     private Long messages;
     private RoleDisplay role;
+    private Long experienceToNextLevel;
+    private Long experienceOnCurrentLevel;
+    private Long currentLevelExperienceNeeded;
+    private Float percentage;
+    private Long nextLevelExperienceNeeded;
 }
