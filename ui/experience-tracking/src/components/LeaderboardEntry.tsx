@@ -16,7 +16,7 @@ export const LeaderboardEntry = ({member, index}: { member: ExperienceMember, in
 
     function getDisplayPercentage() {
         let increased = member.percentage * 100;
-        if(increased % 100 == 0) {
+        if(increased % 100 === 0) {
             return Math.trunc(increased / 100)
         } else {
             return Math.trunc(increased) / 100;
