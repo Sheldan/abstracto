@@ -104,9 +104,10 @@ public interface ModMailThreadManagementService {
      * Creates an instance of {@link ModMailThread} with the appropriate parameters and returns the created instance.
      * @param userInAServer The {@link AUserInAServer} for which the thread was created for
      * @param channel An instance of {@link AChannel} in which the conversation with the member is handled
+     * @param appeal Whether the modmail thread is for the purpose of an appeal
      * @return The created instance of {@link ModMailThread}
      */
-    ModMailThread createModMailThread(AUserInAServer userInAServer, AChannel channel);
+    ModMailThread createModMailThread(AUserInAServer userInAServer, AChannel channel, boolean appeal);
 
     /**
      * Updates the {@link ModMailThread} with the new state and saves the instance.

@@ -59,6 +59,9 @@ public class ModMailThread implements Serializable {
     @Column(name = "closed")
     private Instant closed;
 
+    @Column(name = "appeal", nullable = false)
+    private Boolean appeal;
+
     /**
      * The messages which were officially posted in the context of the mod mail thread. Either via command (from the
      * staff side of view) or by messaging the bot (from the member view)

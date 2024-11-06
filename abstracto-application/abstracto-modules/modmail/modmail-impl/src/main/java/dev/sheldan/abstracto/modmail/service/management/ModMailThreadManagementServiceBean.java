@@ -98,10 +98,11 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
      * The status of the created instance is INITIAL.
      * @param userInAServer The {@link AUserInAServer} for which the thread was created for
      * @param channel An instance of {@link AChannel} in which the conversation with the member is handled
+     * @param appeal Whether the modmail thread is for the purpose of an appeal
      * @return the created {@link ModMailThread} instance
      */
     @Override
-    public ModMailThread createModMailThread(AUserInAServer userInAServer, AChannel channel) {
+    public ModMailThread createModMailThread(AUserInAServer userInAServer, AChannel channel, boolean appeal) {
         ModMailThread thread = ModMailThread
                 .builder()
                 .id(channel.getId())
@@ -111,6 +112,7 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
                 .server(userInAServer.getServerReference())
                 .state(ModMailThreadState.INITIAL)
                 .updated(Instant.now())
+                .appeal(appeal)
                 .build();
 
         log.info("Create modmail thread in channel {} for user {} in server {}.",

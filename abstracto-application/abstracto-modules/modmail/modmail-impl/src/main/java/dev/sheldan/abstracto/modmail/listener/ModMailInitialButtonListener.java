@@ -53,10 +53,11 @@ public class ModMailInitialButtonListener implements ButtonClickedListener {
         log.debug("Executing action for creationg a modmail thread in server {} for user {}.", chosenServer.getServerId(), userId);
         ArrayList<UndoActionInstance> undoActions = new ArrayList<>();
         Guild guild = guildService.getGuildById(chosenServer.getServerId());
+        boolean appeal = chosenServer.getAppealModmail() != null && chosenServer.getAppealModmail();
         channelService.retrieveMessageInChannel(model.getEvent().getChannel(), choices.getMessageId())
                 .thenCompose(originalMessage -> {
                     try {
-                        return modMailThreadService.createModMailThreadForUser(model.getEvent().getUser(), guild, originalMessage, true, undoActions);
+                        return modMailThreadService.createModMailThreadForUser(model.getEvent().getUser(), guild, originalMessage, true, undoActions, appeal);
                     } catch (Exception ex) {
                         log.error("Failed to setup thread correctly", ex);
                         undoActionService.performActions(undoActions);

@@ -25,11 +25,12 @@ public interface ModMailThreadService {
      * @param user The {@link User} to create the mod mail thread for
      * @param guild The {@link Guild} in which the mod mail thread should be created in
      * @param initialMessage The initial message sparking this mod mail thread, null in case it was created by a command
-     * @param userInitiated Whether or not the mod mail thread was initiated by a user
+     * @param userInitiated Whether the mod mail thread was initiated by a user
      * @param undoActions A list of {@link dev.sheldan.abstracto.core.models.UndoAction actions} to be undone in case the operation fails. This list will be filled in the method.
+     * @param appeal Whether the modmail thread was created for the purpose of an appeal
      * @return A {@link CompletableFuture future} which completes when the modmail thread is set up
      */
-    CompletableFuture<MessageChannel> createModMailThreadForUser(User user, Guild guild, Message initialMessage, boolean userInitiated, List<UndoActionInstance> undoActions);
+    CompletableFuture<MessageChannel> createModMailThreadForUser(User user, Guild guild, Message initialMessage, boolean userInitiated, List<UndoActionInstance> undoActions, boolean appeal);
 
     CompletableFuture<Void> sendContactNotification(User user, MessageChannel createdMessageChannel, MessageChannel feedBackChannel);
     CompletableFuture<Void> sendContactNotification(User user, MessageChannel createdMessageChannel, InteractionHook interactionHook);

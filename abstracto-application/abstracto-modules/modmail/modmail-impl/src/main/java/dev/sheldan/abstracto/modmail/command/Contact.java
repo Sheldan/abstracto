@@ -88,7 +88,7 @@ public class Contact extends AbstractConditionableCommand {
             List<CompletableFuture<Message>> futures = channelService.sendEmbedTemplateInTextChannelList(MODMAIL_THREAD_ALREADY_EXISTS_TEMPLATE, model, commandContext.getChannel());
             return FutureUtils.toSingleFutureGeneric(futures).thenApply(aVoid -> CommandResult.fromIgnored());
         } else {
-            return modMailThreadService.createModMailThreadForUser(targetUser.getUser(), targetUser.getGuild(), null,  false, commandContext.getUndoActions())
+            return modMailThreadService.createModMailThreadForUser(targetUser.getUser(), targetUser.getGuild(), null,  false, commandContext.getUndoActions(), false)
                     .thenCompose(unused -> modMailThreadService.sendContactNotification(targetUser.getUser(), unused, commandContext.getChannel()))
                     .thenApply(aVoid -> CommandResult.fromSuccess());
         }
@@ -112,7 +112,7 @@ public class Contact extends AbstractConditionableCommand {
                     .thenApply(interactionHook -> CommandResult.fromSuccess());
         } else {
             CompletableFuture<InteractionHook> response = interactionService.replyEmbed(CONTACT_RESPONSE, event);
-            CompletableFuture<MessageChannel> threadFuture = modMailThreadService.createModMailThreadForUser(user, event.getGuild(), null, false, new ArrayList<>());
+            CompletableFuture<MessageChannel> threadFuture = modMailThreadService.createModMailThreadForUser(user, event.getGuild(), null, false, new ArrayList<>(), false);
             return CompletableFuture.allOf(response, threadFuture)
                     .thenCompose(unused -> modMailThreadService.sendContactNotification(user, threadFuture.join(), response.join()))
                     .thenApply(o -> CommandResult.fromSuccess());

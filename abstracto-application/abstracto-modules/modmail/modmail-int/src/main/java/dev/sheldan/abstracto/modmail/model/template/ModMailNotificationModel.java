@@ -32,4 +32,8 @@ public class ModMailNotificationModel extends ServerContext {
      * The {@link GuildMessageChannel} in which the mod mail thread is handled
      */
     private GuildMessageChannel channel;
+    /**
+     * Whether the modmail is created for the purpose of an appeal
+     */
+    private boolean appeal;
 }

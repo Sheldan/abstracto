@@ -2,7 +2,11 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                      xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd" >
-    <include file="1.0-modmail/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.5.37/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.5.51/collection.xml" relativeToChangelogFile="true"/>
+    <changeSet author="Sheldan" id="mod_mail_thread-add_appeal_boolean">
+        <addColumn tableName="mod_mail_thread">
+            <column name="appeal" type="BOOLEAN" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
