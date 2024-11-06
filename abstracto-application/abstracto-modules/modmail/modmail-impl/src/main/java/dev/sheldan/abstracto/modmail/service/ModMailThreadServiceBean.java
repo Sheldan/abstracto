@@ -405,7 +405,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             boolean possibleForModmail = false;
             Long actualServerId = 0L;
             Long potentialMainServer = configService.getLongValue(ModMailFeatureConfig.MOD_MAIL_APPEAL_SERVER, server.getId()); // what _other_ server is the appeal server
-            if(potentialMainServer != 0) {
+            if(potentialMainServer != 0 && !alreadyConsideredServers.contains(potentialMainServer)) {
                 if(featureModeService.featureModeActive(ModMailFeatureDefinition.MOD_MAIL, potentialMainServer, ModMailMode.MOD_MAIL_APPEALS)) {
                     Long configuredAppealServerId = configService.getLongValue(ModMailFeatureConfig.MOD_MAIL_APPEAL_SERVER, potentialMainServer);
                     if(configuredAppealServerId != 0 && configuredAppealServerId.equals(server.getId())) { // if the other server has set the current server as the appeal config
