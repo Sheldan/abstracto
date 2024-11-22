@@ -7,8 +7,10 @@ import lombok.Setter;
 @Setter
 public class ServerContext {
     private Long serverId;
+    private String locale;
 
     public void clear() {
         this.serverId = null;
+        this.locale = null;
     }
 }

@@ -103,7 +103,7 @@ public class Mines extends AbstractConditionableCommand {
         board.setUserId(event.getMember().getIdLong());
         board.setServerId(serverId);
         board.setCredits(credit);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(MINE_BOARD_TEMPLATE_KEY, board);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(MINE_BOARD_TEMPLATE_KEY, board, serverId);
         return interactionService.replyMessageToSend(messageToSend, event)
                 .thenCompose(interactionHook -> interactionHook.retrieveOriginal().submit())
                 .thenApply(message -> {
@@ -151,7 +151,7 @@ public class Mines extends AbstractConditionableCommand {
         board.setUserId(commandContext.getAuthor().getIdLong());
         board.setServerId(serverId);
         board.setCredits(credit);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(MINE_BOARD_TEMPLATE_KEY, board);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(MINE_BOARD_TEMPLATE_KEY, board, serverId);
         List<CompletableFuture<Message>> futures = channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
         return FutureUtils.toSingleFutureGeneric(futures)
                 .thenAccept(unused ->  gameService.persistMineBoardMessage(board, futures.get(0).join()))

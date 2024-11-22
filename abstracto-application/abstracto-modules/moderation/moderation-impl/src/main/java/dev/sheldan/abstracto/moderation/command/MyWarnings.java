@@ -54,7 +54,7 @@ public class MyWarnings extends AbstractConditionableCommand {
                 .totalWarnCount(totalWarnCount)
                 .currentWarnCount(currentWarnCount)
                 .build();
-        channelService.sendEmbedTemplateInTextChannelList(MY_WARNINGS_RESPONSE_EMBED_TEMPLATE, model, commandContext.getChannel());
+        channelService.sendEmbedTemplateInMessageChannel(MY_WARNINGS_RESPONSE_EMBED_TEMPLATE, model, commandContext.getChannel());
         return CommandResult.fromIgnored();
     }
 

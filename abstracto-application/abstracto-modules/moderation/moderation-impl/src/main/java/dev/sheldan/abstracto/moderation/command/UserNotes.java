@@ -90,7 +90,7 @@ public class UserNotes extends AbstractConditionableCommand {
         CompletableFuture<List<NoteEntryModel>> listCompletableFuture = userNotesConverter.fromNotes(userNotes);
         return listCompletableFuture.thenCompose(noteEntryModels -> {
             model.setUserNotes(noteEntryModels);
-            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(USER_NOTES_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
+            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(USER_NOTES_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
                     .thenApply(aVoid -> CommandResult.fromIgnored());
         });
     }

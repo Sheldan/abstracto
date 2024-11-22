@@ -130,7 +130,7 @@ public class GiveawayServiceBean implements GiveawayService {
         giveawayMessageModel.setJoinedUserCount(giveaway.getParticipants().size() + 1L);
         Long giveawayId = giveaway.getGiveawayId().getId();
         log.info("Adding giveaway participating of user {} to giveaway {} in server {}.", member.getIdLong(), giveawayId, member.getGuild().getIdLong());
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(GIVEAWAY_MESSAGE_TEMPLATE_KEY, giveawayMessageModel);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(GIVEAWAY_MESSAGE_TEMPLATE_KEY, giveawayMessageModel, member.getGuild().getIdLong());
         return channelService.editEmbedMessageInAChannel(messageToSend.getEmbeds().get(0), messageChannel, giveaway.getMessageId())
                 .thenAccept(message -> {
             self.persistAddedParticipant(member, giveawayId);
@@ -183,13 +183,13 @@ public class GiveawayServiceBean implements GiveawayService {
                 .winners(winnerDisplays)
                 .build();
         log.info("Sending result message for giveaway {} in server {}.", giveawayId, serverId);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(GIVEAWAY_RESULT_MESSAGE_TEMPLATE_KEY, resultModel);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(GIVEAWAY_RESULT_MESSAGE_TEMPLATE_KEY, resultModel, serverId);
         List<CompletableFuture<Message>> resultFutures = channelService.sendMessageEmbedToSendToAChannel(messageToSend, giveaway.getGiveawayChannel());
 
         GiveawayMessageModel giveawayMessageModel = GiveawayMessageModel.fromGiveaway(giveaway);
         giveawayMessageModel.setWinners(winnerDisplays);
         giveawayMessageModel.setEnded(true);
-        MessageToSend giveawayMessageToSend = templateService.renderEmbedTemplate(GIVEAWAY_MESSAGE_TEMPLATE_KEY, giveawayMessageModel);
+        MessageToSend giveawayMessageToSend = templateService.renderEmbedTemplate(GIVEAWAY_MESSAGE_TEMPLATE_KEY, giveawayMessageModel, serverId);
         log.info("Updating original giveaway message for giveaway {} in server {}.", giveawayId, serverId);
         GuildMessageChannel messageChannel = channelService.getMessageChannelFromServer(giveaway.getServer().getId(), giveaway.getGiveawayChannel().getId());
         CompletableFuture<Message> giveawayUpdateFuture = channelService.editMessageInAChannelFuture(giveawayMessageToSend, messageChannel, giveaway.getMessageId());
@@ -208,7 +208,7 @@ public class GiveawayServiceBean implements GiveawayService {
         GiveawayMessageModel giveawayMessageModel = GiveawayMessageModel.fromGiveaway(giveaway);
         giveawayMessageModel.setCancelled(true);
         schedulerService.stopTrigger(giveaway.getReminderTriggerKey());
-        MessageToSend giveawayMessageToSend = templateService.renderEmbedTemplate(GIVEAWAY_MESSAGE_TEMPLATE_KEY, giveawayMessageModel);
+        MessageToSend giveawayMessageToSend = templateService.renderEmbedTemplate(GIVEAWAY_MESSAGE_TEMPLATE_KEY, giveawayMessageModel, serverId);
 
         GuildMessageChannel messageChannel = channelService.getMessageChannelFromServer(giveaway.getServer().getId(), giveaway.getGiveawayChannel().getId());
         log.debug("Updating original giveaway message to consider cancellation for giveaway {} in server {}.", giveawayId, serverId);

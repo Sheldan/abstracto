@@ -61,7 +61,7 @@ public class Profanities extends AbstractConditionableCommand {
                 .falsePositives(falsePositives)
                 .truePositives(positiveReports)
                 .build();
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(PROFANITIES_TEMPLATE_KEY, model, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(PROFANITIES_TEMPLATE_KEY, model, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromSuccess());
     }
 

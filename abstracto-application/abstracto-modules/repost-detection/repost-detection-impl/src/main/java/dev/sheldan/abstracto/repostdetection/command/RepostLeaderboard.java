@@ -69,7 +69,7 @@ public class RepostLeaderboard extends AbstractConditionableCommand {
                     .userExecuting(userFuture.join())
                     .member(commandContext.getAuthor())
                     .build();
-            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(REPOST_LEADERBOARD_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()));
+            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(REPOST_LEADERBOARD_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()));
         }).thenApply(o -> CommandResult.fromIgnored());
     }
 

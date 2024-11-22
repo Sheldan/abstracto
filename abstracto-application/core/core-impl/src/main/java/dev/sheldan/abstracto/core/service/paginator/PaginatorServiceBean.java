@@ -102,7 +102,7 @@ public class PaginatorServiceBean implements PaginatorService {
                 .build();
         String embedConfig = templateService.renderTemplate(templateKey + "_paginator", wrapperModel, serverId);
         PaginatorConfiguration configuration = gson.fromJson(embedConfig, PaginatorConfiguration.class);
-        setupFooters(configuration);
+        setupFooters(configuration, serverId);
 
         configuration.setPaginatorId(componentService.generateComponentId());
         configuration.setSinglePage(configuration.getEmbedConfigs().size() < 2);
@@ -138,14 +138,14 @@ public class PaginatorServiceBean implements PaginatorService {
                 .thenAccept(message -> self.setupButtonPayloads(message, setup, serverId));
     }
 
-    private void setupFooters(PaginatorConfiguration configuration) {
+    private void setupFooters(PaginatorConfiguration configuration, Long serverId) {
         for (int i = 0; i < configuration.getEmbedConfigs().size(); i++) {
             PaginatorFooterModel paginatorModel = PaginatorFooterModel
                     .builder()
                     .page(i + 1)
                     .pageCount(configuration.getEmbedConfigs().size())
                     .build();
-            String footerText = templateService.renderTemplate(PAGINATOR_FOOTER_TEMPLATE_KEY, paginatorModel);
+            String footerText = templateService.renderTemplate(PAGINATOR_FOOTER_TEMPLATE_KEY, paginatorModel, serverId);
             MessageConfiguration messageConfig = configuration.getEmbedConfigs().get(i);
             if(messageConfig.getEmbeds() == null || messageConfig.getEmbeds().isEmpty()) {
                 messageConfig.setEmbeds(new ArrayList<>(Arrays.asList(EmbedConfiguration.builder().build())));

@@ -45,7 +45,7 @@ public class Roulette extends AbstractConditionableCommand {
                 .builder()
                 .result(rouletteResult)
                 .build();
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(ROULETTE_RESPONSE_TEMPLATE_KEY, responseModel, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(ROULETTE_RESPONSE_TEMPLATE_KEY, responseModel, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromIgnored());
     }
 

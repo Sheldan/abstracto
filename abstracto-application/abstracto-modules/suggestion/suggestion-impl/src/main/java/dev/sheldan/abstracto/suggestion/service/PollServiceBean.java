@@ -211,7 +211,7 @@ public class PollServiceBean implements PollService {
                 .payloadType(PollAddOptionButtonPayload.class)
                 .build();
         componentPayloadManagementService.createButtonPayload(buttonConfigModel, serverId);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_TEMPLATE_KEY, model);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_TEMPLATE_KEY, model, serverId);
         List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, PollPostTarget.POLLS, serverId);
         return FutureUtils.toSingleFutureGeneric(messageFutures)
                 .thenAccept(unused -> self.persistPoll(messageFutures.get(0).join(), pollCreationRequest));
@@ -281,7 +281,7 @@ public class PollServiceBean implements PollService {
                 .payloadType(QuickPollSelectionMenuPayload.class)
                 .build();
         componentPayloadManagementService.createStringSelectMenuPayload(selectMenuConfigModel, serverId);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(QUICK_POLL_TEMPLATE_KEY, model);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(QUICK_POLL_TEMPLATE_KEY, model, serverId);
         List<CompletableFuture<Message>> messageFutures = interactionService.sendMessageToInteraction(messageToSend, interactionHook);
         return FutureUtils.toSingleFutureGeneric(messageFutures)
                 .thenAccept(unused -> self.persistPoll(messageFutures.get(0).join(), pollCreationRequest));
@@ -339,7 +339,7 @@ public class PollServiceBean implements PollService {
         pollOptionManagementService.addOptionToPoll(poll, label, description, adderUser);
         List<PollMessageOption> options = getOptionsOfPoll(poll);
         ServerPollMessageModel model = ServerPollMessageModel.fromPoll(poll, options);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_TEMPLATE_KEY, model);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_TEMPLATE_KEY, model, serverId);
         MessageChannel pollChannel = adder.getGuild().getChannelById(GuildMessageChannel.class, poll.getChannel().getId());
         List<CompletableFuture<Message>> messageFutures = channelService.editMessagesInAChannelFuture(messageToSend, pollChannel, Arrays.asList(poll.getMessageId()));
         return FutureUtils.toSingleFutureGeneric(messageFutures);
@@ -371,7 +371,7 @@ public class PollServiceBean implements PollService {
                 .topOptions(topOptions)
                 .description(poll.getDescription())
                 .build();
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_EVALUATION_UPDATE_TEMPLATE_KEY, model);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_EVALUATION_UPDATE_TEMPLATE_KEY, model, serverId);
         log.info("Sending update message for poll evaluation of server poll {} in server {}.", pollId, serverId);
         List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, PollPostTarget.POLLS, serverId);
         GuildMessageChannel channel = channelService.getMessageChannelFromServer(serverId, poll.getChannel().getId());
@@ -406,7 +406,7 @@ public class PollServiceBean implements PollService {
                 .messageLink(MessageUtils.buildMessageUrl(serverId, poll.getChannel().getId(), poll.getMessageId()))
                 .description(poll.getDescription())
                 .build();
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_REMINDER_TEMPLATE_KEY, model);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_REMINDER_TEMPLATE_KEY, model, serverId);
         log.info("Sending poll reminder about server poll {} in server {}.", pollId, serverId);
         return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, PollPostTarget.POLL_REMINDER, serverId));
     }
@@ -439,7 +439,7 @@ public class PollServiceBean implements PollService {
                 .build();
         MessageChannel channel = channelService.getMessageChannelFromServer(serverId, poll.getChannel().getId());
         CompletableFuture<Message> removeComponentFuture = channelService.removeComponents(channel, poll.getMessageId());
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(QUICK_POLL_EVALUATION_UPDATE_TEMPLATE_KEY, model);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(QUICK_POLL_EVALUATION_UPDATE_TEMPLATE_KEY, model, serverId);
         CompletableFuture<Void> updateMessageFuture = FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, channel));
         return CompletableFuture.allOf(removeComponentFuture, updateMessageFuture)
                 .thenApply(message -> null);
@@ -463,7 +463,7 @@ public class PollServiceBean implements PollService {
         if(poll.getEvaluationJobTriggerKey() != null) {
             schedulerService.stopTrigger(poll.getEvaluationJobTriggerKey());
         }
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_CLOSE_MESSAGE, model);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_CLOSE_MESSAGE, model, serverId);
         List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, PollPostTarget.POLLS, serverId);
         MessageChannel channel = channelService.getMessageChannelFromServer(serverId, poll.getChannel().getId());
         CompletableFuture<Message> removeComponentsFuture = channelService.removeComponents(channel, poll.getMessageId());
@@ -527,7 +527,7 @@ public class PollServiceBean implements PollService {
         model.setAllowAdditions(false);
         model.setShowDecisions(true);
         model.setAllowMultiple(false);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_TEMPLATE_KEY, model);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_TEMPLATE_KEY, model, guild.getIdLong());
         MessageChannel pollChannel = guild.getChannelById(GuildMessageChannel.class, poll.getChannel().getId());
         return channelService.editEmbedMessageInAChannel(messageToSend.getEmbeds().get(0), pollChannel, poll.getMessageId())
                 .thenApply(message -> null);
@@ -536,7 +536,7 @@ public class PollServiceBean implements PollService {
     public CompletableFuture<Void> updatePollMessage(Poll poll, Guild guild) {
         List<PollMessageOption> options = getOptionsOfPoll(poll);
         ServerPollMessageModel model = ServerPollMessageModel.fromPoll(poll, options);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_TEMPLATE_KEY, model);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_TEMPLATE_KEY, model, guild.getIdLong());
         MessageChannel pollChannel = guild.getChannelById(GuildMessageChannel.class, poll.getChannel().getId());
         return channelService.editEmbedMessageInAChannel(messageToSend.getEmbeds().get(0), pollChannel, poll.getMessageId())
                 .thenApply(message -> null);

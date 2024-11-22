@@ -46,7 +46,7 @@ public class ShowEmote extends AbstractConditionableCommand {
                 .builder()
                 .emote(emoteParameter)
                 .build();
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(SHOW_EMOTE_RESPONSE_TEMPLATE, emoteLog, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(SHOW_EMOTE_RESPONSE_TEMPLATE, emoteLog, commandContext.getChannel()))
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 

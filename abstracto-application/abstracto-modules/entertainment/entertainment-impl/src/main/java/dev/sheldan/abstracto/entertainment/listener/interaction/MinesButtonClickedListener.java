@@ -54,7 +54,7 @@ public class MinesButtonClickedListener implements ButtonClickedListener {
             }
             gameService.uncoverBoard(mineBoard);
         }
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(Mines.MINE_BOARD_TEMPLATE_KEY, mineBoard);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(Mines.MINE_BOARD_TEMPLATE_KEY, mineBoard, model.getServerId());
         interactionService.editOriginal(messageToSend, model.getEvent().getHook()).thenAccept(message -> {
             gameService.updateMineBoard(mineBoard);
             log.info("Updated original mineboard for board {}.", mineBoard.getBoardId());

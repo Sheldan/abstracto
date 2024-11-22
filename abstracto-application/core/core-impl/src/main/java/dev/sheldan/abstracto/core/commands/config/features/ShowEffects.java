@@ -42,7 +42,7 @@ public class ShowEffects extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         ShowEffectsModel model = getModel();
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(SHOW_EFFECTS_RESPONSE_TEMPLATE,
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(SHOW_EFFECTS_RESPONSE_TEMPLATE,
                 model, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromSuccess());
     }

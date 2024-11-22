@@ -49,7 +49,7 @@ public class ShowRepostCheckChannelsTest {
         when(converter.fromRepostCheckChannelGroups(groupList, noParameters.getGuild())).thenReturn(model);
         CompletableFuture<CommandResult> futureResult = testUnit.executeAsync(noParameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(futureResult);
-        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(ShowRepostCheckChannels.SHOW_REPOST_CHECK_CHANNELS_RESPONSE_TEMPLATE_KEY, model, noParameters.getChannel());
+        verify(channelService, times(1)).sendEmbedTemplateInMessageChannel(ShowRepostCheckChannels.SHOW_REPOST_CHECK_CHANNELS_RESPONSE_TEMPLATE_KEY, model, noParameters.getChannel());
     }
 
     @Test

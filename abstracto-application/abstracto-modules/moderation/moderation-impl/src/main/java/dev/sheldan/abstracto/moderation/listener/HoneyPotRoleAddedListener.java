@@ -78,7 +78,7 @@ public class HoneyPotRoleAddedListener implements RoleAddedListener {
                         .memberDisplay(MemberDisplay.fromMember(model.getTargetMember()))
                         .roleDisplay(RoleDisplay.fromRole(model.getRole()))
                         .build();
-                String banReason = templateService.renderTemplate(HONEYPOT_BAN_REASON_TEMPLATE, reasonModel);
+                String banReason = templateService.renderTemplate(HONEYPOT_BAN_REASON_TEMPLATE, reasonModel, model.getServerId());
                 banService.banUserWithNotification(model.getTargetUser(), banReason, ServerUser.fromMember(model.getTargetMember().getGuild().getSelfMember()),
                         model.getTargetMember().getGuild(), Duration.ofDays(7)).thenAccept(banResult -> {
                     log.info("Banned user {} in guild {} due to role {}.", model.getTargetUser().getUserId(), model.getTargetUser().getServerId(), model.getRoleId());

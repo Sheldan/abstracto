@@ -53,7 +53,7 @@ public class Choose extends AbstractConditionableCommand {
                 .builder()
                 .chosenValue(choice)
                 .build();
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(CHOOSE_RESPONSE_TEMPLATE_KEY, responseModel, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(CHOOSE_RESPONSE_TEMPLATE_KEY, responseModel, commandContext.getChannel()))
             .thenApply(unused -> CommandResult.fromIgnored());
     }
 

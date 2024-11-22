@@ -72,7 +72,8 @@ public class Close extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         // the default value of the note is configurable via template
-        String note = parameters.size() == 1 ? (String) parameters.get(0) : templateService.renderTemplate(MODMAIL_CLOSE_DEFAULT_NOTE_TEMPLATE_KEY, new Object());
+        String note = parameters.size() == 1 ? (String) parameters.get(0) : templateService.renderTemplate(MODMAIL_CLOSE_DEFAULT_NOTE_TEMPLATE_KEY, new Object(), commandContext.getGuild()
+            .getIdLong());
         ModMailThread modMailThread = modMailThreadManagementService.getByChannelId(commandContext.getChannel().getIdLong());
         if(ModMailThreadState.CLOSED.equals(modMailThread.getState()) || ModMailThreadState.CLOSING.equals(modMailThread.getState())) {
             throw new ModMailThreadClosedException();

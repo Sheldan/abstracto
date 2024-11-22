@@ -361,7 +361,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                             .newRole(oldRoleId != null ? RoleDisplay.fromRole(oldRoleId) : null)
                             .newRole(newRoleId != null ? RoleDisplay.fromRole(newRoleId) : null)
                             .build();
-                    MessageToSend messageToSend = templateService.renderEmbedTemplate("experience_level_up_notification", model);
+                    MessageToSend messageToSend = templateService.renderEmbedTemplate("experience_level_up_notification", model, serverId);
                     FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, message.getChannel())).thenAccept(unused -> {
                         log.info("Sent level up notification to user {} in server {} in channel {}.", member.getIdLong(), serverId, message.getChannel().getIdLong());
                     }).exceptionally(throwable -> {

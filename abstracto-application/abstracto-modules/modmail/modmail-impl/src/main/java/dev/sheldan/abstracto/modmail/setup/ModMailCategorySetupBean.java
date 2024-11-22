@@ -88,7 +88,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
             model.setServerId(user.getGuildId());
         }
         log.info("Executing mod mail category setup for server {}.", user.getGuildId());
-        String messageText = templateService.renderTemplate(messageTemplateKey, model);
+        String messageText = templateService.renderTemplate(messageTemplateKey, model, user.getGuildId());
         AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(user.getGuildId(), user.getUserId());

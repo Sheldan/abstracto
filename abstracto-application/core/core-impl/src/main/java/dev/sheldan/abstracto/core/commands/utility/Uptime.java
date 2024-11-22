@@ -39,7 +39,7 @@ public class Uptime extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         UptimeModel model = getModel();
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(UPTIME_RESPONSE_TEMPLATE_KEY, model,  commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(UPTIME_RESPONSE_TEMPLATE_KEY, model,  commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromSuccess());
     }
 

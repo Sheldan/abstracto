@@ -50,7 +50,7 @@ public class ThreadReaderCommand extends AbstractConditionableCommand {
                 .builder()
                 .tweetId(tweetId)
                 .build();
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(THREAD_READER_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(THREAD_READER_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
                .thenApply(unused -> CommandResult.fromSuccess());
     }
 

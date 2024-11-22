@@ -66,19 +66,19 @@ public class ExternalEmoteStats extends AbstractConditionableCommand {
         // only show embed if static emote stats are available
         if(!emoteStatsModel.getStaticEmotes().isEmpty()) {
             log.debug("External emote stats has {} static emotes since {}.", emoteStatsModel.getStaticEmotes().size(), statsSince);
-            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_STATIC_EXTERNAL_RESPONSE, emoteStatsModel, commandContext.getChannel()));
+            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_STATIC_EXTERNAL_RESPONSE, emoteStatsModel, commandContext.getChannel()));
         }
 
         // only show embed if animated emote stats are available
         if(!emoteStatsModel.getAnimatedEmotes().isEmpty()) {
             log.debug("External emote stats has {} animated emotes since {}.", emoteStatsModel.getAnimatedEmotes(), statsSince);
-            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_ANIMATED_EXTERNAL_RESPONSE, emoteStatsModel, commandContext.getChannel()));
+            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_ANIMATED_EXTERNAL_RESPONSE, emoteStatsModel, commandContext.getChannel()));
         }
 
         // show an embed if no emote stats are available indicating so
         if(!emoteStatsModel.areStatsAvailable()) {
             log.info("No external emote stats available for guild {} since {}.", commandContext.getGuild().getIdLong(), statsSince);
-            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EmoteStats.EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), commandContext.getChannel()));
+            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(EmoteStats.EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), commandContext.getChannel()));
         }
 
         return FutureUtils.toSingleFutureGeneric(messagePromises)

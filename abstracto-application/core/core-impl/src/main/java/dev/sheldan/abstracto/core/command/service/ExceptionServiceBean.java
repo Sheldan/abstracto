@@ -61,14 +61,14 @@ public class ExceptionServiceBean implements ExceptionService {
 
     private void reportGenericException(Throwable throwable, CommandContext context) {
         GenericExceptionModel exceptionModel = buildCommandModel(throwable, context);
-        channelService.sendEmbedTemplateInTextChannelList("generic_command_exception", exceptionModel, context.getChannel());
+        channelService.sendEmbedTemplateInMessageChannel("generic_command_exception", exceptionModel, context.getChannel());
     }
 
     @Override
     public void reportExceptionToGuildMessageReceivedContext(Throwable exception, MessageReceivedEvent event) {
         if(exception instanceof Templatable){
             GenericExceptionModel model = buildMemberContext(exception, event.getMember());
-            String text = templateService.renderTemplate(MODEL_WRAPPER_TEMPLATE_KEY, model);
+            String text = templateService.renderTemplate(MODEL_WRAPPER_TEMPLATE_KEY, model, event.getGuild().getIdLong());
             channelService.sendTextToChannel(text, event.getChannel());
         } else {
             channelService.sendTextToChannel(exception.getLocalizedMessage(), event.getChannel());
@@ -79,7 +79,7 @@ public class ExceptionServiceBean implements ExceptionService {
     public void reportExceptionToPrivateMessageReceivedContext(Throwable exception, MessageReceivedEvent event) {
         if(exception instanceof Templatable){
             GenericExceptionModel model = buildPrivateMessageReceivedModel(exception, event.getAuthor());
-            String text = templateService.renderTemplate(MODEL_WRAPPER_TEMPLATE_KEY, model);
+            String text = templateService.renderTemplate(MODEL_WRAPPER_TEMPLATE_KEY, model, event.getGuild().getIdLong());
             channelService.sendTextToChannel(text, event.getChannel());
         } else {
             channelService.sendTextToChannel(exception.getLocalizedMessage(), event.getChannel());
@@ -90,7 +90,7 @@ public class ExceptionServiceBean implements ExceptionService {
     public void reportExceptionToChannel(Throwable exception, MessageChannel channel, Member member) {
         if(exception instanceof Templatable){
             GenericExceptionModel model = buildMemberContext(exception, member);
-            String text = templateService.renderTemplate(MODEL_WRAPPER_TEMPLATE_KEY, model);
+            String text = templateService.renderTemplate(MODEL_WRAPPER_TEMPLATE_KEY, model, member.getGuild().getIdLong());
             channelService.sendTextToChannel(text, channel);
         } else {
             channelService.sendTextToChannel(exception.getLocalizedMessage(), channel);

@@ -193,8 +193,8 @@ public class EntertainmentServiceBean implements EntertainmentService {
                     .text(pressF.getText())
                     .messageId(pressF.getMessageId())
                     .build();
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(PRESS_F_RESULT_TEMPLATE_KEY, model);
             Long serverId = pressF.getServer().getId();
+            MessageToSend messageToSend = templateService.renderEmbedTemplate(PRESS_F_RESULT_TEMPLATE_KEY, model, serverId);
             Long channelId = pressF.getPressFChannel().getId();
             Long messageId = pressF.getMessageId();
             return FutureUtils.toSingleFutureGeneric(channelService.sendMessageEmbedToSendToAChannel(messageToSend, pressF.getPressFChannel()))

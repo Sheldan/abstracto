@@ -76,7 +76,7 @@ public class Bonk extends AbstractConditionableCommand {
             }
         }
         File bonkGifFile = imageGenerationService.getBonkGif(member.getEffectiveAvatar().getUrl(imageSize));
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(BONK_EMBED_TEMPLATE_KEY, new Object());
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(BONK_EMBED_TEMPLATE_KEY, new Object(), commandContext.getGuild().getIdLong());
         // template support does not support binary files
         AttachedFile file = AttachedFile
                 .builder()
@@ -99,7 +99,7 @@ public class Bonk extends AbstractConditionableCommand {
             targetMember = event.getMember();
         }
         File bonkGifFile = imageGenerationService.getBonkGif(targetMember.getEffectiveAvatar().getUrl(imageSize));
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(BONK_EMBED_TEMPLATE_KEY, new Object());
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(BONK_EMBED_TEMPLATE_KEY, new Object(), event.getGuild().getIdLong());
         // template support does not support binary files
         AttachedFile file = AttachedFile
                 .builder()

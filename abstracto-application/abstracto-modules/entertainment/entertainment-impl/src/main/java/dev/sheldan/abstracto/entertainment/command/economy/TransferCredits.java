@@ -65,7 +65,7 @@ public class TransferCredits extends AbstractConditionableCommand {
                 .targetMember(MemberDisplay.fromMember(targetMember))
                 .credits(amount)
                 .build();
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(TRANSFER_CREDITS_RESPONSE, responseModel, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(TRANSFER_CREDITS_RESPONSE, responseModel, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromSuccess());
     }
 

@@ -92,7 +92,7 @@ public class RepostLeaderboardTest {
         when(converter.convertSingleUser(userResult)).thenReturn(CompletableFuture.completedFuture(convertedUserResult));
         CompletableFuture<CommandResult> resultFuture = testUnit.executeAsync(noParameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(resultFuture);
-        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(RepostLeaderboard.REPOST_LEADERBOARD_RESPONSE_TEMPLATE_KEY), modelCaptor.capture(), eq(noParameters.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInMessageChannel(eq(RepostLeaderboard.REPOST_LEADERBOARD_RESPONSE_TEMPLATE_KEY), modelCaptor.capture(), eq(noParameters.getChannel()));
         RepostLeaderboardModel model = modelCaptor.getValue();
         Assert.assertEquals(noParameters.getGuild(), model.getGuild());
         Assert.assertEquals(convertedList, model.getEntries());

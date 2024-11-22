@@ -34,7 +34,7 @@ public class Ping extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         PingModel model = buildModel(commandContext.getJda());
-        return channelService.sendTextTemplateInTextChannel(PING_TEMPLATE, model, commandContext.getChannel())
+        return channelService.sendTextTemplateInMessageChannel(PING_TEMPLATE, model, commandContext.getChannel())
                 .thenApply(message -> CommandResult.fromIgnored());
     }
 

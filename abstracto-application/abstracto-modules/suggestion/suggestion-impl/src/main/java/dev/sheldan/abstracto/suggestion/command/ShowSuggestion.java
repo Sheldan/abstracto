@@ -50,7 +50,7 @@ public class ShowSuggestion extends AbstractConditionableCommand {
 
         SuggestionInfoModel suggestionInfoModel = suggestionService.getSuggestionInfo(commandContext.getGuild().getIdLong(), suggestionId);
         return FutureUtils.toSingleFutureGeneric(
-                channelService.sendEmbedTemplateInTextChannelList(SHOW_SUGGESTION_TEMPLATE_KEY, suggestionInfoModel, commandContext.getChannel()))
+                channelService.sendEmbedTemplateInMessageChannel(SHOW_SUGGESTION_TEMPLATE_KEY, suggestionInfoModel, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromSuccess());
     }
 

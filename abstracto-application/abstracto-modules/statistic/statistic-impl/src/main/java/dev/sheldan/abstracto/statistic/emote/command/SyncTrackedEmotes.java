@@ -39,7 +39,7 @@ public class SyncTrackedEmotes extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         TrackedEmoteSynchronizationResult syncResult = trackedEmoteService.synchronizeTrackedEmotes(commandContext.getGuild());
         // show a result of how many emotes were deleted/added
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(SYNC_TRACKED_EMOTES_RESULT_RESPONSE, syncResult, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(SYNC_TRACKED_EMOTES_RESULT_RESPONSE, syncResult, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromIgnored());
     }
 

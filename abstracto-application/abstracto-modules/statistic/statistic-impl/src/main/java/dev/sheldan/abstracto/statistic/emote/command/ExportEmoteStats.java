@@ -73,7 +73,7 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
         List<UsedEmote> usedEmotes = usedEmoteManagementService.loadEmoteUsagesForServerSince(actualServer, statsSince);
         // if there are no stats available, render a message indicating so
         if(usedEmotes.isEmpty()) {
-            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(DOWNLOAD_EMOTE_STATS_NO_STATS_AVAILABLE_RESPONSE_TEMPLATE_KEY, new Object(), commandContext.getChannel()))
+            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(DOWNLOAD_EMOTE_STATS_NO_STATS_AVAILABLE_RESPONSE_TEMPLATE_KEY, new Object(), commandContext.getChannel()))
                     .thenApply(unused -> CommandResult.fromIgnored());
         }
         // info might not be nice to handle in the template, and 1970 would look weird to users

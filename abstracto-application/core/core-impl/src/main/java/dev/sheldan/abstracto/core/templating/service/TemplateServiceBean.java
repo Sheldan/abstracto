@@ -502,9 +502,18 @@ public class TemplateServiceBean implements TemplateService {
     public MessageToSend renderEmbedTemplate(String key, Object model, Long serverId) {
         try {
             serverContext.setServerId(serverId);
+            initLocaleFromServer();
             return renderEmbedTemplate(key, model);
         } finally {
             serverContext.clear();
+        }
+    }
+
+    // FIXME not thread safe
+    private void initLocaleFromServer() {
+        if(serverContext.getServerId() != null) {
+            String localeConfig = configService.getStringValueOrConfigDefault(CoreFeatureConfig.LOCALE_CONFIG_KEY, serverContext.getServerId());
+            serverContext.setLocale(localeConfig);
         }
     }
 
@@ -524,6 +533,7 @@ public class TemplateServiceBean implements TemplateService {
     public MessageToSend renderTemplateToMessageToSend(String key, Object model, Long serverId) {
         try {
             serverContext.setServerId(serverId);
+            initLocaleFromServer();
             return renderTemplateToMessageToSend(key, model);
         } finally {
             serverContext.clear();
@@ -729,6 +739,7 @@ public class TemplateServiceBean implements TemplateService {
     public String renderTemplateWithMap(String key, HashMap<String, Object> parameters, Long serverId) {
         try {
             serverContext.setServerId(serverId);
+            initLocaleFromServer();
             return renderTemplateWithMap(key, parameters);
         } finally {
             serverContext.clear();
@@ -756,6 +767,7 @@ public class TemplateServiceBean implements TemplateService {
     public String renderTemplate(String key, Object model, Long serverId) {
         try {
             serverContext.setServerId(serverId);
+            initLocaleFromServer();
             return renderTemplate(key, model);
         } finally {
             serverContext.clear();
@@ -773,7 +785,11 @@ public class TemplateServiceBean implements TemplateService {
      */
     private String renderTemplateToString(String key, Object model) throws IOException, TemplateException {
         StringWriter result = new StringWriter();
-        Template template = configuration.getTemplate(key, null, serverContext.getServerId(), null, true, false);
+        Locale locale = null;
+        if(serverContext.getLocale() != null) {
+            locale = Locale.forLanguageTag(serverContext.getLocale());
+        }
+        Template template = configuration.getTemplate(key, locale, serverContext.getServerId(), null, true, false);
         template.process(model, result);
         return result.toString();
     }
@@ -793,6 +809,7 @@ public class TemplateServiceBean implements TemplateService {
     public String renderSimpleTemplate(String key, Long serverId) {
         try {
             serverContext.setServerId(serverId);
+            initLocaleFromServer();
             return renderSimpleTemplate(key);
         } finally {
             serverContext.clear();
@@ -814,6 +831,7 @@ public class TemplateServiceBean implements TemplateService {
     public String renderTemplatable(Templatable templatable, Long serverId) {
         try {
             serverContext.setServerId(serverId);
+            initLocaleFromServer();
             return renderTemplatable(templatable);
         } finally {
             serverContext.clear();
@@ -824,6 +842,7 @@ public class TemplateServiceBean implements TemplateService {
     public String renderDuration(Duration duration, Long serverId) {
         try {
             serverContext.setServerId(serverId);
+            initLocaleFromServer();
             return renderDuration(duration);
         } finally {
             serverContext.clear();

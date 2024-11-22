@@ -61,7 +61,7 @@ public class SlashCommandServiceBean implements SlashCommandService {
         if(!isTemplated) {
             description = commandConfiguration.getDescription();
         } else {
-            description = templateService.renderSimpleTemplate(internalCommandName + "_description");
+            description = templateService.renderSimpleTemplate(internalCommandName + "_description", serverId);
         }
         String rootName = slashConfig.getSlashCompatibleRootName();
         String groupName = slashConfig.getSlashCompatibleGroupName();
@@ -125,33 +125,33 @@ public class SlashCommandServiceBean implements SlashCommandService {
                     for (int i = 0; i < parameter.getListSize(); i++) {
                         for (OptionType type : types) {
                             String parameterName = slashCommandParameterService.getFullQualifiedParameterName(parameter.getSlashCompatibleName(), type) + "_" + i;
-                            String parameterDescription = isTemplated ? templateService.renderSimpleTemplate(internalCommandName + "_parameter_" + parameter.getName()) : parameter.getDescription();
+                            String parameterDescription = isTemplated ? templateService.renderSimpleTemplate(internalCommandName + "_parameter_" + parameter.getName(), serverId) : parameter.getDescription();
                             OptionData optionData = new OptionData(type, parameterName, parameterDescription, false);
-                            addChoices(optionData, parameter, internalCommandName, isTemplated);
+                            addChoices(optionData, parameter, internalCommandName, isTemplated, serverId);
                             optionalParameters.add(optionData);
                         }
                     }
                 } else {
                     types.forEach(type -> {
                         String parameterName = slashCommandParameterService.getFullQualifiedParameterName(parameter.getSlashCompatibleName(), type);
-                        String parameterDescription = isTemplated ? templateService.renderSimpleTemplate(internalCommandName + "_parameter_" + parameter.getName()) : parameter.getDescription();
+                        String parameterDescription = isTemplated ? templateService.renderSimpleTemplate(internalCommandName + "_parameter_" + parameter.getName(), serverId) : parameter.getDescription();
                         OptionData optionData = new OptionData(type, parameterName, parameterDescription, false);
-                        addChoices(optionData, parameter, internalCommandName, isTemplated);
+                        addChoices(optionData, parameter, internalCommandName, isTemplated, serverId);
                         optionalParameters.add(optionData);
                     });
                 }
             } else {
                 OptionType type = types.get(0);
-                String parameterDescription = isTemplated ? templateService.renderSimpleTemplate(internalCommandName + "_parameter_" + parameter.getName()) : parameter.getDescription();
+                String parameterDescription = isTemplated ? templateService.renderSimpleTemplate(internalCommandName + "_parameter_" + parameter.getName(), serverId) : parameter.getDescription();
                 if(parameter.isListParam()) {
                     for (int i = 0; i < parameter.getListSize(); i++) {
                         OptionData optionData = new OptionData(type, parameter.getSlashCompatibleName() + "_" + i, parameterDescription, false);
-                        addChoices(optionData, parameter, internalCommandName, isTemplated);
+                        addChoices(optionData, parameter, internalCommandName, isTemplated, serverId);
                         optionalParameters.add(optionData);
                     }
                 } else {
                     OptionData optionData = new OptionData(type, parameter.getSlashCompatibleName(), parameterDescription, !parameter.isOptional(), parameter.getSupportsAutoComplete());
-                    addChoices(optionData, parameter, internalCommandName, isTemplated);
+                    addChoices(optionData, parameter, internalCommandName, isTemplated, serverId);
                     requiredParameters.add(optionData);
                 }
             }
@@ -160,9 +160,9 @@ public class SlashCommandServiceBean implements SlashCommandService {
         return requiredParameters;
     }
 
-    private void addChoices(OptionData optionData, Parameter parameter, String commandName, boolean isTemplated) {
+    private void addChoices(OptionData optionData, Parameter parameter, String commandName, boolean isTemplated, Long serverId) {
         parameter.getChoices().forEach(choiceKey -> {
-            String value = isTemplated ? templateService.renderSimpleTemplate(commandName + "_parameter_" + parameter.getName() + "_choice_" + choiceKey) : choiceKey;
+            String value = isTemplated ? templateService.renderSimpleTemplate(commandName + "_parameter_" + parameter.getName() + "_choice_" + choiceKey, serverId) : choiceKey;
             optionData.addChoice(value, choiceKey);
         });
     }

@@ -55,7 +55,7 @@ public class DeletedEmoteStatsTest {
         when(model.areStatsAvailable()).thenReturn(true);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
         when(usedEmoteService.getDeletedEmoteStatsForServerSince(server, Instant.EPOCH)).thenReturn(model);
-        when(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_STATIC_DELETED_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
+        when(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_STATIC_DELETED_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }
 
@@ -68,7 +68,7 @@ public class DeletedEmoteStatsTest {
         when(model.areStatsAvailable()).thenReturn(true);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
         when(usedEmoteService.getDeletedEmoteStatsForServerSince(server, Instant.EPOCH)).thenReturn(model);
-        when(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_ANIMATED_DELETED_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
+        when(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_ANIMATED_DELETED_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }
 
@@ -79,7 +79,7 @@ public class DeletedEmoteStatsTest {
         when(model.areStatsAvailable()).thenReturn(false);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
         when(usedEmoteService.getDeletedEmoteStatsForServerSince(server, Instant.EPOCH)).thenReturn(model);
-        when(channelService.sendEmbedTemplateInTextChannelList(eq(EmoteStats.EMOTE_STATS_NO_STATS_AVAILABLE), any(), eq(noParameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
+        when(channelService.sendEmbedTemplateInMessageChannel(eq(EmoteStats.EMOTE_STATS_NO_STATS_AVAILABLE), any(), eq(noParameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }
 
@@ -92,7 +92,7 @@ public class DeletedEmoteStatsTest {
         when(model.areStatsAvailable()).thenReturn(true);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
         when(usedEmoteService.getDeletedEmoteStatsForServerSince(eq(server), any(Instant.class))).thenReturn(model);
-        when(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_STATIC_DELETED_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
+        when(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_STATIC_DELETED_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }
 

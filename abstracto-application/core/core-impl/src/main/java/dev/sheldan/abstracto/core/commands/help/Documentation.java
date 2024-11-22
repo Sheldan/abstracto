@@ -32,7 +32,7 @@ public class Documentation extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannelList(DOCUMENTATION_RESPONSE_TEMPLATE_KEY, new Object(), commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(DOCUMENTATION_RESPONSE_TEMPLATE_KEY, new Object(), commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromIgnored());
     }
 

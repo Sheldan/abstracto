@@ -465,7 +465,7 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     @Transactional
-    public List<CompletableFuture<Message>> sendEmbedTemplateInTextChannelList(String templateKey, Object model, MessageChannel channel) {
+    public List<CompletableFuture<Message>> sendEmbedTemplateInMessageChannel(String templateKey, Object model, MessageChannel channel) {
         MessageToSend messageToSend;
         if(channel instanceof GuildChannel) {
             messageToSend = templateService.renderEmbedTemplate(templateKey, model, ((GuildChannel)channel).getGuild().getIdLong());
@@ -476,14 +476,7 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public List<CompletableFuture<Message>> sendEmbedTemplateInMessageChannelList(String templateKey, Object model, MessageChannel channel) {
-        // message channel on its own, does not have a guild, so we cant say for which server we want to render the template
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(templateKey, model);
-        return sendMessageToSendToChannel(messageToSend, channel);
-    }
-
-    @Override
-    public CompletableFuture<Message> sendTextTemplateInTextChannel(String templateKey, Object model, MessageChannel channel) {
+    public CompletableFuture<Message> sendTextTemplateInMessageChannel(String templateKey, Object model, MessageChannel channel) {
         String text;
         if(channel instanceof GuildChannel) {
             text = templateService.renderTemplate(templateKey, model, ((GuildChannel)channel).getGuild().getIdLong());
@@ -491,13 +484,6 @@ public class ChannelServiceBean implements ChannelService {
             text = templateService.renderTemplate(templateKey, model);
         }
 
-        return sendTextToChannel(text, channel);
-    }
-
-    @Override
-    public CompletableFuture<Message> sendTextTemplateInMessageChannel(String templateKey, Object model, MessageChannel channel) {
-        // message channel on its own, does not have a guild, so we cant say for which server we want to render the template
-        String text = templateService.renderTemplate(templateKey, model);
         return sendTextToChannel(text, channel);
     }
 
@@ -580,7 +566,7 @@ public class ChannelServiceBean implements ChannelService {
     public CompletableFuture<Message> sendSimpleTemplateToChannel(Long serverId, Long channelId, String template) {
         GuildMessageChannel foundChannel = getMessageChannelFromServer(serverId, channelId);
         if(foundChannel != null) {
-            return sendTextTemplateInTextChannel(template, new Object(), foundChannel);
+            return sendTextTemplateInMessageChannel(template, new Object(), foundChannel);
         } else {
             log.info("Channel {} in server {} not found.", channelId, serverId);
             throw new IllegalArgumentException("Incorrect channel type.");

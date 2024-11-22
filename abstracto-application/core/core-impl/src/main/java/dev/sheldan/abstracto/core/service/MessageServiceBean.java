@@ -181,7 +181,7 @@ public class MessageServiceBean implements MessageService {
     @Override
     public CompletableFuture<Void> sendEmbedToUser(User user, String template, Object model) {
         return openPrivateChannelForUser(user).thenCompose(privateChannel ->
-                FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannelList(template, model, privateChannel)));
+                FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(template, model, privateChannel)));
     }
 
     public CompletableFuture<PrivateChannel> openPrivateChannelForUser(User user) {
@@ -192,7 +192,7 @@ public class MessageServiceBean implements MessageService {
     public CompletableFuture<Message> sendEmbedToUserWithMessage(User user, String template, Object model) {
         log.debug("Sending direct message with template {} to user {}.", template, user.getIdLong());
         return openPrivateChannelForUser(user).thenCompose(privateChannel ->
-                channelService.sendEmbedTemplateInMessageChannelList(template, model, privateChannel).get(0));
+                channelService.sendEmbedTemplateInMessageChannel(template, model, privateChannel).get(0));
     }
 
     @Override

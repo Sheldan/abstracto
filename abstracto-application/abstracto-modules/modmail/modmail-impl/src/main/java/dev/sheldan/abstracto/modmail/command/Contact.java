@@ -85,7 +85,7 @@ public class Contact extends AbstractConditionableCommand {
                     .existingModMailThread(existingThread)
                     .executingMemberDisplay(MemberNameDisplay.fromMember(targetUser))
                     .build();
-            List<CompletableFuture<Message>> futures = channelService.sendEmbedTemplateInTextChannelList(MODMAIL_THREAD_ALREADY_EXISTS_TEMPLATE, model, commandContext.getChannel());
+            List<CompletableFuture<Message>> futures = channelService.sendEmbedTemplateInMessageChannel(MODMAIL_THREAD_ALREADY_EXISTS_TEMPLATE, model, commandContext.getChannel());
             return FutureUtils.toSingleFutureGeneric(futures).thenApply(aVoid -> CommandResult.fromIgnored());
         } else {
             return modMailThreadService.createModMailThreadForUser(targetUser.getUser(), targetUser.getGuild(), null,  false, commandContext.getUndoActions(), false)

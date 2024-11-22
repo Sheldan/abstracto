@@ -53,9 +53,7 @@ public interface ChannelService {
     CompletableFuture<Void> archiveThreadChannel(ThreadChannel threadChannel);
     CompletableFuture<Void> deleteTextChannel(AChannel channel);
     CompletableFuture<Void> deleteTextChannel(Long serverId, Long channelId);
-    List<CompletableFuture<Message>> sendEmbedTemplateInTextChannelList(String templateKey, Object model, MessageChannel channel);
-    List<CompletableFuture<Message>> sendEmbedTemplateInMessageChannelList(String templateKey, Object model, MessageChannel channel);
-    CompletableFuture<Message> sendTextTemplateInTextChannel(String templateKey, Object model, MessageChannel channel);
+    List<CompletableFuture<Message>> sendEmbedTemplateInMessageChannel(String templateKey, Object model, MessageChannel channel);
     CompletableFuture<Message> sendTextTemplateInMessageChannel(String templateKey, Object model, MessageChannel channel);
     CompletableFuture<Void> deleteMessagesInChannel(MessageChannel messageChannel, List<Message> messages);
 

@@ -67,7 +67,7 @@ public class UserNotesTest {
         CompletableFuture<List<NoteEntryModel>> convertedNotes = CompletableFuture.completedFuture(Arrays.asList(firstConvertedNote, secondConvertedNote));
         when(userNotesConverter.fromNotes(userNotes)).thenReturn(convertedNotes);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
-        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(UserNotes.USER_NOTES_RESPONSE_TEMPLATE), captor.capture(), eq(parameters.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInMessageChannel(eq(UserNotes.USER_NOTES_RESPONSE_TEMPLATE), captor.capture(), eq(parameters.getChannel()));
         ListNotesModel usedModel = captor.getValue();
         List<NoteEntryModel> notes = convertedNotes.join();
         Assert.assertEquals(notes.size(), usedModel.getUserNotes().size());
@@ -96,7 +96,7 @@ public class UserNotesTest {
         when(userNotesConverter.fromNotes(userNotes)).thenReturn(convertedNotes);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         List<NoteEntryModel> notes = convertedNotes.join();
-        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(UserNotes.USER_NOTES_RESPONSE_TEMPLATE), captor.capture(), eq(parameters.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInMessageChannel(eq(UserNotes.USER_NOTES_RESPONSE_TEMPLATE), captor.capture(), eq(parameters.getChannel()));
         ListNotesModel usedModel = captor.getValue();
         Assert.assertEquals(notes.size(), usedModel.getUserNotes().size());
         for (int i = 0; i < usedModel.getUserNotes().size(); i++) {

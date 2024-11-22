@@ -62,17 +62,17 @@ public class DeletedEmoteStats extends AbstractConditionableCommand {
         // only show the embed, if there are static emotes to show
         if(!emoteStatsModel.getStaticEmotes().isEmpty()) {
             log.debug("Deleted emote stats has {} static emotes since {}.", emoteStatsModel.getStaticEmotes().size(), statsSince);
-            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_STATIC_DELETED_RESPONSE, emoteStatsModel, commandContext.getChannel()));
+            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_STATIC_DELETED_RESPONSE, emoteStatsModel, commandContext.getChannel()));
         }
         // only show the embed, if there are animated emotes to show
         if(!emoteStatsModel.getAnimatedEmotes().isEmpty()) {
             log.debug("Deleted emote stats has {} animated emotes since {}.", emoteStatsModel.getAnimatedEmotes(), statsSince);
-            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_ANIMATED_DELETED_RESPONSE, emoteStatsModel, commandContext.getChannel()));
+            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_ANIMATED_DELETED_RESPONSE, emoteStatsModel, commandContext.getChannel()));
         }
         // if neither static nor animated emote stats are available, show an embed indicating so
         if(!emoteStatsModel.areStatsAvailable()) {
             log.info("No delete emote stats available for guild {} since {}.", commandContext.getGuild().getIdLong(), statsSince);
-            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EmoteStats.EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), commandContext.getChannel()));
+            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(EmoteStats.EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), commandContext.getChannel()));
         }
 
         return FutureUtils.toSingleFutureGeneric(messagePromises)

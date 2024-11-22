@@ -66,7 +66,7 @@ public class Mock extends AbstractConditionableCommand {
                 .originalText(messageText)
                 .mockingText(mockingText)
                 .build();
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(MOCK_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(MOCK_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromSuccess());
     }
 

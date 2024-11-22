@@ -68,7 +68,7 @@ public class ExportEmoteStatsTest {
         when(usedEmoteManagementService.loadEmoteUsagesForServerSince(server, Instant.EPOCH)).thenReturn(usedEmotes);
         CompletableFuture<CommandResult> asyncResult = testUnit.executeAsync(commandContext);
         CommandTestUtilities.checkSuccessfulCompletionAsync(asyncResult);
-        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(DOWNLOAD_EMOTE_STATS_NO_STATS_AVAILABLE_RESPONSE_TEMPLATE_KEY), any(), eq(commandContext.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInMessageChannel(eq(DOWNLOAD_EMOTE_STATS_NO_STATS_AVAILABLE_RESPONSE_TEMPLATE_KEY), any(), eq(commandContext.getChannel()));
     }
 
     @Test

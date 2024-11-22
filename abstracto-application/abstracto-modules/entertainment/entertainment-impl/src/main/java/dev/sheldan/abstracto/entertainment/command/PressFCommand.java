@@ -61,7 +61,7 @@ public class PressFCommand extends AbstractConditionableCommand {
         Long defaultDurationSeconds = configService.getLongValueOrConfigDefault(PRESS_F_DEFAULT_DURATION_SECONDS, commandContext.getGuild().getIdLong());
         Duration duration = Duration.ofSeconds(defaultDurationSeconds);
         PressFPromptModel pressFModel = entertainmentService.getPressFModel(text);
-        List<CompletableFuture<Message>> messages = channelService.sendEmbedTemplateInMessageChannelList(RESPONSE_TEMPLATE, pressFModel, commandContext.getChannel());
+        List<CompletableFuture<Message>> messages = channelService.sendEmbedTemplateInMessageChannel(RESPONSE_TEMPLATE, pressFModel, commandContext.getChannel());
         return FutureUtils.toSingleFutureGeneric(messages)
                 .thenAccept(unused -> entertainmentService.persistPressF(text, duration, commandContext.getAuthor(),
                                 pressFModel.getPressFComponentId(), commandContext.getChannel(), messages.get(0).join().getIdLong()))

@@ -58,7 +58,7 @@ public class AmongusText extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         String text = (String) commandContext.getParameters().getParameters().get(0);
         File amongusTextImage = imageGenerationService.getAmongusTextImage(text);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(AMONGUS_TEXT_EMBED_TEMPLATE_KEY, new Object());
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(AMONGUS_TEXT_EMBED_TEMPLATE_KEY, new Object(), commandContext.getGuild().getIdLong());
         // template support does not support binary files
         AttachedFile file = AttachedFile
                 .builder()
@@ -76,7 +76,7 @@ public class AmongusText extends AbstractConditionableCommand {
         event.deferReply().queue();
         String text = slashCommandParameterService.getCommandOption(TEXT_PARAMETER_KEY, event, String.class);
         File amongusTextImage = imageGenerationService.getAmongusTextImage(text);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(AMONGUS_TEXT_EMBED_TEMPLATE_KEY, new Object());
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(AMONGUS_TEXT_EMBED_TEMPLATE_KEY, new Object(), event.getGuild().getIdLong());
         // template support does not support binary files
         AttachedFile file = AttachedFile
                 .builder()

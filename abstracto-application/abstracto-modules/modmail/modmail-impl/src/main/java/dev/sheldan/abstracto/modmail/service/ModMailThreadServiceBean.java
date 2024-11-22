@@ -243,7 +243,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .createdChannel(messageChannel)
                 .userDisplay(UserDisplay.fromUser(user))
                 .build();
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannelList(MODMAIL_THREAD_CREATED_TEMPLATE_KEY, model, feedBackChannel));
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(MODMAIL_THREAD_CREATED_TEMPLATE_KEY, model, feedBackChannel));
     }
 
     @Override
@@ -473,7 +473,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         } else {
             log.info("No server available to open a modmail thread in.");
             // in case there is no server available, send an error message
-            channelService.sendEmbedTemplateInMessageChannelList("modmail_no_server_available", new Object(), initialMessage.getChannel());
+            channelService.sendEmbedTemplateInMessageChannel("modmail_no_server_available", new Object(), initialMessage.getChannel());
         }
     }
 
@@ -502,7 +502,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .latestModMailThread(latestThread)
                 .pastModMailThreadCount((long)oldThreads.size())
                 .build();
-        List<CompletableFuture<Message>> messages = channelService.sendEmbedTemplateInTextChannelList("modmail_thread_header", header, channel);
+        List<CompletableFuture<Message>> messages = channelService.sendEmbedTemplateInMessageChannel("modmail_thread_header", header, channel);
         return CompletableFuture.allOf(messages.toArray(new CompletableFuture[0]));
     }
 
@@ -522,7 +522,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             // in this case there was no text channel on the server associated with the mod mail thread
             // close the existing one, so the user can start a new one
             self.closeModMailThreadInDb(modmailThreadId);
-            String textToSend = templateService.renderTemplate("modmail_failed_to_forward_message", new Object());
+            String textToSend = templateService.renderTemplate("modmail_failed_to_forward_message", new Object(), serverId);
             return channelService.sendTextToChannel(textToSend, messageFromUser.getChannel());
         }
     }
@@ -792,8 +792,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 log.info("Notifying user about the closed modmail thread {}.", modMailThreadId);
                 ModMailThread modMailThread = modMailThreadOpt.get();
                 HashMap<String, String> closingMessage = new HashMap<>();
-                String defaultValue = templateService.renderSimpleTemplate("modmail_closing_user_message_description");
-                closingMessage.put("closingMessage", configService.getStringValue(MOD_MAIL_CLOSING_TEXT_SYSTEM_CONFIG_KEY, modMailThread.getServer().getId(), defaultValue));
+                Long serverId = modMailThread.getServer().getId();
+                String defaultValue = templateService.renderSimpleTemplate("modmail_closing_user_message_description", serverId);
+                closingMessage.put("closingMessage", configService.getStringValue(MOD_MAIL_CLOSING_TEXT_SYSTEM_CONFIG_KEY, serverId, defaultValue));
                 return messageService.sendEmbedToUser(modMailThreaduser, "modmail_closing_user_message", closingMessage).thenCompose(message ->
                     self.deleteChannelAndClose(modMailThreadId, undoActions)
                 ).exceptionally(throwable -> {
@@ -875,7 +876,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .loggedMessages(0)
                 .totalMessages(messages.getMessages().size())
                 .build();
-        List<CompletableFuture<Message>> updateMessageFutures = channelService.sendEmbedTemplateInTextChannelList(MODMAIL_CLOSE_PROGRESS_TEMPLATE_KEY, progressModel, channel);
+        List<CompletableFuture<Message>> updateMessageFutures = channelService.sendEmbedTemplateInMessageChannel(MODMAIL_CLOSE_PROGRESS_TEMPLATE_KEY, progressModel, channel);
         return FutureUtils.toSingleFutureGeneric(updateMessageFutures)
                 .thenCompose(updateMessage -> self.logMessages(modMailThreadId, messages, context, updateMessageFutures.get(0).join()));
     }

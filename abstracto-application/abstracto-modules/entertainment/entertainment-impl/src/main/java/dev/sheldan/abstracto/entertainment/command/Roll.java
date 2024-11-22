@@ -69,7 +69,7 @@ public class Roll extends AbstractConditionableCommand {
                 .builder()
                 .rolled(rolled)
                 .build();
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(ROLL_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(ROLL_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromIgnored());
     }
 

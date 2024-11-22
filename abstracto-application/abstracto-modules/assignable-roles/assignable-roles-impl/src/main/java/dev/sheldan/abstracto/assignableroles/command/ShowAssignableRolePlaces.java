@@ -39,7 +39,7 @@ public class ShowAssignableRolePlaces extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         AssignablePlaceOverview model = service.getAssignableRolePlaceOverview(commandContext.getGuild());
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(ASSIGNABLE_ROLE_PLACES_OVERVIEW_TEMPLATE_KEY, model, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(ASSIGNABLE_ROLE_PLACES_OVERVIEW_TEMPLATE_KEY, model, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromSuccess());
     }
 

@@ -65,7 +65,7 @@ public class FeatureModesTest {
         AServer server = Mockito.mock(AServer.class);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
         when(featureModeService.getEffectiveFeatureModes(server)).thenReturn(featureModeDisplays);
-        when(channelService.sendEmbedTemplateInTextChannelList(eq(FeatureModes.FEATURE_MODES_RESPONSE_TEMPLATE_KEY), modelCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(new ArrayList<>());
+        when(channelService.sendEmbedTemplateInMessageChannel(eq(FeatureModes.FEATURE_MODES_RESPONSE_TEMPLATE_KEY), modelCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(new ArrayList<>());
         CompletableFuture<CommandResult> commandResultCompletableFuture = testUnit.executeAsync(noParameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(commandResultCompletableFuture);
         List<FeatureModeDisplay> usedDisplays = modelCaptor.getValue().getFeatureModes();
@@ -86,7 +86,7 @@ public class FeatureModesTest {
         AServer server = Mockito.mock(AServer.class);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
         when(featureModeService.getEffectiveFeatureModes(server, feature)).thenReturn(featureModeDisplays);
-        when(channelService.sendEmbedTemplateInTextChannelList(eq(FeatureModes.FEATURE_MODES_RESPONSE_TEMPLATE_KEY), modelCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(new ArrayList<>());
+        when(channelService.sendEmbedTemplateInMessageChannel(eq(FeatureModes.FEATURE_MODES_RESPONSE_TEMPLATE_KEY), modelCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(new ArrayList<>());
         CompletableFuture<CommandResult> commandResultCompletableFuture = testUnit.executeAsync(noParameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(commandResultCompletableFuture);
         List<FeatureModeDisplay> usedDisplays = modelCaptor.getValue().getFeatureModes();

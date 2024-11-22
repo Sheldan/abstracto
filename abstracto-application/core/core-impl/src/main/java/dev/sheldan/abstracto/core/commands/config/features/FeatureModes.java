@@ -74,7 +74,7 @@ public class FeatureModes extends AbstractConditionableCommand {
                 .builder()
                 .featureModes(featureModes)
                 .build();
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(FEATURE_MODES_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(FEATURE_MODES_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 

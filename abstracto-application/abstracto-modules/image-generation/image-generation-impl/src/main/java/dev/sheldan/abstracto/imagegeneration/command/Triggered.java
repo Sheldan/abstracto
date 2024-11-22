@@ -68,7 +68,7 @@ public class Triggered extends AbstractConditionableCommand {
             member = (Member) parameters.get(0);
         }
         File triggeredGifFile = imageGenerationService.getTriggeredGif(member.getEffectiveAvatar().getUrl(imageSize));
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(TRIGGERED_EMBED_TEMPLATE_KEY, new Object());
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(TRIGGERED_EMBED_TEMPLATE_KEY, new Object(), commandContext.getGuild().getIdLong());
         // template support does not support binary files
         AttachedFile file = AttachedFile
                 .builder()
@@ -91,7 +91,7 @@ public class Triggered extends AbstractConditionableCommand {
             targetMember = event.getMember();
         }
         File triggeredGifFile = imageGenerationService.getTriggeredGif(targetMember.getEffectiveAvatar().getUrl(imageSize));
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(TRIGGERED_EMBED_TEMPLATE_KEY, new Object());
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(TRIGGERED_EMBED_TEMPLATE_KEY, new Object(), event.getGuild().getIdLong());
         // template support does not support binary files
         AttachedFile file = AttachedFile
                 .builder()

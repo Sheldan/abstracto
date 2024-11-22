@@ -81,7 +81,7 @@ public class BanModerationActionModalListener implements ModalInteractionListene
                 .findFirst()
                 .orElse(null);
         if(StringUtils.isBlank(tempReason)) {
-            reason = templateService.renderSimpleTemplate(DEFAULT_BAN_REASON_TEMPLATE_KEY);
+            reason = templateService.renderSimpleTemplate(DEFAULT_BAN_REASON_TEMPLATE_KEY, model.getServerId());
         } else {
             reason = tempReason;
         }

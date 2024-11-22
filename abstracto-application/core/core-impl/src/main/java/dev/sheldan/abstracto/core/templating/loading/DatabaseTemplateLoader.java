@@ -21,9 +21,6 @@ import java.util.Optional;
 public class DatabaseTemplateLoader implements TemplateLoader {
 
     @Autowired
-    private TemplateService templateService;
-
-    @Autowired
     private EffectiveTemplateManagementService effectiveTemplateManagementService;
 
     @Autowired
@@ -43,7 +40,7 @@ public class DatabaseTemplateLoader implements TemplateLoader {
         } else {
             templateByKey = effectiveTemplateManagementService.getTemplateByKey(s);
         }
-        return templateByKey.orElseThrow(() -> new IOException(String.format("Failed to load template. %s", s)));
+        return templateByKey.orElse(null);
     }
 
     @Override

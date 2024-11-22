@@ -42,7 +42,7 @@ public class ShowAssignableRolePlaceConfig extends AbstractConditionableCommand 
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         AssignableRolePlaceConfig config = service.getAssignableRolePlaceConfig(commandContext.getGuild(), name);
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(ASSIGNABLE_ROLES_CONFIG_POST_TEMPLATE_KEY, config, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(ASSIGNABLE_ROLES_CONFIG_POST_TEMPLATE_KEY, config, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromSuccess());
     }
 

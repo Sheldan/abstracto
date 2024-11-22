@@ -76,7 +76,7 @@ public class Pat extends AbstractConditionableCommand {
             }
         }
         File patGifFile = imageGenerationService.getPatGif(member.getEffectiveAvatar().getUrl(imageSize));
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(PAT_EMBED_TEMPLATE_KEY, new Object());
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(PAT_EMBED_TEMPLATE_KEY, new Object(), commandContext.getGuild().getIdLong());
         // template support does not support binary files
         AttachedFile file = AttachedFile
                 .builder()
@@ -99,7 +99,7 @@ public class Pat extends AbstractConditionableCommand {
             targetMember = event.getMember();
         }
         File patGifFile = imageGenerationService.getPatGif(targetMember.getEffectiveAvatar().getUrl(imageSize));
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(PAT_EMBED_TEMPLATE_KEY, new Object());
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(PAT_EMBED_TEMPLATE_KEY, new Object(), event.getGuild().getIdLong());
         // template support does not support binary files
         AttachedFile file = AttachedFile
                 .builder()

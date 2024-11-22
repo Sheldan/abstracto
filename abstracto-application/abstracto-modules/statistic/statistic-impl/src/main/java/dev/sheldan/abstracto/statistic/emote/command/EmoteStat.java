@@ -56,10 +56,10 @@ public class EmoteStat extends AbstractConditionableCommand {
         }
         EmoteStatsResultDisplay emoteStatsModel = usedEmoteService.getEmoteStatForEmote(trackedEmote, statsSince);
         if(emoteStatsModel.getResult().getAmount() == null) {
-            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), commandContext.getChannel()))
+            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), commandContext.getChannel()))
                     .thenApply(unused -> CommandResult.fromIgnored());
         }
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STAT_RESPONSE, emoteStatsModel, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STAT_RESPONSE, emoteStatsModel, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromIgnored());
     }
 
