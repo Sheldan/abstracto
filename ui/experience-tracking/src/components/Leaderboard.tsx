@@ -7,7 +7,7 @@ import {ErrorDisplay} from "./ErrorDisplay";
 export function Leaderboard({serverId, userId}: { serverId: bigint, userId: bigint }) {
 
     const pageSize = 50;
-    const windowSize = 10;
+    const windowSize = 25;
 
     const [members, setMembers] = useState<ExperienceMember[]>([])
     const [memberCount, setMemberCount] = useState(0)
@@ -40,7 +40,7 @@ export function Leaderboard({serverId, userId}: { serverId: bigint, userId: bigi
                 setHasMoreAfterwards(!leaderboardJson.last)
             }
             if(addStart) {
-                members.unshift(... loadedMembers)
+                members.unshift(...loadedMembers)
                 setMembers(members)
             } else {
                 setMembers(members.concat(loadedMembers))
@@ -120,13 +120,13 @@ export function Leaderboard({serverId, userId}: { serverId: bigint, userId: bigi
     }
 
     async function loadBefore() {
-        await loadLeaderboardForGuild(pageCountStart, pageSize, pageOffsetStart != 0 ? pageOffsetStart : 0, 0, true)
+        await loadLeaderboardForGuild(pageCountStart, pageSize, pageOffsetStart !== 0 ? pageOffsetStart : 0, 0, true)
         setPageOffsetStart(0)
         setPageCountStart(pageCountStart - 1)
     }
 
     async function loadAfter() {
-        await loadLeaderboardForGuild(pageCountEnd, pageSize, pageOffsetEnd != 0 ? 0 : pageSize, pageOffsetEnd, false)
+        await loadLeaderboardForGuild(pageCountEnd, pageSize, pageOffsetEnd !== 0 ? 0 : pageSize, pageOffsetEnd, false)
         setPageOffsetEnd(0)
         setPageCountEnd(pageCountEnd + 1)
     }
