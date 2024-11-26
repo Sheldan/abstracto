@@ -8,7 +8,7 @@
       name="description"
       content="Leaderboard for experience"
     />
-    <script>window.serverId={{ serverId }}n; window.userId = {{ userId }}</script>
+    <script>window.serverId={{ serverId }}n; {% if (userId is defined) and userId %} window.userId = {{ userId }}n{% else %}window.userId = 0n{% endif %}</script>
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>Experience leaderboard</title>
   </head>
