@@ -7,11 +7,8 @@ public interface LeaderBoardEntryResult {
 
     Long getId();
 
-    /**
-     * The {@link dev.sheldan.abstracto.core.models.database.AUserInAServer} id of the user
-     * @return The ID of the user in a server
-     */
-    Long getUserInServerId();
+    Long getUserId();
+    Long getRoleId();
 
     /**
      * The experience of the {@link dev.sheldan.abstracto.core.models.database.AUserInAServer}

@@ -47,4 +47,5 @@ public class RankModel {
      * The member to show the rank for
      */
     private Member member;
+    private String leaderboardUrl;
 }

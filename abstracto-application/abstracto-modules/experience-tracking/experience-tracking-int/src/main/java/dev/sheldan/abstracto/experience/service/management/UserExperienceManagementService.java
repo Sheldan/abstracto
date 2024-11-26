@@ -62,6 +62,7 @@ public interface UserExperienceManagementService {
      * @return A list desc ordered by {@link AUserExperience} experience only containing the elements between {@code start} and @{code end}
      */
     List<AUserExperience> findLeaderBoardUsersPaginated(AServer server, Integer page, Integer size);
+    List<LeaderBoardEntryResult> getWindowedLeaderboardEntriesForUser(AUserInAServer aUserInAServer, Integer windowSize);
 
     /**
      * Returns the {@link LeaderBoardEntryResult} of the given {@link AUserExperience}.

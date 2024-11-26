@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.experience.model.template;
 
 import dev.sheldan.abstracto.core.models.context.SlimUserInitiatedServerContext;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
@@ -25,4 +26,9 @@ public class LeaderBoardModel extends SlimUserInitiatedServerContext {
      */
     private LeaderBoardEntryModel userExecuting;
     private String leaderboardUrl;
+    /**
+     * Whether to show the users own placement
+     */
+    @Builder.Default
+    private boolean showPlacement = true;
 }

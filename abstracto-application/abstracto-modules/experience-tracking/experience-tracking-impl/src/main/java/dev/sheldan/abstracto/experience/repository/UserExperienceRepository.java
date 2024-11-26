@@ -55,6 +55,33 @@ public interface UserExperienceRepository  extends JpaRepository<AUserExperience
             "WHERE rank.id = :userInServerId", nativeQuery = true)
     LeaderBoardEntryResult getRankOfUserInServer(@Param("userInServerId") Long id, @Param("serverId") Long serverId);
 
+    @Query(value = "WITH user_experience_ranked AS" +
+        "            ( " +
+        "                SELECT us.id, uis.user_id, us.experience, us.role_id, us.level_id, us.message_count, ROW_NUMBER() OVER ( ORDER BY experience DESC ) as rank" +
+        "                FROM user_experience us INNER JOIN user_in_server uis ON us.id = uis.user_in_server_id " +
+        "                INNER JOIN server s ON s.id = uis.server_id WHERE s.id = :serverId" +
+        "            )," +
+        "            user_experience_target as (" +
+        "                SELECT ranking.id as id, ranking.user_id, ranking.experience as experience, ranking.message_count, ranking.level_id as level, ranking.rank " +
+        "                FROM user_experience_ranked ranking" +
+        "                WHERE ranking.id = :userInServerId" +
+        "            )" +
+        "    (SELECT r.id, r.user_id as userId, r.experience, r.level_id as level, r.role_id as roleId, r.message_count as messageCount, r.rank as rank" +
+        "    FROM user_experience_ranked r " +
+        "       CROSS JOIN user_experience_target t" +
+        "    WHERE r.rank <= t.rank " +
+        "    ORDER BY r.rank DESC " +
+        "    LIMIT :before) " +
+        "UNION ALL " +
+        "   (SELECT r.id, r.user_id as userId, r.experience, r.level_id as level, r.role_id as roleId, r.message_count as messageCount, r.rank as rank" +
+        "    FROM user_experience_ranked r" +
+        "       CROSS JOIN user_experience_target t" +
+        "    WHERE r.rank > t.rank " +
+        "    ORDER BY r.rank " +
+        "    LIMIT :after) " +
+        "ORDER BY rank", nativeQuery = true)
+    List<LeaderBoardEntryResult> getRankOfUserWithWindow(@Param("userInServerId") Long id, @Param("serverId") Long serverId, @Param("before") Long beforeInclusive, @Param("after") Long after);
+
     @Modifying(clearAutomatically = true)
     @Query("update AUserExperience u set u.currentExperienceRole = null where u.currentExperienceRole.id = :roleId")
     void removeExperienceRoleFromUsers(@Param("roleId") Long experienceRoleId);

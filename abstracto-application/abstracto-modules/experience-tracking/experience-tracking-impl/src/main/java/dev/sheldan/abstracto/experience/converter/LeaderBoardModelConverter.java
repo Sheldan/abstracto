@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.experience.converter;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.experience.model.LeaderBoard;
 import dev.sheldan.abstracto.experience.model.LeaderBoardEntry;
-import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.model.template.LeaderBoardEntryModel;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -42,26 +41,23 @@ public class LeaderBoardModelConverter {
      * @return The list of {@link LeaderBoardEntryModel leaderboarEntryModels} which contain the fully fledged information provided to the
      * leader board template
      */
-    public CompletableFuture<List<LeaderBoardEntryModel>> fromLeaderBoard(LeaderBoard leaderBoard) {
+    public CompletableFuture<List<LeaderBoardEntryModel>> fromLeaderBoard(LeaderBoard leaderBoard, Long serverId) {
         log.debug("Converting {} entries to a list of leaderboard entries.", leaderBoard.getEntries().size());
-        return fromLeaderBoardEntry(leaderBoard.getEntries());
+        return fromLeaderBoardEntry(leaderBoard.getEntries(), serverId);
     }
 
-    public CompletableFuture<List<LeaderBoardEntryModel>> fromLeaderBoardEntry(List<LeaderBoardEntry> leaderBoardEntries) {
+    public CompletableFuture<List<LeaderBoardEntryModel>> fromLeaderBoardEntry(List<LeaderBoardEntry> leaderBoardEntries, Long serverId) {
         List<Long> userIds = new ArrayList<>();
-        Long serverId = leaderBoardEntries.get(0).getExperience().getServer().getId();
         Map<Long, LeaderBoardEntryModel> models = leaderBoardEntries
                 .stream()
                 .map(leaderBoardEntry -> {
-                    AUserExperience experience = leaderBoardEntry.getExperience();
-                    Long userId = experience.getUser().getUserReference().getId();
-                    userIds.add(userId);
+                    userIds.add(leaderBoardEntry.getUserId());
                     return LeaderBoardEntryModel
                             .builder()
-                            .userId(userId)
-                            .experience(experience.getExperience())
-                            .messageCount(experience.getMessageCount())
-                            .level(experience.getLevelOrDefault())
+                            .userId(leaderBoardEntry.getUserId())
+                            .experience(leaderBoardEntry.getExperience())
+                            .messageCount(leaderBoardEntry.getMessageCount())
+                            .level(leaderBoardEntry.getLevel())
                             .rank(leaderBoardEntry.getRank())
                             .build();
                 })

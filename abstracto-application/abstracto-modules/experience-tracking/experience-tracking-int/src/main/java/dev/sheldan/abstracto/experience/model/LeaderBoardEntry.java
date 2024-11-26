@@ -12,12 +12,19 @@ import lombok.Setter;
 @Setter
 @Builder
 public class LeaderBoardEntry {
-    /**
-     * Object representing the current experience status of a user in a guild.
-     */
-    private AUserExperience experience;
-    /**
-     * The rank this user has in the respective guild.
-     */
+    private Long userId;
+    private Integer level;
+    private Long experience;
+    private Long messageCount;
     private Integer rank;
+
+    public static LeaderBoardEntry fromAUserExperience(AUserExperience aUserExperience) {
+        return LeaderBoardEntry
+            .builder()
+            .experience(aUserExperience.getExperience())
+            .userId(aUserExperience.getUser().getUserReference().getId())
+            .messageCount(aUserExperience.getMessageCount())
+            .level(aUserExperience.getLevelOrDefault())
+            .build();
+    }
 }

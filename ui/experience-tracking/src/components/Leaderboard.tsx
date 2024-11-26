@@ -4,26 +4,87 @@ import {ExperienceMember, GuildInfo} from "../data/leaderboard";
 import {ExperienceConfigDisplay} from "./ExperienceConfigDisplay";
 import {ErrorDisplay} from "./ErrorDisplay";
 
-export function Leaderboard({serverId}: { serverId: bigint }) {
+export function Leaderboard({serverId, userId}: { serverId: bigint, userId: bigint }) {
 
-    const pageSize = 25;
+    const pageSize = 50;
+    const windowSize = 10;
 
     const [members, setMembers] = useState<ExperienceMember[]>([])
     const [memberCount, setMemberCount] = useState(0)
-    const [pageCount, setPageCount] = useState(0)
-    const [hasMore, setHasMore] = useState(true)
+    const [pageCountEnd, setPageCountEnd] = useState(0)
+    const [pageCountStart, setPageCountStart] = useState(0)
+    const [pageOffsetEnd, setPageOffsetEnd] = useState(0)
+    const [pageOffsetStart, setPageOffsetStart] = useState(0)
+    const [hasMoreAfterwards, setHasMoreAfterwards] = useState(true)
+    const [hasMoreBefore, setHasMoreBefore] = useState(true)
+    const [userSpecific, setUserSpecific] = useState(false)
     const [hasError, setError] = useState(false)
     const [guildInfo, setGuildInfo] = useState<GuildInfo>({} as GuildInfo)
 
-    async function loadLeaderboard(page: number, size: number) {
+    async function loadLeaderboardForGuild(page: number, size: number, takeStart: number, skipStart: number, addStart: boolean) {
         try {
             const leaderboardResponse = await fetch(`/experience/v1/leaderboards/${serverId}?page=${page}&size=${size}`)
             const leaderboardJson = await leaderboardResponse.json()
-            const loadedMembers: Array<ExperienceMember> = leaderboardJson.content;
+            let loadedMembers: ExperienceMember[] = leaderboardJson.content;
+            if(takeStart !== 0) {
+                loadedMembers = loadedMembers.slice(0, takeStart)
+            }
+            if(skipStart !== 0) {
+                loadedMembers = loadedMembers.slice(skipStart, loadedMembers.length)
+            }
             setMemberCount(memberCount + loadedMembers.length)
-            setHasMore(!leaderboardJson.last)
-            setPageCount(page)
+            if(hasMoreBefore) {
+                setHasMoreBefore(!leaderboardJson.first)
+            }
+            if(hasMoreAfterwards) {
+                setHasMoreAfterwards(!leaderboardJson.last)
+            }
+            if(addStart) {
+                members.unshift(... loadedMembers)
+                setMembers(members)
+            } else {
+                setMembers(members.concat(loadedMembers))
+            }
+        } catch (error) {
+            console.log(error)
+            setError(true)
+        }
+    }
+
+
+    async function loadLeaderboardForUser(userId: bigint, windowSize: number) {
+        try {
+            const leaderboardResponse = await fetch(`/experience/v1/leaderboards/${serverId}/${userId}?windowSize=${windowSize}`)
+            const loadedMembers: Array<ExperienceMember> = await leaderboardResponse.json();
+            setMemberCount(memberCount + loadedMembers.length)
+            if(windowSize === loadedMembers.length) { // simple case, we got back the full package
+                setHasMoreBefore(true)
+                setHasMoreAfterwards(true)
+            } else {
+                const indexOfUser = loadedMembers.findIndex(value => value.id === userId.toString())
+                if(indexOfUser < (windowSize / 2)) { // the user is in the upper half
+                    setHasMoreBefore(false)
+                } else {
+                    setHasMoreBefore(true)
+                }
+                if((windowSize - indexOfUser) < (windowSize / 2)) { // not the full window was reached
+                    setHasMoreAfterwards(false)
+                } else {
+                    setHasMoreAfterwards(true)
+                }
+            }
             setMembers(members.concat(loadedMembers))
+            const lastRank = loadedMembers[loadedMembers.length -1].rank;
+            let lastPage = Math.floor(lastRank / pageSize)
+            const pageOffsetEnd = lastRank % pageSize
+            setPageOffsetEnd(pageOffsetEnd) // this is how far we got in the last page, take everything starting here
+            setPageCountEnd(lastPage) // this is the page the last entry is on, the next page we need to load
+
+            const firstRank = loadedMembers[0].rank;
+            const firstPage = Math.floor(firstRank / pageSize)
+            const pageOffsetStart = firstRank % pageSize - firstPage * pageSize - 1
+            setPageOffsetStart(pageOffsetStart) // this is how many we want to use, starting from the top
+            setPageCountStart(firstPage) // this the page we want to load
         } catch (error) {
             console.log(error)
             setError(true)
@@ -42,16 +103,36 @@ export function Leaderboard({serverId}: { serverId: bigint }) {
 
     useEffect(()=> {
         if(memberCount === 0) {
-            loadLeaderboard(0, pageSize)
+            if(userId === 0n) {
+                loadLeaderboardForGuild(0, pageSize, pageSize, 0, false)
+            } else {
+                setUserSpecific(true)
+                loadLeaderboardForUser(userId, windowSize)
+            }
         }
         loadGuildInfo()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
 
-    function loadMore() {
-        loadLeaderboard(pageCount + 1, pageSize)
+    async function loadMore() {
+        await loadLeaderboardForGuild(pageCountEnd + 1, pageSize, pageSize, 0, false)
+        setPageCountEnd(pageCountEnd + 1)
+    }
+
+    async function loadBefore() {
+        await loadLeaderboardForGuild(pageCountStart, pageSize, pageOffsetStart != 0 ? pageOffsetStart : 0, 0, true)
+        setPageOffsetStart(0)
+        setPageCountStart(pageCountStart - 1)
+    }
+
+    async function loadAfter() {
+        await loadLeaderboardForGuild(pageCountEnd, pageSize, pageOffsetEnd != 0 ? 0 : pageSize, pageOffsetEnd, false)
+        setPageOffsetEnd(0)
+        setPageCountEnd(pageCountEnd + 1)
     }
     let loadMoreButton = <button className="w-full h-10 bg-gray-500 hover:bg-gray-700 text-white mt-4" onClick={loadMore}>Load more</button>;
+    let loadBeforeButton = <button className="w-full h-10 bg-gray-500 hover:bg-gray-700 text-white mt-4" onClick={loadBefore}>Load before</button>;
+    let loadAfterButton = <button className="w-full h-10 bg-gray-500 hover:bg-gray-700 text-white mt-4" onClick={loadAfter}>Load after</button>;
     return (
         <>
             {!hasError ?
@@ -76,6 +157,7 @@ export function Leaderboard({serverId}: { serverId: bigint }) {
                             <ExperienceConfigDisplay serverId={serverId}/>
                         </div>
                         <div className="text-sm text-left w-full mt-4">
+                            {hasMoreBefore && userSpecific ? loadBeforeButton : ''}
                             <table className="w-full text-gray-400">
                                 <thead
                                     className="text-xs uppercase bg-gray-700 text-gray-400">
@@ -101,7 +183,10 @@ export function Leaderboard({serverId}: { serverId: bigint }) {
                                 {members.map((member, index) => <LeaderboardEntry key={member.id} index={index} member={member}/>)}
                                 </tbody>
                             </table>
-                            {hasMore ? loadMoreButton : ''}
+                            <div>
+                                {hasMoreAfterwards && !userSpecific ? loadMoreButton : ''}
+                                {hasMoreAfterwards && userSpecific ? loadAfterButton : ''}
+                            </div>
                         </div>
                     </div>
                 </>

@@ -83,6 +83,12 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
     }
 
     @Override
+    public List<LeaderBoardEntryResult> getWindowedLeaderboardEntriesForUser(AUserInAServer aUserInAServer, Integer windowSize) {
+        return repository.getRankOfUserWithWindow(aUserInAServer.getUserInServerId(), aUserInAServer.getServerReference().getId(),  windowSize.longValue() / 2 + 1,
+            windowSize.longValue() / 2);
+    }
+
+    @Override
     public LeaderBoardEntryResult getRankOfUserInServer(AUserExperience userExperience) {
         return repository.getRankOfUserInServer(userExperience.getId(), userExperience.getServer().getId());
     }

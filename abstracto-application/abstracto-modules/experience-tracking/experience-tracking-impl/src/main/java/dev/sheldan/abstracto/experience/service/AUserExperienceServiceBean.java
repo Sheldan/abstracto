@@ -491,9 +491,30 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         int pageOffset = page * pageSize;
         for (int i = 0; i < experiences.size(); i++) {
             AUserExperience userExperience = experiences.get(i);
-            entries.add(LeaderBoardEntry.builder().experience(userExperience).rank(pageOffset + i + 1).build());
+            LeaderBoardEntry entry = LeaderBoardEntry.fromAUserExperience(userExperience);
+            entry.setRank(pageOffset + i + 1);
+            entries.add(entry);
         }
         return LeaderBoard.builder().entries(entries).build();
+    }
+
+    @Override
+    public LeaderBoard findLeaderBoardDataForUserFocus(AUserInAServer aUserInAServer) {
+        List<LeaderBoardEntry> allEntries =
+            userExperienceManagementService.getWindowedLeaderboardEntriesForUser(aUserInAServer, 10)
+                .stream().map(leaderBoardEntryResult -> LeaderBoardEntry
+                    .builder()
+                    .experience(leaderBoardEntryResult.getExperience())
+                    .level(leaderBoardEntryResult.getLevel())
+                    .userId(leaderBoardEntryResult.getUserId())
+                    .messageCount(leaderBoardEntryResult.getMessageCount())
+                    .rank(leaderBoardEntryResult.getRank())
+                    .build())
+                .collect(Collectors.toList());
+        return LeaderBoard
+            .builder()
+            .entries(allEntries)
+            .build();
     }
 
     @Override
@@ -509,7 +530,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         if(rankOfUserInServer != null) {
             rank = rankOfUserInServer.getRank();
         }
-        return LeaderBoardEntry.builder().experience(aUserExperience).rank(rank).build();
+        LeaderBoardEntry entry = LeaderBoardEntry.fromAUserExperience(aUserExperience);
+        entry.setRank(rank);
+        return entry;
     }
 
 }

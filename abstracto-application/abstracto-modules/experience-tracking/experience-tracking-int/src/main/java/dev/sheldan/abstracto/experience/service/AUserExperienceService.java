@@ -54,6 +54,7 @@ public interface AUserExperienceService {
      * from the desired page
      */
     LeaderBoard findLeaderBoardData(AServer server, Integer page);
+    LeaderBoard findLeaderBoardDataForUserFocus(AUserInAServer aUserInAServer);
 
     /**
      * Retrieves the {@link LeaderBoardEntry} from a specific {@link AUserInAServer} containing information about the
