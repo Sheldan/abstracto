@@ -3,7 +3,7 @@
     <parent>
         <groupId>dev.sheldan.abstracto.modules</groupId>
         <artifactId>webservices</artifactId>
-        <version>1.5.52</version>
+        <version>1.5.53-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
