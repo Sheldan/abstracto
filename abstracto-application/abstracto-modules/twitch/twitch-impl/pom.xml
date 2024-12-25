@@ -3,7 +3,7 @@
     <parent>
         <artifactId>twitch</artifactId>
         <groupId>dev.sheldan.abstracto.modules</groupId>
-        <version>1.5.55-SNAPSHOT</version>
+        <version>1.5.55</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
