@@ -101,6 +101,7 @@ public class GreateGiveaway extends AbstractConditionableCommand {
                 .duration(duration)
                 .targetChannel(target)
                 .winnerCount(winners)
+                .serverId(creator.getGuild().getIdLong())
                 .title(title)
                 .build();
 
