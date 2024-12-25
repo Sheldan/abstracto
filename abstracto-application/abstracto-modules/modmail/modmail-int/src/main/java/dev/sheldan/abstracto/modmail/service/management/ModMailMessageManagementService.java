@@ -17,13 +17,13 @@ public interface ModMailMessageManagementService {
      * @param modMailThread The {@link ModMailThread} the message should be attached to
      * @param createdMessageInDM The {@link Message} which should be attached to the {@link ModMailThread} and was posted to the DM channel (might be null)
      * @param createdMessageInChannel The {@link Message} which should be attached to the {@link ModMailThread} and was posted to the modmail thread (might be null)
-     * @param userPostedMessage The {@link Message} which caused this message to be created, the command or the message by the user
+     * @param messageId The ID of the {@link Message} which caused this message to be created, the command or the message by the user
      * @param author The {@link AUserInAServer} who authored the {@link Message} originally
      * @param anonymous Whether or not the message was sent anonymous (only possible by staff members)
      * @param dmChannel Whether or not the message originated from the user, and therefore in an direct message channel
      * @return The created {@link ModMailMessage message} instance
      */
-    ModMailMessage addMessageToThread(ModMailThread modMailThread, Message createdMessageInDM, Message createdMessageInChannel, Message userPostedMessage, AUserInAServer author, Boolean anonymous, Boolean dmChannel);
+    ModMailMessage addMessageToThread(ModMailThread modMailThread, Message createdMessageInDM, Message createdMessageInChannel, Long messageId, AUserInAServer author, Boolean anonymous, Boolean dmChannel);
 
     /**
      * Retrieves all messages which were sent in a {@link ModMailThread}

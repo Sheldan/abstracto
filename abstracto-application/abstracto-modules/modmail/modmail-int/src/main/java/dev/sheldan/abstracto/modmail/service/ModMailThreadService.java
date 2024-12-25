@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.UndoActionInstance;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.modmail.model.ClosingContext;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import net.dv8tion.jda.api.entities.*;
@@ -62,6 +63,7 @@ public interface ModMailThreadService {
      * @return A {@link CompletableFuture future} which completes when the message has been relayed to the channel
      */
     CompletableFuture<Message> relayMessageToModMailThread(ModMailThread modMailThread, Message messageFromUser, List<UndoActionInstance> undoActions);
+    CompletableFuture<Void> sendMessageToUser(AUserInAServer aUserInAServer, MessageToSend messageToSend, User user);
 
     /**
      * Forwards a message send by a moderator to the direct message channel opened with the user. If the message is

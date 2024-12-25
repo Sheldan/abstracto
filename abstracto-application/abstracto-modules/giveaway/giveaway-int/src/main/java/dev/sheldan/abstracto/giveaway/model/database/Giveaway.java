@@ -65,6 +65,9 @@ public class Giveaway {
     @Column(name = "message_id", nullable = false)
     private Long messageId;
 
+    @OneToOne(mappedBy = "giveaway")
+    private GiveawayKey giveawayKey;
+
     @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 

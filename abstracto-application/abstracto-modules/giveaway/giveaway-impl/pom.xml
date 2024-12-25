@@ -39,6 +39,12 @@
         </dependency>
 
         <dependency>
+            <groupId>dev.sheldan.abstracto.modules</groupId>
+            <artifactId>modmail-int</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>dev.sheldan.abstracto.core</groupId>
             <artifactId>metrics-int</artifactId>
             <version>${project.version}</version>

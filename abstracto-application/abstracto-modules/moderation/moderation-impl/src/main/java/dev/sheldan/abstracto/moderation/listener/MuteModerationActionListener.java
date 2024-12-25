@@ -15,10 +15,10 @@ import dev.sheldan.abstracto.moderation.model.interaction.ModerationActionMutePa
 import dev.sheldan.abstracto.moderation.model.template.listener.ModerationActionMuteModalModel;
 import dev.sheldan.abstracto.moderation.model.template.listener.ModerationActionPayloadModel;
 import dev.sheldan.abstracto.moderation.service.ModerationActionServiceBean;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Slf4j

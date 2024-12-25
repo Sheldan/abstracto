@@ -20,13 +20,13 @@ public class ModMailMessageManagementServiceBean implements ModMailMessageManage
     private ModMailMessageRepository modMailMessageRepository;
 
     @Override
-    public ModMailMessage addMessageToThread(ModMailThread modMailThread, Message createdMessageInDM, Message createdMessageInChannel, Message userPostedMessage, AUserInAServer author, Boolean anonymous, Boolean dmChannel) {
+    public ModMailMessage addMessageToThread(ModMailThread modMailThread, Message createdMessageInDM, Message createdMessageInChannel, Long messageId, AUserInAServer author, Boolean anonymous, Boolean dmChannel) {
         Long dmId = createdMessageInDM != null ? createdMessageInDM.getIdLong() : null;
         Long channelMessageId = createdMessageInChannel != null ? createdMessageInChannel.getIdLong() : null;
         ModMailMessage modMailMessage = ModMailMessage
                 .builder()
                 .author(author)
-                .messageId(userPostedMessage.getIdLong())
+                .messageId(messageId)
                 .createdMessageInDM(dmId)
                 .server(modMailThread.getServer())
                 .createdMessageInChannel(channelMessageId)
@@ -35,7 +35,7 @@ public class ModMailMessageManagementServiceBean implements ModMailMessageManage
                 .anonymous(anonymous)
                 .build();
         log.info("Storing created message in DM {} with created message in channel {} caused by message {} to modmail thread {} of user {} in server {}.",
-                dmId, channelMessageId, userPostedMessage.getId(), modMailThread.getId(), author.getUserReference().getId(), author.getServerReference().getId());
+                dmId, channelMessageId, messageId, modMailThread.getId(), author.getUserReference().getId(), author.getServerReference().getId());
 
         return modMailMessageRepository.save(modMailMessage);
     }

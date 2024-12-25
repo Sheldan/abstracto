@@ -1,0 +1,69 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd" >
+    <changeSet author="Sheldan" id="giveaway_key-table">
+        <createTable tableName="giveaway_key">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" />
+            </column>
+            <column name="creator_user_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="benefactor_user_id" type="INTEGER">
+                <constraints nullable="true"/>
+            </column>
+            <column name="winner_user_id" type="INTEGER">
+                <constraints nullable="true"/>
+            </column>
+            <column name="key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="used" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="giveaway_id" type="BIGINT">
+                <constraints nullable="true" />
+            </column>
+            <column name="giveaway_server_id" type="BIGINT">
+                <constraints nullable="true" />
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+        </createTable>
+        <addPrimaryKey tableName="giveaway_key" columnNames="id, server_id"/>
+        <addForeignKeyConstraint baseColumnNames="creator_user_id" baseTableName="giveaway_key" constraintName="fk_giveaway_key_creator" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id"
+                                 referencedTableName="user_in_server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="benefactor_user_id" baseTableName="giveaway_key" constraintName="fk_giveaway_key_benefactor" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id"
+                                 referencedTableName="user_in_server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="winner_user_id" baseTableName="giveaway_key" constraintName="fk_giveaway_key_winner" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id"
+                                 referencedTableName="user_in_server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="giveaway_id,giveaway_server_id" baseTableName="giveaway_key" constraintName="fk_giveaway_key_giveaway" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id,server_id"
+                                 referencedTableName="giveaway" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="giveaway_key" constraintName="fk_giveaway_key_server" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS giveaway_key_update_trigger ON giveaway_key;
+            CREATE TRIGGER giveaway_update_trigger BEFORE UPDATE ON giveaway_key FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS giveaway_key_insert_trigger ON giveaway_key;
+            CREATE TRIGGER giveaway_insert_trigger BEFORE INSERT ON giveaway_key FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
+    </changeSet>
+</databaseChangeLog>

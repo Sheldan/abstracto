@@ -66,6 +66,9 @@ public class MessageUpdatedListenerBean extends ListenerAdapter {
     @Override
     @Transactional
     public void onMessageUpdate(@Nonnull MessageUpdateEvent event) {
+        if(!event.isFromGuild()) {
+            return;
+        }
         metricService.incrementCounter(MESSAGE_UPDATED_COUNTER);
         Message message = event.getMessage();
         messageCache.getMessageFromCache(message.getGuild().getIdLong(), message.getChannel().getIdLong(), event.getMessageIdLong()).thenAccept(cachedMessage -> {

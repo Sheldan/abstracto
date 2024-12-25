@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.giveaway.model;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 
 import java.time.Duration;
@@ -12,8 +11,10 @@ import java.time.Duration;
 @Getter
 public class GiveawayCreationRequest {
 
-    private Member creator;
-    private Member benefactor;
+    private Long creatorId;
+    private Long serverId;
+    private Long benefactorId;
+    private Long giveawayKeyId;
     private String title;
     private String description;
     private Duration duration;

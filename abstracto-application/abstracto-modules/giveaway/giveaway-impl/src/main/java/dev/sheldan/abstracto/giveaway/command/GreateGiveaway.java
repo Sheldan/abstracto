@@ -18,6 +18,7 @@ import dev.sheldan.abstracto.giveaway.service.GiveawayService;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +26,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class GreateGiveaway extends AbstractConditionableCommand {
@@ -48,55 +50,62 @@ public class GreateGiveaway extends AbstractConditionableCommand {
     @Autowired
     private GiveawayService giveawayService;
 
+    @Autowired
+    private GreateGiveaway self;
+
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         return event.deferReply()
                 .submit()
-                .thenCompose(interactionHook -> {
-                    String title = slashCommandParameterService.getCommandOption(TITLE_PARAMETER, event, String.class);
-                    String description;
-                    if(slashCommandParameterService.hasCommandOption(DESCRIPTION_PARAMETER, event)) {
-                        description = slashCommandParameterService.getCommandOption(DESCRIPTION_PARAMETER, event, String.class);
-                    } else {
-                        description = null;
-                    }
+                .thenCompose(interactionHook -> self.createGiveaway(event, interactionHook))
+                .thenApply(unused -> CommandResult.fromSuccess());
 
-                    String durationString = slashCommandParameterService.getCommandOption(DURATION_PARAMETER, event, Duration.class, String.class);
-                    Duration duration = ParseUtils.parseDuration(durationString);
+    }
 
-                    GuildMessageChannel target = null;
-                    if(slashCommandParameterService.hasCommandOption(CHANNEL_PARAMETER, event)) {
-                        target = slashCommandParameterService.getCommandOption(CHANNEL_PARAMETER, event, GuildMessageChannel.class);
-                    }
+    @Transactional
+    public CompletableFuture<Void> createGiveaway(SlashCommandInteractionEvent event, InteractionHook interactionHook) {
+        String title = slashCommandParameterService.getCommandOption(TITLE_PARAMETER, event, String.class);
+        String description;
+        if(slashCommandParameterService.hasCommandOption(DESCRIPTION_PARAMETER, event)) {
+            description = slashCommandParameterService.getCommandOption(DESCRIPTION_PARAMETER, event, String.class);
+        } else {
+            description = null;
+        }
 
-                    Integer winners = 1;
-                    if(slashCommandParameterService.hasCommandOption(WINNERS_PARAMETER, event)) {
-                        winners = slashCommandParameterService.getCommandOption(WINNERS_PARAMETER, event, Integer.class);
-                    }
+        String durationString = slashCommandParameterService.getCommandOption(DURATION_PARAMETER, event, Duration.class, String.class);
+        Duration duration = ParseUtils.parseDuration(durationString);
 
-                    Member benefactor;
-                    if(slashCommandParameterService.hasCommandOption(BENEFACTOR_PARAMETER, event)) {
-                        benefactor = slashCommandParameterService.getCommandOption(BENEFACTOR_PARAMETER, event, Member.class);
-                    } else {
-                        benefactor = null;
-                    }
+        GuildMessageChannel target = null;
+        if(slashCommandParameterService.hasCommandOption(CHANNEL_PARAMETER, event)) {
+            target = slashCommandParameterService.getCommandOption(CHANNEL_PARAMETER, event, GuildMessageChannel.class);
+        }
 
-                    Member creator = event.getMember();
-                    GiveawayCreationRequest request = GiveawayCreationRequest
-                            .builder()
-                            .benefactor(benefactor)
-                            .creator(creator)
-                            .description(description)
-                            .duration(duration)
-                            .targetChannel(target)
-                            .winnerCount(winners)
-                            .title(title)
-                            .build();
+        Integer winners = 1;
+        if(slashCommandParameterService.hasCommandOption(WINNERS_PARAMETER, event)) {
+            winners = slashCommandParameterService.getCommandOption(WINNERS_PARAMETER, event, Integer.class);
+        }
 
-                    return giveawayService.createGiveaway(request)
-                            .thenAccept(unused -> interactionService.sendEmbed(CREATE_GIVEAWAY_RESPONSE_TEMPLATE_KEY, interactionHook));
-        }).thenApply(unused -> CommandResult.fromSuccess());
+        Member benefactor;
+        if(slashCommandParameterService.hasCommandOption(BENEFACTOR_PARAMETER, event)) {
+            benefactor = slashCommandParameterService.getCommandOption(BENEFACTOR_PARAMETER, event, Member.class);
+        } else {
+            benefactor = null;
+        }
 
+        Member creator = event.getMember();
+        GiveawayCreationRequest request = GiveawayCreationRequest
+                .builder()
+                .benefactorId(benefactor != null ? benefactor.getIdLong() : null)
+                .creatorId(creator.getIdLong())
+                .description(description)
+                .duration(duration)
+                .targetChannel(target)
+                .winnerCount(winners)
+                .title(title)
+                .build();
+
+        return giveawayService.createGiveaway(request)
+            .thenAccept(unused -> interactionService.sendEmbed(CREATE_GIVEAWAY_RESPONSE_TEMPLATE_KEY, interactionHook));
     }
 
     @Override
@@ -159,6 +168,7 @@ public class GreateGiveaway extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(GiveawaySlashCommandNames.GIVEAWAY)
+                .groupName("management")
                 .commandName("create")
                 .build();
 

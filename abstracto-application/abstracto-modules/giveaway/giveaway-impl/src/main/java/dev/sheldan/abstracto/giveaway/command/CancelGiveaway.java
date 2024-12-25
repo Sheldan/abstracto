@@ -80,6 +80,7 @@ public class CancelGiveaway extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(GiveawaySlashCommandNames.GIVEAWAY)
+                .groupName("management")
                 .commandName("cancel")
                 .build();
 
