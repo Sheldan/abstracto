@@ -58,7 +58,9 @@ public class GiveawayKeyManagementServiceBean implements GiveawayKeyManagementSe
   @Override
   public void deleteById(Long id, Long serverId) {
     GiveawayKey key = giveawayKeyRepository.findById(new GiveawayKeyId(id, serverId)).orElseThrow(GiveawayKeyNotFoundException::new);
-    key.getGiveaway().setGiveawayKey(null);
+    if(key.getGiveaway() != null) {
+      key.getGiveaway().setGiveawayKey(null);
+    }
     giveawayKeyRepository.delete(key);
   }
 
