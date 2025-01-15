@@ -10,7 +10,8 @@ public enum WebserviceFeatureDefinition implements FeatureDefinition {
     THREAD_READER("threadReader"),
     OPEN_WEATHER_MAP("openWeatherMap"),
     WIKIPEDIA("wikipedia"),
-    DICTIONARY("dictionary");
+    DICTIONARY("dictionary"),
+    CURRENCY_CONVERSION("currencyConversion");
 
     private String key;
 
