@@ -33,80 +33,102 @@ public interface UsedEmoteRepository extends JpaRepository<UsedEmote, UsedEmoteD
             " and type = :used_emote_type", nativeQuery = true)
     Optional<UsedEmote> findEmoteFromServerToday(@Param("emote_id") Long emoteId, @Param("server_id") Long server_id, @Param("used_emote_type") String usedEmoteType);
 
-    @Query(value = "select us.emote_id as emoteId, us.server_id as serverId, sum(us.amount) as amount from used_emote us " +
-            "inner join tracked_emote te " +
-            "on us.emote_id = te.id and us.server_id = te.server_id " +
-            "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) and us.server_id = :server_id " +
-            "group by us.emote_id, us.server_id " +
+    @Query(value = "select te.id as emoteId, te.server_id as serverId, coalesce(sum(us.amount), 0) as amount " +
+            "from tracked_emote te " +
+            "left join used_emote us " +
+            "on us.emote_id = te.id " +
+            "and us.server_id = te.server_id " +
+            "and us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
+            "where te.server_id = :server_id " +
+            "group by te.id, te.server_id " +
             "order by amount desc", nativeQuery = true)
     List<EmoteStatsResult> getEmoteStatsForServerSince(@Param("server_id") Long serverId, @Param("start_date") Instant since);
 
-    @Query(value = "select us.emote_id as emoteId, us.server_id as serverId, sum(us.amount) as amount from used_emote us " +
-            "inner join tracked_emote te " +
-            "on us.emote_id = te.id and us.server_id = te.server_id " +
-            "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) and us.server_id = :server_id and te.external = true " +
-            "group by us.emote_id, us.server_id " +
+    @Query(value = "select te.id as emoteId, te.server_id as serverId, coalesce(sum(us.amount), 0) as amount " +
+            "from tracked_emote te " +
+            "left join used_emote us " +
+            "on us.emote_id = te.id " +
+            "and us.server_id = te.server_id " +
+            "and us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
+            "where us.server_id = :server_id " +
+            "and te.external = true " +
+            "group by te.id, te.server_id " +
             "order by amount desc", nativeQuery = true)
     List<EmoteStatsResult> getExternalEmoteStatsForServerSince(@Param("server_id") Long serverId, @Param("start_date") Instant since);
 
-    @Query(value = "select us.emote_id as emoteId, us.server_id as serverId, sum(us.amount) as amount from used_emote us " +
-        "inner join tracked_emote te " +
-        "on us.emote_id = te.id and us.server_id = te.server_id " +
-        "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
-        "and us.server_id = :server_id " +
-        "and te.external = true " +
+    @Query(value = "select te.id as emoteId, te.server_id as serverId, coalesce(sum(us.amount), 0) as amount " +
+        "from tracked_emote te " +
+        "left join used_emote us " +
+        "on us.emote_id = te.id " +
+        "and us.server_id = te.server_id " +
+        "and us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
         "and us.type = :used_emote_type " +
-        "group by us.emote_id, us.server_id " +
+        "where te.server_id = :server_id " +
+        "and te.external = true " +
+        "group by te.id, te.server_id " +
         "order by amount desc", nativeQuery = true)
     List<EmoteStatsResult> getExternalEmoteStatsForServerSince(@Param("server_id") Long serverId, @Param("start_date") Instant since, @Param("used_emote_type") String usedEmoteType);
 
-    @Query(value = "select us.emote_id as emoteId, us.server_id as serverId, sum(us.amount) as amount from used_emote us " +
-            "inner join tracked_emote te " +
-            "on us.emote_id = te.id and us.server_id = te.server_id " +
-            "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) and us.server_id = :server_id and te.deleted = true " +
-            "group by us.emote_id, us.server_id " +
+    @Query(value = "select te.id as emoteId, te.server_id as serverId, coalesce(sum(us.amount), 0) as amount " +
+            "from tracked_emote te " +
+            "left join used_emote us " +
+            "on us.emote_id = te.id " +
+            "and us.server_id = te.server_id " +
+            "and us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
+            "and te.server_id = :server_id " +
+            "and te.deleted = true " +
+            "group by te.id, te.server_id " +
             "order by amount desc", nativeQuery = true)
     List<EmoteStatsResult> getDeletedEmoteStatsForServerSince(@Param("server_id") Long serverId, @Param("start_date") Instant since);
 
-    @Query(value = "select us.emote_id as emoteId, us.server_id as serverId, sum(us.amount) as amount from used_emote us " +
-        "inner join tracked_emote te " +
-        "on us.emote_id = te.id and us.server_id = te.server_id " +
-        "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
-        "and us.server_id = :server_id " +
-        "and te.deleted = true " +
+    @Query(value = "select te.id as emoteId, te.server_id as serverId, coalesce(sum(us.amount), 0) as amount " +
+        "from tracked_emote te " +
+        "left join used_emote us " +
+        "on us.emote_id = te.id " +
+        "and us.server_id = te.server_id " +
+        "and us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
         "and us.type = :used_emote_type " +
-        "group by us.emote_id, us.server_id " +
+        "where te.server_id = :server_id " +
+        "and te.deleted = true " +
+        "group by te.id, te.server_id " +
         "order by amount desc", nativeQuery = true)
     List<EmoteStatsResult> getDeletedEmoteStatsForServerSince(@Param("server_id") Long serverId, @Param("start_date") Instant since, @Param("used_emote_type") String usedEmoteType);
 
-    @Query(value = "select us.emote_id as emoteId, us.server_id as serverId, sum(us.amount) as amount from used_emote us " +
-            "inner join tracked_emote te " +
-            "on us.emote_id = te.id and us.server_id = te.server_id " +
-            "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) and us.server_id = :server_id and te.external = false and te.deleted = false " +
-            "group by us.emote_id, us.server_id " +
+    @Query(value = "select te.id as emoteId, te.server_id as serverId, coalesce(sum(us.amount), 0) as amount " +
+            "from tracked_emote te " +
+            "left join used_emote us " +
+            "on us.emote_id = te.id " +
+            "and us.server_id = te.server_id " +
+            "and us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
+            "where te.server_id = :server_id " +
+            "and te.external = false " +
+            "and te.deleted = false " +
+            "group by te.id, te.server_id " +
             "order by amount desc", nativeQuery = true)
     List<EmoteStatsResult> getCurrentlyExistingEmoteStatsForServerSince(@Param("server_id") Long serverId, @Param("start_date") Instant since);
 
-    @Query(value = "select us.emote_id as emoteId, us.server_id as serverId, sum(us.amount) as amount from used_emote us " +
-        "inner join tracked_emote te " +
-        "on us.emote_id = te.id and us.server_id = te.server_id " +
-        "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
-        "and us.server_id = :server_id " +
+    @Query(value = "select te.id as emoteId, te.server_id as serverId, coalesce(sum(us.amount), 0) as amount " +
+        "from tracked_emote te " +
+        "left join used_emote us " +
+        "on us.emote_id = te.id " +
+        "and us.server_id = te.server_id " +
+        "and us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
+        "and us.type = :used_emote_type " +
+        "where te.server_id = :server_id " +
         "and te.external = false " +
         "and te.deleted = false " +
-        "and us.type = :used_emote_type " +
-        "group by us.emote_id, us.server_id " +
+        "group by te.id, te.server_id " +
         "order by amount desc", nativeQuery = true)
     List<EmoteStatsResult> getCurrentlyExistingEmoteStatsForServerSince(@Param("server_id") Long serverId, @Param("start_date") Instant since, @Param("used_emote_type") String usedEmoteType);
 
-    @Query(value = "select :tracked_emote_id as emoteId, :server_id as serverId, sum(us.amount) as amount " +
+    @Query(value = "select :tracked_emote_id as emoteId, :server_id as serverId, coalesce(sum(us.amount), 0) as amount " +
             "from used_emote us " +
             "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
             "and us.server_id = :server_id " +
             "and us.emote_id = :tracked_emote_id", nativeQuery = true)
     EmoteStatsResult getEmoteStatForTrackedEmote(@Param("tracked_emote_id") Long trackedEmoteId, @Param("server_id") Long serverId, @Param("start_date") Instant since);
 
-    @Query(value = "select :tracked_emote_id as emoteId, :server_id as serverId, sum(us.amount) as amount " +
+    @Query(value = "select :tracked_emote_id as emoteId, :server_id as serverId, coalesce(sum(us.amount), 0) as amount " +
         "from used_emote us " +
         "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
         "and us.server_id = :server_id " +
