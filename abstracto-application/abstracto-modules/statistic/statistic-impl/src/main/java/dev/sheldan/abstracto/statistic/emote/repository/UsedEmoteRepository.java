@@ -75,7 +75,7 @@ public interface UsedEmoteRepository extends JpaRepository<UsedEmote, UsedEmoteD
             "on us.emote_id = te.id " +
             "and us.server_id = te.server_id " +
             "and us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
-            "and te.server_id = :server_id " +
+            "where te.server_id = :server_id " +
             "and te.deleted = true " +
             "group by te.id, te.server_id " +
             "order by amount desc", nativeQuery = true)
