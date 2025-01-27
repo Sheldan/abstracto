@@ -217,7 +217,7 @@ public class PurgeServiceBean implements PurgeService {
             }
             log.debug("Setting status for {} out of {}", currentCount, totalCount);
             MessageToSend finalUpdateMessage = getStatusMessageToSend(totalCount, channel.getGuild().getIdLong(), currentCount);
-            interactionService.editOriginal(finalUpdateMessage, interactionHook);
+            interactionService.replaceOriginal(finalUpdateMessage, interactionHook);
         };
     }
 
@@ -244,7 +244,7 @@ public class PurgeServiceBean implements PurgeService {
 
         CompletableFuture<MessageHistory> historyFuture = channelService.getHistoryOfChannel(channel, startId, toDeleteInThisIteration);
         MessageToSend statusMessageToSend = getStatusMessageToSend(totalCount, channel.getGuild().getIdLong(), 0);
-        CompletableFuture<Message> statusMessageFuture = interactionService.editOriginal(statusMessageToSend, interactionHook);
+        CompletableFuture<Message> statusMessageFuture = interactionService.replaceOriginal(statusMessageToSend, interactionHook);
 
         CompletableFuture<Void> deletionFuture = new CompletableFuture<>();
         CompletableFuture<Void> retrievalFuture = CompletableFuture.allOf(historyFuture, statusMessageFuture);

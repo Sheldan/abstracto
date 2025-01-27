@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.interaction.slash.parameter.provider.SlashComm
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.EmoteService;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.commands.CommandInteractionPayload;
@@ -138,16 +139,16 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
     }
 
     @Override
-    public AEmote loadAEmoteFromString(String input, CommandInteractionPayload event) {
-        Emoji emoji = loadEmoteFromString(input, event);
+    public AEmote loadAEmoteFromString(String input, Guild guild) {
+        Emoji emoji = loadEmoteFromString(input, guild);
         return emoteService.getFakeEmoteFromEmoji(emoji);
     }
 
     @Override
-    public Emoji loadEmoteFromString(String input, CommandInteractionPayload event) {
+    public Emoji loadEmoteFromString(String input, Guild guild) {
         if(StringUtils.isNumeric(input)) {
             long emoteId = Long.parseLong(input);
-            return event.getGuild().getEmojiById(emoteId);
+            return guild.getEmojiById(emoteId);
         }
         return Emoji.fromFormatted(input);
     }

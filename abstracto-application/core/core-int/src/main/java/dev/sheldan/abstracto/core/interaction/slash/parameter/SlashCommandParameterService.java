@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.interaction.slash.parameter;
 
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.models.database.AEmote;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.commands.CommandInteractionPayload;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -16,8 +17,8 @@ public interface SlashCommandParameterService {
     Object getCommandOption(String name, CommandInteractionPayload event);
     Boolean hasCommandOption(String name, CommandInteractionPayload event);
     Boolean hasCommandOptionWithFullType(String name, CommandInteractionPayload event, OptionType optionType);
-    AEmote loadAEmoteFromString(String input, CommandInteractionPayload event);
-    Emoji loadEmoteFromString(String input, CommandInteractionPayload event);
+    AEmote loadAEmoteFromString(String input, Guild guild);
+    Emoji loadEmoteFromString(String input, Guild guild);
     List<OptionType> getTypesFromParameter(Parameter parameter);
     List<OptionType> getTypesFromParameter(Class clazz);
     String getFullQualifiedParameterName(String name, OptionType type);

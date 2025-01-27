@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsResult;
 import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsResultDisplay;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
+import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmoteType;
 import dev.sheldan.abstracto.statistic.emote.service.management.UsedEmoteManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,26 +33,26 @@ public class UsedEmoteServiceBean implements UsedEmoteService {
     }
 
     @Override
-    public EmoteStatsModel getDeletedEmoteStatsForServerSince(AServer server, Instant since) {
-        List<EmoteStatsResult> emoteStatsResults = usedEmoteManagementService.loadDeletedEmoteStatsForServerSince(server, since);
+    public EmoteStatsModel getDeletedEmoteStatsForServerSince(AServer server, Instant since, UsedEmoteType usedEmoteType) {
+        List<EmoteStatsResult> emoteStatsResults = usedEmoteManagementService.loadDeletedEmoteStatsForServerSince(server, since, usedEmoteType);
         return converter.fromEmoteStatsResults(emoteStatsResults);
     }
 
     @Override
-    public EmoteStatsModel getExternalEmoteStatsForServerSince(AServer server, Instant since) {
-        List<EmoteStatsResult> emoteStatsResults = usedEmoteManagementService.loadExternalEmoteStatsForServerSince(server, since);
+    public EmoteStatsModel getExternalEmoteStatsForServerSince(AServer server, Instant since, UsedEmoteType type) {
+        List<EmoteStatsResult> emoteStatsResults = usedEmoteManagementService.loadExternalEmoteStatsForServerSince(server, since, type);
         return converter.fromEmoteStatsResults(emoteStatsResults);
     }
 
     @Override
-    public EmoteStatsModel getActiveEmoteStatsForServerSince(AServer server, Instant since) {
-        List<EmoteStatsResult> emoteStatsResults = usedEmoteManagementService.loadActiveEmoteStatsForServerSince(server, since);
+    public EmoteStatsModel getActiveEmoteStatsForServerSince(AServer server, Instant since, UsedEmoteType usedEmoteType) {
+        List<EmoteStatsResult> emoteStatsResults = usedEmoteManagementService.loadActiveEmoteStatsForServerSince(server, since, usedEmoteType);
         return converter.fromEmoteStatsResults(emoteStatsResults);
     }
 
     @Override
-    public EmoteStatsResultDisplay getEmoteStatForEmote(TrackedEmote trackedEmote, Instant since) {
-        EmoteStatsResult emoteStatsResult = usedEmoteManagementService.loadEmoteStatForEmote(trackedEmote, since);
+    public EmoteStatsResultDisplay getEmoteStatForEmote(TrackedEmote trackedEmote, Instant since, UsedEmoteType usedEmoteType) {
+        EmoteStatsResult emoteStatsResult = usedEmoteManagementService.loadEmoteStatForEmote(trackedEmote, since, usedEmoteType);
         return converter.convertEmoteStatsResultToDisplay(emoteStatsResult);
     }
 

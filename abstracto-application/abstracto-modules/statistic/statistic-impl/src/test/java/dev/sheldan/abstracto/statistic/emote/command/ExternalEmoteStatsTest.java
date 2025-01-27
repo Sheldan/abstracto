@@ -54,7 +54,7 @@ public class ExternalEmoteStatsTest {
         when(model.getStaticEmotes()).thenReturn(Arrays.asList(display));
         when(model.areStatsAvailable()).thenReturn(true);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
-        when(usedEmoteService.getExternalEmoteStatsForServerSince(server, Instant.EPOCH)).thenReturn(model);
+        when(usedEmoteService.getExternalEmoteStatsForServerSince(server, Instant.EPOCH, null)).thenReturn(model);
         when(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_STATIC_EXTERNAL_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }
@@ -67,7 +67,7 @@ public class ExternalEmoteStatsTest {
         when(model.getAnimatedEmotes()).thenReturn(Arrays.asList(display));
         when(model.areStatsAvailable()).thenReturn(true);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
-        when(usedEmoteService.getExternalEmoteStatsForServerSince(server, Instant.EPOCH)).thenReturn(model);
+        when(usedEmoteService.getExternalEmoteStatsForServerSince(server, Instant.EPOCH, null)).thenReturn(model);
         when(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_ANIMATED_EXTERNAL_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }
@@ -78,7 +78,7 @@ public class ExternalEmoteStatsTest {
         EmoteStatsModel model = Mockito.mock(EmoteStatsModel.class);
         when(model.areStatsAvailable()).thenReturn(false);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
-        when(usedEmoteService.getExternalEmoteStatsForServerSince(server, Instant.EPOCH)).thenReturn(model);
+        when(usedEmoteService.getExternalEmoteStatsForServerSince(server, Instant.EPOCH, null)).thenReturn(model);
         when(channelService.sendEmbedTemplateInMessageChannel(eq(EmoteStats.EMOTE_STATS_NO_STATS_AVAILABLE), any(), eq(noParameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }
@@ -91,7 +91,7 @@ public class ExternalEmoteStatsTest {
         when(model.getStaticEmotes()).thenReturn(Arrays.asList(display));
         when(model.areStatsAvailable()).thenReturn(true);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
-        when(usedEmoteService.getExternalEmoteStatsForServerSince(eq(server), any(Instant.class))).thenReturn(model);
+        when(usedEmoteService.getExternalEmoteStatsForServerSince(eq(server), any(Instant.class), eq(null))).thenReturn(model);
         when(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_STATIC_EXTERNAL_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }

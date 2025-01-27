@@ -2,7 +2,5 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                      xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd" >
-    <include file="1.0-statistic/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.3.10/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.5.58/collection.xml" relativeToChangelogFile="true"/>
+    <include file="emote_statistic_cleanup_job.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -15,6 +15,7 @@ import dev.sheldan.abstracto.statistic.emote.model.TrackedEmoteOverview;
 import dev.sheldan.abstracto.statistic.emote.model.TrackedEmoteSynchronizationResult;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmote;
+import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmoteType;
 import dev.sheldan.abstracto.statistic.emote.service.management.TrackedEmoteManagementService;
 import dev.sheldan.abstracto.statistic.emote.service.management.UsedEmoteManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -68,28 +69,29 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
 
 
     @Override
-    public void addEmoteToRuntimeStorage(List<CachedEmote> emotes, Guild guild) {
+    public void addEmoteToRuntimeStorage(List<CachedEmote> emotes, Guild guild, UsedEmoteType type) {
         boolean externalTrackingEnabled = featureModeService.featureModeActive(StatisticFeatureDefinition.EMOTE_TRACKING, guild.getIdLong(), EmoteTrackingMode.EXTERNAL_EMOTES);
         emotes.forEach(emote -> {
             // either the emote is from the current guild (we always add those) or external emote tracking is enabled (we should always add those)
             if(externalTrackingEnabled || !emote.getExternal()) {
-                trackedEmoteRuntimeService.addEmoteForServer(emote, guild, emote.getExternal());
+                trackedEmoteRuntimeService.addEmoteForServer(emote, guild, 1L, emote.getExternal(), type);
             }
         });
     }
 
+
     @Override
-    public void addEmoteToRuntimeStorage(CachedEmote emote, Guild guild, Long count) {
+    public void addEmoteToRuntimeStorage(CachedEmote emote, Guild guild, Long count, UsedEmoteType type) {
         boolean externalTrackingEnabled = featureModeService.featureModeActive(StatisticFeatureDefinition.EMOTE_TRACKING, guild.getIdLong(), EmoteTrackingMode.EXTERNAL_EMOTES);
         // either the emote is from the current guild (we always add those) or external emote tracking is enabled (we should always add those)
         if(externalTrackingEnabled || !emote.getExternal()) {
-            trackedEmoteRuntimeService.addEmoteForServer(emote, guild, count, emote.getExternal());
+            trackedEmoteRuntimeService.addEmoteForServer(emote, guild, count, emote.getExternal(), type);
         }
     }
 
     @Override
-    public void addEmoteToRuntimeStorage(CustomEmoji emote, Guild guild, Long count) {
-        addEmoteToRuntimeStorage(cacheEntityService.getCachedEmoteFromEmote(emote, guild), guild, count);
+    public void addEmoteToRuntimeStorage(CustomEmoji emote, Guild guild, Long count, UsedEmoteType type) {
+        addEmoteToRuntimeStorage(cacheEntityService.getCachedEmoteFromEmote(emote, guild), guild, count, type);
     }
 
     @Override
@@ -105,23 +107,23 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
                 emoteOptional.ifPresent(trackedEmote -> {
                     // only track the record, if its enabled
                     if(trackedEmote.getTrackingEnabled()) {
-                        Optional<UsedEmote> existingUsedEmote = usedEmoteManagementService.loadUsedEmoteForTrackedEmoteToday(trackedEmote);
+                        Optional<UsedEmote> existingUsedEmote = usedEmoteManagementService.loadUsedEmoteForTrackedEmoteToday(trackedEmote, persistingEmote.getUsedEmoteType());
                         // if a use for today already exists, increment the amount
                         existingUsedEmote.ifPresent(usedEmote ->
                             usedEmote.setAmount(usedEmote.getAmount() + persistingEmote.getCount())
                         );
                         // if none exists, create a new
-                        if(!existingUsedEmote.isPresent()) {
-                            usedEmoteManagementService.createEmoteUsageForToday(trackedEmote, persistingEmote.getCount());
+                        if(existingUsedEmote.isEmpty()) {
+                            usedEmoteManagementService.createEmoteUsageForToday(trackedEmote, persistingEmote.getCount(), persistingEmote.getUsedEmoteType());
                         }
                     } else {
                         log.debug("Tracking disabled for emote {} in server {}.", trackedEmote.getTrackedEmoteId().getId(), trackedEmote.getTrackedEmoteId().getServerId());
                     }
                 });
-                // if tracked emote does not exists, we might want to create one (only for external emotes)
+                // if tracked emote does not exist, we might want to create one (only for external emotes)
                 // we only do it for external emotes, because the feature mode AUTO_TRACK would not make sense
                 // we might want emotes which are completely ignored by emote tracking
-                if(!emoteOptional.isPresent() && autoTrackExternalEmotes && trackExternalEmotes) {
+                if(emoteOptional.isEmpty() && autoTrackExternalEmotes && trackExternalEmotes) {
                     createNewTrackedEmote(serverId, persistingEmote);
                 }
             });
@@ -137,7 +139,7 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
         Optional<Guild> guildOptional = guildService.getGuildByIdOptional(serverId);
         guildOptional.ifPresent(guild -> {
             TrackedEmote newCreatedTrackedEmote = trackedEmoteManagementService.createExternalTrackedEmote(persistingEmote);
-            usedEmoteManagementService.createEmoteUsageForToday(newCreatedTrackedEmote, persistingEmote.getCount());
+            usedEmoteManagementService.createEmoteUsageForToday(newCreatedTrackedEmote, persistingEmote.getCount(), persistingEmote.getUsedEmoteType());
         });
     }
 

@@ -8,17 +8,25 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
+import dev.sheldan.abstracto.core.utils.ParseUtils;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
+import dev.sheldan.abstracto.statistic.config.StatisticSlashCommandNames;
+import dev.sheldan.abstracto.statistic.emote.command.parameter.UsedEmoteTypeParameter;
 import dev.sheldan.abstracto.statistic.emote.config.EmoteTrackingMode;
 import dev.sheldan.abstracto.statistic.emote.config.EmoteTrackingModuleDefinition;
 import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emote.service.UsedEmoteService;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -46,8 +54,18 @@ public class ExternalEmoteStats extends AbstractConditionableCommand {
     @Autowired
     private ServerManagementService serverManagementService;
 
+    @Autowired
+    private SlashCommandParameterService slashCommandParameterService;
+
+    @Autowired
+    private InteractionService interactionService;
+
     public static final String EMOTE_STATS_STATIC_EXTERNAL_RESPONSE = "externalEmoteStats_static_response";
     public static final String EMOTE_STATS_ANIMATED_EXTERNAL_RESPONSE = "externalEmoteStats_animated_response";
+    private static final String EXTERNAL_EMOTE_STATS_USED_EMOTE_TYPE = "type";
+
+    private static final String EXTERNAL_EMOTE_STATS_PERIOD = "period";
+    private static final String EXTERNAL_EMOTE_STATS_COMMAND_NAME = "externalEmoteStats";
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
@@ -60,7 +78,7 @@ public class ExternalEmoteStats extends AbstractConditionableCommand {
             statsSince = Instant.now().minus(duration);
         }
         AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        EmoteStatsModel emoteStatsModel = usedEmoteService.getExternalEmoteStatsForServerSince(server, statsSince);
+        EmoteStatsModel emoteStatsModel = usedEmoteService.getExternalEmoteStatsForServerSince(server, statsSince, null);
         List<CompletableFuture<Message>> messagePromises = new ArrayList<>();
 
         // only show embed if static emote stats are available
@@ -86,26 +104,101 @@ public class ExternalEmoteStats extends AbstractConditionableCommand {
     }
 
     @Override
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        UsedEmoteTypeParameter typeEnum;
+        if(slashCommandParameterService.hasCommandOption(EXTERNAL_EMOTE_STATS_USED_EMOTE_TYPE, event)) {
+            String type = slashCommandParameterService.getCommandOption(EXTERNAL_EMOTE_STATS_USED_EMOTE_TYPE, event, String.class);
+            typeEnum = UsedEmoteTypeParameter.valueOf(type);
+        } else {
+            typeEnum = null;
+        }
+        Instant startTime;
+        if(slashCommandParameterService.hasCommandOption(EXTERNAL_EMOTE_STATS_PERIOD, event)) {
+            String durationString = slashCommandParameterService.getCommandOption(EXTERNAL_EMOTE_STATS_PERIOD, event, Duration.class, String.class);
+            Duration durationSince = ParseUtils.parseDuration(durationString);
+            startTime = Instant.now().minus(durationSince);
+        } else {
+            startTime = Instant.EPOCH;
+        }
+
+        AServer server = serverManagementService.loadServer(event.getGuild());
+        EmoteStatsModel emoteStatsModel = usedEmoteService.getExternalEmoteStatsForServerSince(server, startTime, UsedEmoteTypeParameter.convertToUsedEmoteType(typeEnum));
+        List<CompletableFuture<Message>> messagePromises = new ArrayList<>();
+        return event.deferReply().submit().thenCompose(interactionHook -> {
+            // only show embed if static emote stats are available
+            if (!emoteStatsModel.getStaticEmotes().isEmpty()) {
+                log.debug("External emote stats has {} static emotes since {}.", emoteStatsModel.getStaticEmotes().size(), startTime);
+                messagePromises.addAll(
+                    interactionService.sendMessageToInteraction(EMOTE_STATS_STATIC_EXTERNAL_RESPONSE, emoteStatsModel, interactionHook));
+            }
+
+            // only show embed if animated emote stats are available
+            if (!emoteStatsModel.getAnimatedEmotes().isEmpty()) {
+                log.debug("External emote stats has {} animated emotes since {}.", emoteStatsModel.getAnimatedEmotes(), startTime);
+                messagePromises.addAll(
+                    interactionService.sendMessageToInteraction(EMOTE_STATS_ANIMATED_EXTERNAL_RESPONSE, emoteStatsModel, interactionHook));
+            }
+
+            // show an embed if no emote stats are available indicating so
+            if (!emoteStatsModel.areStatsAvailable()) {
+                log.info("No external emote stats available for guild {} since {}.", event.getGuild().getIdLong(), startTime);
+                messagePromises.addAll(interactionService.sendMessageToInteraction(EmoteStats.EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), interactionHook));
+            }
+
+            return FutureUtils.toSingleFutureGeneric(messagePromises)
+                .thenApply(unused -> CommandResult.fromIgnored());
+        });
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         Parameter periodParameter = Parameter
                 .builder()
-                .name("period")
+                .name(EXTERNAL_EMOTE_STATS_PERIOD)
                 .templated(true)
                 .optional(true)
                 .type(Duration.class)
                 .build();
         parameters.add(periodParameter);
+
         HelpInfo helpInfo = HelpInfo
                 .builder()
                 .templated(true)
                 .build();
+
+        List<String> emoteTypes = Arrays
+            .stream(UsedEmoteTypeParameter.values())
+            .map(Enum::name)
+            .collect(Collectors.toList());
+
+        Parameter typeParameter = Parameter
+            .builder()
+            .name(EXTERNAL_EMOTE_STATS_USED_EMOTE_TYPE)
+            .templated(true)
+            .slashCommandOnly(true)
+            .optional(true)
+            .choices(emoteTypes)
+            .type(String.class)
+            .build();
+
+        parameters.add(typeParameter);
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+            .builder()
+            .enabled(true)
+            .rootCommandName(StatisticSlashCommandNames.STATISTIC)
+            .groupName("emotestats")
+            .commandName("external")
+            .build();
+
         return CommandConfiguration.builder()
-                .name("externalEmoteStats")
+                .name(EXTERNAL_EMOTE_STATS_COMMAND_NAME)
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
                 .messageCommandOnly(true)
                 .async(true)
+                .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

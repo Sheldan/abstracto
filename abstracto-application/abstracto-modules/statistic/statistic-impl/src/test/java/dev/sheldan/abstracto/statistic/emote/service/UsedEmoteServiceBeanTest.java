@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.statistic.emote.converter.EmoteStatsConverter;
 import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsResult;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
+import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmoteType;
 import dev.sheldan.abstracto.statistic.emote.service.management.UsedEmoteManagementService;
 import org.junit.Assert;
 import org.junit.Test;
@@ -58,27 +59,27 @@ public class UsedEmoteServiceBeanTest {
     @Test
     public void testGetDeletedEmoteStatsForServerSince() {
         List<EmoteStatsResult> mockedEmoteStatsResult = getMockedStatsResult();
-        when(usedEmoteManagementService.loadDeletedEmoteStatsForServerSince(eq(server), any(Instant.class))).thenReturn(mockedEmoteStatsResult);
+        when(usedEmoteManagementService.loadDeletedEmoteStatsForServerSince(eq(server), any(Instant.class), eq(UsedEmoteType.REACTION))).thenReturn(mockedEmoteStatsResult);
         when(converter.fromEmoteStatsResults(mockedEmoteStatsResult)).thenReturn(emoteStatsModel);
-        EmoteStatsModel result = testUnit.getDeletedEmoteStatsForServerSince(server, pointInTime);
+        EmoteStatsModel result = testUnit.getDeletedEmoteStatsForServerSince(server, pointInTime, UsedEmoteType.REACTION);
         Assert.assertEquals(emoteStatsModel, result);
     }
 
     @Test
     public void testGetExternalEmoteStatsForServerSince() {
         List<EmoteStatsResult> mockedEmoteStatsResult = getMockedStatsResult();
-        when(usedEmoteManagementService.loadExternalEmoteStatsForServerSince(eq(server), any(Instant.class))).thenReturn(mockedEmoteStatsResult);
+        when(usedEmoteManagementService.loadExternalEmoteStatsForServerSince(eq(server), any(Instant.class), eq(UsedEmoteType.REACTION))).thenReturn(mockedEmoteStatsResult);
         when(converter.fromEmoteStatsResults(mockedEmoteStatsResult)).thenReturn(emoteStatsModel);
-        EmoteStatsModel result = testUnit.getExternalEmoteStatsForServerSince(server, pointInTime);
+        EmoteStatsModel result = testUnit.getExternalEmoteStatsForServerSince(server, pointInTime, UsedEmoteType.REACTION);
         Assert.assertEquals(emoteStatsModel, result);
     }
 
     @Test
     public void testGetActiveEmoteStatsForServerSince() {
         List<EmoteStatsResult> mockedEmoteStatsResult = getMockedStatsResult();
-        when(usedEmoteManagementService.loadActiveEmoteStatsForServerSince(eq(server), any(Instant.class))).thenReturn(mockedEmoteStatsResult);
+        when(usedEmoteManagementService.loadActiveEmoteStatsForServerSince(eq(server), any(Instant.class), eq(UsedEmoteType.REACTION))).thenReturn(mockedEmoteStatsResult);
         when(converter.fromEmoteStatsResults(mockedEmoteStatsResult)).thenReturn(emoteStatsModel);
-        EmoteStatsModel result = testUnit.getActiveEmoteStatsForServerSince(server, pointInTime);
+        EmoteStatsModel result = testUnit.getActiveEmoteStatsForServerSince(server, pointInTime, UsedEmoteType.REACTION);
         Assert.assertEquals(emoteStatsModel, result);
     }
 

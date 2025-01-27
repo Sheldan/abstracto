@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.statistic.emote.service;
 
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.statistic.emote.model.PersistingEmote;
+import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmoteType;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,34 +26,30 @@ public class TrackedEmoteRuntimeServiceBean implements TrackedEmoteRuntimeServic
         return trackedEmoteRunTimeStorage.getRuntimeConfig();
     }
 
-    @Override
-    public void addEmoteForServer(CachedEmote emote, Guild guild, boolean external) {
-       addEmoteForServer(emote, guild, 1L, external);
-    }
 
     @Override
-    public void addEmoteForServer(CachedEmote emote, Guild guild, Long count, boolean external) {
+    public void addEmoteForServer(CachedEmote emote, Guild guild, Long count, boolean external, UsedEmoteType usedEmoteType) {
         takeLock();
         try {
             // generate an appropriate key
             Long key = getKey();
             // create a PersistingEmote based the given Emote
-            PersistingEmote newPersistentEmote = createFromEmote(guild, emote, count, external);
+            PersistingEmote newPersistentEmote = createFromEmote(guild, emote, count, external, usedEmoteType);
             if (trackedEmoteRunTimeStorage.contains(key)) {
                 // if it already exists, we can add to the already existing map
                 Map<Long, List<PersistingEmote>> elementsForKey = trackedEmoteRunTimeStorage.get(key);
                 if (elementsForKey.containsKey(guild.getIdLong())) {
                     // if the server already has an entry, we can just add it to the list of existing ones
-                    List<PersistingEmote> persistingEmotes = elementsForKey.get(guild.getIdLong());
-                    Optional<PersistingEmote> existingEmote = persistingEmotes
-                            .stream()
-                            .filter(persistingEmote -> persistingEmote.getEmoteId().equals(emote.getEmoteId()))
-                            .findFirst();
+                    List<PersistingEmote> existingEmotes = elementsForKey.get(guild.getIdLong());
+                    Optional<PersistingEmote> existingEmote = existingEmotes
+                        .stream()
+                        .filter(persistingEmote -> persistingEmote.getEmoteId().equals(emote.getEmoteId()) && persistingEmote.getUsedEmoteType().equals(usedEmoteType))
+                        .findFirst();
                     // if it exists already, just increment the counter by the given amount
                     existingEmote.ifPresent(persistingEmote -> persistingEmote.setCount(persistingEmote.getCount() + count));
                     if (!existingEmote.isPresent()) {
                         // just add the newly created one
-                        persistingEmotes.add(newPersistentEmote);
+                        existingEmotes.add(newPersistentEmote);
                     }
                 } else {
                     // it did not exist for the server, create a new list of PersistingEmote
@@ -77,12 +74,12 @@ public class TrackedEmoteRuntimeServiceBean implements TrackedEmoteRuntimeServic
     }
 
     @Override
-    public PersistingEmote createFromEmote(Guild guild, CachedEmote emote, boolean external) {
-        return createFromEmote(guild, emote, 1L, external);
+    public PersistingEmote createFromEmote(Guild guild, CachedEmote emote, boolean external, UsedEmoteType usedEmoteType) {
+        return createFromEmote(guild, emote, 1L, external, usedEmoteType);
     }
 
     @Override
-    public PersistingEmote createFromEmote(Guild guild, CachedEmote emote, Long count, boolean external) {
+    public PersistingEmote createFromEmote(Guild guild, CachedEmote emote, Long count, boolean external, UsedEmoteType usedEmoteType) {
         String url = external ? emote.getImageURL() : null;
         return PersistingEmote
                 .builder()
@@ -90,6 +87,7 @@ public class TrackedEmoteRuntimeServiceBean implements TrackedEmoteRuntimeServic
                 .emoteId(emote.getEmoteId())
                 .external(external)
                 .externalUrl(url)
+                .usedEmoteType(usedEmoteType)
                 .emoteName(emote.getEmoteName())
                 .count(count)
                 .serverId(guild.getIdLong())

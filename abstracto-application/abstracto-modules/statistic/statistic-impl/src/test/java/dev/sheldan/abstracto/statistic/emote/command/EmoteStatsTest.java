@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsResultDisplay;
+import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmoteType;
 import dev.sheldan.abstracto.statistic.emote.service.UsedEmoteService;
 import org.junit.Assert;
 import org.junit.Test;
@@ -54,7 +55,7 @@ public class EmoteStatsTest {
         when(model.getStaticEmotes()).thenReturn(Arrays.asList(display));
         when(model.areStatsAvailable()).thenReturn(true);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
-        when(usedEmoteService.getActiveEmoteStatsForServerSince(server, Instant.EPOCH)).thenReturn(model);
+        when(usedEmoteService.getActiveEmoteStatsForServerSince(server, Instant.EPOCH, UsedEmoteType.REACTION)).thenReturn(model);
         when(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_STATIC_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }
@@ -67,7 +68,7 @@ public class EmoteStatsTest {
         when(model.getAnimatedEmotes()).thenReturn(Arrays.asList(display));
         when(model.areStatsAvailable()).thenReturn(true);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
-        when(usedEmoteService.getActiveEmoteStatsForServerSince(server, Instant.EPOCH)).thenReturn(model);
+        when(usedEmoteService.getActiveEmoteStatsForServerSince(server, Instant.EPOCH, null)).thenReturn(model);
         when(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_ANIMATED_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }
@@ -78,7 +79,7 @@ public class EmoteStatsTest {
         EmoteStatsModel model = Mockito.mock(EmoteStatsModel.class);
         when(model.areStatsAvailable()).thenReturn(false);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
-        when(usedEmoteService.getActiveEmoteStatsForServerSince(server, Instant.EPOCH)).thenReturn(model);
+        when(usedEmoteService.getActiveEmoteStatsForServerSince(server, Instant.EPOCH, null)).thenReturn(model);
         when(channelService.sendEmbedTemplateInMessageChannel(eq(EmoteStats.EMOTE_STATS_NO_STATS_AVAILABLE), any(), eq(noParameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }
@@ -91,7 +92,7 @@ public class EmoteStatsTest {
         when(model.getStaticEmotes()).thenReturn(Arrays.asList(display));
         when(model.areStatsAvailable()).thenReturn(true);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
-        when(usedEmoteService.getActiveEmoteStatsForServerSince(eq(server), any(Instant.class))).thenReturn(model);
+        when(usedEmoteService.getActiveEmoteStatsForServerSince(eq(server), any(Instant.class), eq(null))).thenReturn(model);
         when(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_STATIC_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }

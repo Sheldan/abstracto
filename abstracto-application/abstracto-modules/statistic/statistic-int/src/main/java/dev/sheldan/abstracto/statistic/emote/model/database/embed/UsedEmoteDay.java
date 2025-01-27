@@ -1,5 +1,8 @@
 package dev.sheldan.abstracto.statistic.emote.model.database.embed;
 
+import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmoteType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.*;
 
 import jakarta.persistence.Column;
@@ -36,4 +39,8 @@ public class UsedEmoteDay implements Serializable {
      */
     @Column(name = "use_date")
     private Instant useDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private UsedEmoteType type;
 }

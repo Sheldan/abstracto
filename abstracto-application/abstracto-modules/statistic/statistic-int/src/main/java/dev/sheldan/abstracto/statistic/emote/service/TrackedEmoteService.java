@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.statistic.emote.model.PersistingEmote;
 import dev.sheldan.abstracto.statistic.emote.model.TrackedEmoteOverview;
 import dev.sheldan.abstracto.statistic.emote.model.TrackedEmoteSynchronizationResult;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
+import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmoteType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 
@@ -21,23 +22,25 @@ public interface TrackedEmoteService {
      * @param emotes The list of {@link CustomEmoji}s to add to the runtime storage
      * @param guild The {@link Guild} in which the {@link CustomEmoji}s were used and where the usages should be added
      */
-    void addEmoteToRuntimeStorage(List<CachedEmote> emotes, Guild guild);
+    void addEmoteToRuntimeStorage(List<CachedEmote> emotes, Guild guild, UsedEmoteType usedEmoteType);
 
     /**
      * Adds the given {@link CustomEmoji} with the given amount to the runtime storage for the given {@link Guild}
      * @param emote The {@link CachedEmote} to add to the runtime storage
      * @param guild The {@link Guild} in which the {@link CustomEmoji} was used and in which the usage should be added
      * @param count The amount of times which the {@link CustomEmoji} has been used and should be reflected in the runtime storage
+     * @param type The type of interaction the emote came from
      */
-    void addEmoteToRuntimeStorage(CachedEmote emote, Guild guild, Long count);
+    void addEmoteToRuntimeStorage(CachedEmote emote, Guild guild, Long count, UsedEmoteType type);
 
     /**
      * Adds the given {@link CustomEmoji} with the given amount to the runtime storage for the given {@link Guild}
      * @param emote The {@link CustomEmoji} to add to the runtime storage
      * @param guild The {@link Guild} in which the {@link CustomEmoji} was used and in which the usage should be added
      * @param count The amount of times which the {@link CustomEmoji} has been used and should be reflected in the runtime storage
+     * @param type The type of interaction the emote came from
      */
-    void addEmoteToRuntimeStorage(CustomEmoji emote, Guild guild, Long count);
+    void addEmoteToRuntimeStorage(CustomEmoji emote, Guild guild, Long count, UsedEmoteType type);
 
     /**
      * Takes the given map of server_ids with the list of {@link PersistingEmote} and stores the objects in the database

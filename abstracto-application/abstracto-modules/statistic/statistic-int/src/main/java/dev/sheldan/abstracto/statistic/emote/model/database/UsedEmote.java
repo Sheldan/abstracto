@@ -47,4 +47,5 @@ public class UsedEmote {
 
     @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
+
 }

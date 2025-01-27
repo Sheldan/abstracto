@@ -24,12 +24,14 @@ public interface UsedEmoteRepository extends JpaRepository<UsedEmote, UsedEmoteD
      * @param emoteId The ID of the emote which is being tracked
      * @param server_id The ID of the {@link net.dv8tion.jda.api.entities.Guild} which is the server where the emote
      *                  is being tracked
+     * @param usedEmoteType The type of interaction the emote was used in
      * @return An {@link Optional} containing a possible {@link UsedEmote}, if it exists for the criteria, an empty Optional otherwise.
      */
     @Query(value="select * from used_emote " +
             "where emote_id = :emote_id and server_id = :server_id " +
-            "and use_date = date_trunc('day', now())", nativeQuery = true)
-    Optional<UsedEmote> findEmoteFromServerToday(@Param("emote_id") Long emoteId, @Param("server_id") Long server_id);
+            "and use_date = date_trunc('day', now()) " +
+            " and type = :used_emote_type", nativeQuery = true)
+    Optional<UsedEmote> findEmoteFromServerToday(@Param("emote_id") Long emoteId, @Param("server_id") Long server_id, @Param("used_emote_type") String usedEmoteType);
 
     @Query(value = "select us.emote_id as emoteId, us.server_id as serverId, sum(us.amount) as amount from used_emote us " +
             "inner join tracked_emote te " +
@@ -48,12 +50,34 @@ public interface UsedEmoteRepository extends JpaRepository<UsedEmote, UsedEmoteD
     List<EmoteStatsResult> getExternalEmoteStatsForServerSince(@Param("server_id") Long serverId, @Param("start_date") Instant since);
 
     @Query(value = "select us.emote_id as emoteId, us.server_id as serverId, sum(us.amount) as amount from used_emote us " +
+        "inner join tracked_emote te " +
+        "on us.emote_id = te.id and us.server_id = te.server_id " +
+        "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
+        "and us.server_id = :server_id " +
+        "and te.external = true " +
+        "and us.type = :used_emote_type " +
+        "group by us.emote_id, us.server_id " +
+        "order by amount desc", nativeQuery = true)
+    List<EmoteStatsResult> getExternalEmoteStatsForServerSince(@Param("server_id") Long serverId, @Param("start_date") Instant since, @Param("used_emote_type") String usedEmoteType);
+
+    @Query(value = "select us.emote_id as emoteId, us.server_id as serverId, sum(us.amount) as amount from used_emote us " +
             "inner join tracked_emote te " +
             "on us.emote_id = te.id and us.server_id = te.server_id " +
             "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) and us.server_id = :server_id and te.deleted = true " +
             "group by us.emote_id, us.server_id " +
             "order by amount desc", nativeQuery = true)
     List<EmoteStatsResult> getDeletedEmoteStatsForServerSince(@Param("server_id") Long serverId, @Param("start_date") Instant since);
+
+    @Query(value = "select us.emote_id as emoteId, us.server_id as serverId, sum(us.amount) as amount from used_emote us " +
+        "inner join tracked_emote te " +
+        "on us.emote_id = te.id and us.server_id = te.server_id " +
+        "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
+        "and us.server_id = :server_id " +
+        "and te.deleted = true " +
+        "and us.type = :used_emote_type " +
+        "group by us.emote_id, us.server_id " +
+        "order by amount desc", nativeQuery = true)
+    List<EmoteStatsResult> getDeletedEmoteStatsForServerSince(@Param("server_id") Long serverId, @Param("start_date") Instant since, @Param("used_emote_type") String usedEmoteType);
 
     @Query(value = "select us.emote_id as emoteId, us.server_id as serverId, sum(us.amount) as amount from used_emote us " +
             "inner join tracked_emote te " +
@@ -63,12 +87,33 @@ public interface UsedEmoteRepository extends JpaRepository<UsedEmote, UsedEmoteD
             "order by amount desc", nativeQuery = true)
     List<EmoteStatsResult> getCurrentlyExistingEmoteStatsForServerSince(@Param("server_id") Long serverId, @Param("start_date") Instant since);
 
+    @Query(value = "select us.emote_id as emoteId, us.server_id as serverId, sum(us.amount) as amount from used_emote us " +
+        "inner join tracked_emote te " +
+        "on us.emote_id = te.id and us.server_id = te.server_id " +
+        "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
+        "and us.server_id = :server_id " +
+        "and te.external = false " +
+        "and te.deleted = false " +
+        "and us.type = :used_emote_type " +
+        "group by us.emote_id, us.server_id " +
+        "order by amount desc", nativeQuery = true)
+    List<EmoteStatsResult> getCurrentlyExistingEmoteStatsForServerSince(@Param("server_id") Long serverId, @Param("start_date") Instant since, @Param("used_emote_type") String usedEmoteType);
+
     @Query(value = "select :tracked_emote_id as emoteId, :server_id as serverId, sum(us.amount) as amount " +
             "from used_emote us " +
             "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
             "and us.server_id = :server_id " +
             "and us.emote_id = :tracked_emote_id", nativeQuery = true)
     EmoteStatsResult getEmoteStatForTrackedEmote(@Param("tracked_emote_id") Long trackedEmoteId, @Param("server_id") Long serverId, @Param("start_date") Instant since);
+
+    @Query(value = "select :tracked_emote_id as emoteId, :server_id as serverId, sum(us.amount) as amount " +
+        "from used_emote us " +
+        "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
+        "and us.server_id = :server_id " +
+        "and us.emote_id = :tracked_emote_id " +
+        "and us.type = :used_emote_type", nativeQuery = true)
+    EmoteStatsResult getEmoteStatForTrackedEmote(@Param("tracked_emote_id") Long trackedEmoteId, @Param("server_id") Long serverId,
+                                                 @Param("start_date") Instant since, @Param("used_emote_type") String usedEmoteType);
 
     void deleteByEmoteId_EmoteIdAndEmoteId_ServerIdAndEmoteId_UseDateGreaterThan(Long emoteId, Long serverId, Instant timestamp);
 

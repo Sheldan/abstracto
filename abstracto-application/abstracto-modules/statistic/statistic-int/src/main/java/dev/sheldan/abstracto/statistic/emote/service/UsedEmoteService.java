@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsResultDisplay;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 
+import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmoteType;
 import java.time.Instant;
 
 /**
@@ -25,29 +26,32 @@ public interface UsedEmoteService {
      * This {@link EmoteStatsModel} will contain only deleted {@link TrackedEmote} from the server
      * @param server The {@link AServer} to retrieve the emote stats for
      * @param since Emote stats should be younger than this {@link Instant}. Only the date portion is considered.
+     * @param usedEmoteType The type of interaction the emote was from
      * @return An {@link EmoteStatsModel} containing the statistics split by animated and static emote
      */
-    EmoteStatsModel getDeletedEmoteStatsForServerSince(AServer server, Instant since);
+    EmoteStatsModel getDeletedEmoteStatsForServerSince(AServer server, Instant since, UsedEmoteType usedEmoteType);
 
     /**
      * Retrieves the {@link EmoteStatsModel} for the {@link AServer} since {@link Instant}.
      * This {@link EmoteStatsModel} will contain only external {@link TrackedEmote} from the server
      * @param server The {@link AServer} to retrieve the emote stats for
      * @param since Emote stats should be younger than this {@link Instant}. Only the date portion is considered.
+     * @param usedEmoteType The type of interaction the emote was used in
      * @return An {@link EmoteStatsModel} containing the statistics split by animated and static emote
      */
-    EmoteStatsModel getExternalEmoteStatsForServerSince(AServer server, Instant since);
+    EmoteStatsModel getExternalEmoteStatsForServerSince(AServer server, Instant since, UsedEmoteType usedEmoteType);
 
     /**
      * Retrieves the {@link EmoteStatsModel} for the {@link AServer} since {@link Instant}.
      * This {@link EmoteStatsModel} will contain only active {@link TrackedEmote} from the server. These are emotes which are still present
      * the {@link net.dv8tion.jda.api.entities.Guild}
      * @param server The {@link AServer} to retrieve the emote stats for
-     * @param since Emote stats should be younger than this {@link Instant}. Only the date portion is considered.
+     * @param since Emote stats should be younger than this {@link Instant}. Only the date portion is considered
+     * @param usedEmoteType The type of emote the interaction is coming from
      * @return An {@link EmoteStatsModel} containing the statistics split by animated and static emote
      */
-    EmoteStatsModel getActiveEmoteStatsForServerSince(AServer server, Instant since);
-    EmoteStatsResultDisplay getEmoteStatForEmote(TrackedEmote trackedEmote, Instant since);
+    EmoteStatsModel getActiveEmoteStatsForServerSince(AServer server, Instant since, UsedEmoteType usedEmoteType);
+    EmoteStatsResultDisplay getEmoteStatForEmote(TrackedEmote trackedEmote, Instant since, UsedEmoteType usedEmoteType);
 
     /**
      * Removes all {@link dev.sheldan.abstracto.statistic.emote.model.database.UsedEmote} for the given {@link TrackedEmote} which are younger

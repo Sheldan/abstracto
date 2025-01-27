@@ -25,6 +25,7 @@ import java.util.Arrays;
 import static dev.sheldan.abstracto.statistic.emote.command.DeletedEmoteStats.EMOTE_STATS_ANIMATED_DELETED_RESPONSE;
 import static dev.sheldan.abstracto.statistic.emote.command.DeletedEmoteStats.EMOTE_STATS_STATIC_DELETED_RESPONSE;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.endsWith;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -54,7 +55,7 @@ public class DeletedEmoteStatsTest {
         when(model.getStaticEmotes()).thenReturn(Arrays.asList(display));
         when(model.areStatsAvailable()).thenReturn(true);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
-        when(usedEmoteService.getDeletedEmoteStatsForServerSince(server, Instant.EPOCH)).thenReturn(model);
+        when(usedEmoteService.getDeletedEmoteStatsForServerSince(server, Instant.EPOCH, null)).thenReturn(model);
         when(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_STATIC_DELETED_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }
@@ -67,7 +68,7 @@ public class DeletedEmoteStatsTest {
         when(model.getAnimatedEmotes()).thenReturn(Arrays.asList(display));
         when(model.areStatsAvailable()).thenReturn(true);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
-        when(usedEmoteService.getDeletedEmoteStatsForServerSince(server, Instant.EPOCH)).thenReturn(model);
+        when(usedEmoteService.getDeletedEmoteStatsForServerSince(server, Instant.EPOCH, null)).thenReturn(model);
         when(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_ANIMATED_DELETED_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }
@@ -78,7 +79,7 @@ public class DeletedEmoteStatsTest {
         EmoteStatsModel model = Mockito.mock(EmoteStatsModel.class);
         when(model.areStatsAvailable()).thenReturn(false);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
-        when(usedEmoteService.getDeletedEmoteStatsForServerSince(server, Instant.EPOCH)).thenReturn(model);
+        when(usedEmoteService.getDeletedEmoteStatsForServerSince(server, Instant.EPOCH, null)).thenReturn(model);
         when(channelService.sendEmbedTemplateInMessageChannel(eq(EmoteStats.EMOTE_STATS_NO_STATS_AVAILABLE), any(), eq(noParameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }
@@ -91,7 +92,7 @@ public class DeletedEmoteStatsTest {
         when(model.getStaticEmotes()).thenReturn(Arrays.asList(display));
         when(model.areStatsAvailable()).thenReturn(true);
         when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
-        when(usedEmoteService.getDeletedEmoteStatsForServerSince(eq(server), any(Instant.class))).thenReturn(model);
+        when(usedEmoteService.getDeletedEmoteStatsForServerSince(eq(server), any(Instant.class), eq(null))).thenReturn(model);
         when(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_STATIC_DELETED_RESPONSE, model, noParameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CommandTestUtilities.checkSuccessfulCompletionAsync(testUnit.executeAsync(noParameters));
     }

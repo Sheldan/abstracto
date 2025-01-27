@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.statistic.emote.model;
 
+import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmoteType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,6 +34,7 @@ public class PersistingEmote {
      * Only if the emote is external: the URL where the source image of the emote is stored on Discord servers
      */
     private String externalUrl;
+    private UsedEmoteType usedEmoteType;
     /**
      * The amount of times the emote has been used.
      */

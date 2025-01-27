@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.statistic.emote.service;
 
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.statistic.emote.model.PersistingEmote;
+import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmoteType;
 import net.dv8tion.jda.api.entities.Guild;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class TrackedEmoteRuntimeServiceBeanTest {
     @Test
     public void testCreateFromEmoteFromGuild() {
         when(emote.getEmoteId()).thenReturn(EMOTE_ID);
-        PersistingEmote createdEmote = testUnit.createFromEmote(guild, emote, COUNT, false);
+        PersistingEmote createdEmote = testUnit.createFromEmote(guild, emote, COUNT, false, UsedEmoteType.MESSAGE);
         Assert.assertFalse(createdEmote.getExternal());
         Assert.assertNull(createdEmote.getExternalUrl());
         Assert.assertEquals(EMOTE_ID, createdEmote.getEmoteId());
@@ -58,7 +59,7 @@ public class TrackedEmoteRuntimeServiceBeanTest {
     public void testCreateFromEmoteExternal() {
         when(emote.getImageURL()).thenReturn(URL);
         when(emote.getEmoteId()).thenReturn(EMOTE_ID);
-        PersistingEmote createdEmote = testUnit.createFromEmote(guild, emote, COUNT, true);
+        PersistingEmote createdEmote = testUnit.createFromEmote(guild, emote, COUNT, true, UsedEmoteType.MESSAGE);
         Assert.assertTrue(createdEmote.getExternal());
         Assert.assertEquals(URL, createdEmote.getExternalUrl());
         Assert.assertEquals(EMOTE_ID, createdEmote.getEmoteId());
@@ -68,7 +69,7 @@ public class TrackedEmoteRuntimeServiceBeanTest {
     @Test
     public void testCreateFromEmoteOneCountFromGuild() {
         when(emote.getEmoteId()).thenReturn(EMOTE_ID);
-        PersistingEmote createdEmote = testUnit.createFromEmote(guild, emote, false);
+        PersistingEmote createdEmote = testUnit.createFromEmote(guild, emote, false, UsedEmoteType.MESSAGE);
         Assert.assertFalse(createdEmote.getExternal());
         Assert.assertNull(createdEmote.getExternalUrl());
         Assert.assertEquals(EMOTE_ID, createdEmote.getEmoteId());
@@ -79,7 +80,7 @@ public class TrackedEmoteRuntimeServiceBeanTest {
     public void testCreateFromEmoteOneCountExternal() {
         when(emote.getImageURL()).thenReturn(URL);
         when(emote.getEmoteId()).thenReturn(EMOTE_ID);
-        PersistingEmote createdEmote = testUnit.createFromEmote(guild, emote, true);
+        PersistingEmote createdEmote = testUnit.createFromEmote(guild, emote, true, UsedEmoteType.MESSAGE);
         Assert.assertTrue(createdEmote.getExternal());
         Assert.assertEquals(URL, createdEmote.getExternalUrl());
         Assert.assertEquals(EMOTE_ID, createdEmote.getEmoteId());
@@ -92,7 +93,7 @@ public class TrackedEmoteRuntimeServiceBeanTest {
         when(emote.getEmoteId()).thenReturn(EMOTE_ID);
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(trackedEmoteRunTimeStorage.contains(SECOND)).thenReturn(false);
-        testUnit.addEmoteForServer(emote, guild, false);
+        testUnit.addEmoteForServer(emote, guild, 1L, false, UsedEmoteType.REACTION);
         verify(trackedEmoteRunTimeStorage, times(1)).put(eq(SECOND), putCaptor.capture());
         HashMap<Long, List<PersistingEmote>> value = putCaptor.getValue();
         Assert.assertEquals(1, value.keySet().size());
@@ -110,7 +111,7 @@ public class TrackedEmoteRuntimeServiceBeanTest {
         when(trackedEmoteRunTimeStorage.contains(SECOND)).thenReturn(true);
         HashMap<Long, List<PersistingEmote>> serverMap = new HashMap<>();
         when(trackedEmoteRunTimeStorage.get(SECOND)).thenReturn(serverMap);
-        testUnit.addEmoteForServer(emote, guild, false);
+        testUnit.addEmoteForServer(emote, guild, 1L, false, UsedEmoteType.REACTION);
         Assert.assertEquals(1, serverMap.keySet().size());
         Assert.assertEquals(SERVER_ID, serverMap.keySet().iterator().next());
         List<PersistingEmote> createdEmotes = serverMap.values().iterator().next();
@@ -127,7 +128,7 @@ public class TrackedEmoteRuntimeServiceBeanTest {
         HashMap<Long, List<PersistingEmote>> serverMap = new HashMap<>();
         serverMap.put(SERVER_ID, new ArrayList<>(Arrays.asList(persistingEmote)));
         when(trackedEmoteRunTimeStorage.get(SECOND)).thenReturn(serverMap);
-        testUnit.addEmoteForServer(emote, guild, false);
+        testUnit.addEmoteForServer(emote, guild, 1L,false, UsedEmoteType.REACTION);
         Assert.assertEquals(1, serverMap.keySet().size());
         Assert.assertEquals(SERVER_ID, serverMap.keySet().iterator().next());
         List<PersistingEmote> persistingEmotes = serverMap.values().iterator().next();
@@ -147,7 +148,7 @@ public class TrackedEmoteRuntimeServiceBeanTest {
         when(persistingEmote.getCount()).thenReturn(COUNT);
         serverMap.put(SERVER_ID, new ArrayList<>(Arrays.asList(persistingEmote)));
         when(trackedEmoteRunTimeStorage.get(SECOND)).thenReturn(serverMap);
-        testUnit.addEmoteForServer(emote, guild, false);
+        testUnit.addEmoteForServer(emote, guild, 1L, false, UsedEmoteType.REACTION);
         Assert.assertEquals(1, serverMap.keySet().size());
         Assert.assertEquals(SERVER_ID, serverMap.keySet().iterator().next());
         List<PersistingEmote> persistingEmotes = serverMap.values().iterator().next();
@@ -168,7 +169,7 @@ public class TrackedEmoteRuntimeServiceBeanTest {
         when(persistingEmote.getCount()).thenReturn(COUNT);
         serverMap.put(SERVER_ID, new ArrayList<>(Arrays.asList(persistingEmote)));
         when(trackedEmoteRunTimeStorage.get(SECOND)).thenReturn(serverMap);
-        testUnit.addEmoteForServer(emote, guild, COUNT, false);
+        testUnit.addEmoteForServer(emote, guild, COUNT, false, UsedEmoteType.REACTION);
         Assert.assertEquals(1, serverMap.keySet().size());
         Assert.assertEquals(SERVER_ID, serverMap.keySet().iterator().next());
         List<PersistingEmote> persistingEmotes = serverMap.values().iterator().next();

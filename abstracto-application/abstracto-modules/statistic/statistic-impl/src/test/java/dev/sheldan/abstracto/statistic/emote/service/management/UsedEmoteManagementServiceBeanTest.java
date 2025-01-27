@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsResult;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmote;
+import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmoteType;
 import dev.sheldan.abstracto.statistic.emote.repository.UsedEmoteRepository;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,8 +48,8 @@ public class UsedEmoteManagementServiceBeanTest {
     @Test
     public void testLoadUsedEmoteForTrackedEmoteToday() {
         setupTrackedEmote();
-        when(usedEmoteRepository.findEmoteFromServerToday(EMOTE_ID, SERVER_ID)).thenReturn(Optional.of(usedEmote));
-        Optional<UsedEmote> usedEmoteOptional = testUnit.loadUsedEmoteForTrackedEmoteToday(trackedEmote);
+        when(usedEmoteRepository.findEmoteFromServerToday(EMOTE_ID, SERVER_ID, UsedEmoteType.REACTION.name())).thenReturn(Optional.of(usedEmote));
+        Optional<UsedEmote> usedEmoteOptional = testUnit.loadUsedEmoteForTrackedEmoteToday(trackedEmote, UsedEmoteType.REACTION);
         Assert.assertTrue(usedEmoteOptional.isPresent());
         usedEmoteOptional.ifPresent(usedEmote1 ->
             Assert.assertEquals(usedEmote, usedEmote1)
@@ -58,12 +59,13 @@ public class UsedEmoteManagementServiceBeanTest {
     @Test
     public void testCreateEmoteUsageForToday() {
         setupTrackedEmote();
-        testUnit.createEmoteUsageForToday(trackedEmote, COUNT);
+        testUnit.createEmoteUsageForToday(trackedEmote, COUNT, UsedEmoteType.REACTION);
         verify(usedEmoteRepository, times(1)).save(usedEmoteArgumentCaptor.capture());
         UsedEmote createdUsedEmote = usedEmoteArgumentCaptor.getValue();
         Assert.assertEquals(COUNT, createdUsedEmote.getAmount());
         Assert.assertEquals(EMOTE_ID, createdUsedEmote.getEmoteId().getEmoteId());
         Assert.assertEquals(SERVER_ID, createdUsedEmote.getEmoteId().getServerId());
+        Assert.assertEquals(UsedEmoteType.REACTION, createdUsedEmote.getEmoteId().getType());
     }
 
     @Test
@@ -97,7 +99,7 @@ public class UsedEmoteManagementServiceBeanTest {
         setupServer();
         List<EmoteStatsResult> results = getEmoteStatsResults();
         when(usedEmoteRepository.getDeletedEmoteStatsForServerSince(SERVER_ID, Instant.EPOCH)).thenReturn(results);
-        List<EmoteStatsResult> returnedResult = testUnit.loadDeletedEmoteStatsForServerSince(server, Instant.EPOCH);
+        List<EmoteStatsResult> returnedResult = testUnit.loadDeletedEmoteStatsForServerSince(server, Instant.EPOCH, UsedEmoteType.REACTION);
         Assert.assertEquals(results.size(), returnedResult.size());
         Assert.assertEquals(results, returnedResult);
     }
@@ -107,7 +109,7 @@ public class UsedEmoteManagementServiceBeanTest {
         setupServer();
         List<EmoteStatsResult> results = getEmoteStatsResults();
         when(usedEmoteRepository.getExternalEmoteStatsForServerSince(SERVER_ID, Instant.EPOCH)).thenReturn(results);
-        List<EmoteStatsResult> returnedResult = testUnit.loadExternalEmoteStatsForServerSince(server, Instant.EPOCH);
+        List<EmoteStatsResult> returnedResult = testUnit.loadExternalEmoteStatsForServerSince(server, Instant.EPOCH, UsedEmoteType.REACTION);
         Assert.assertEquals(results.size(), returnedResult.size());
         Assert.assertEquals(results, returnedResult);
     }
@@ -116,8 +118,8 @@ public class UsedEmoteManagementServiceBeanTest {
     public void testLoadActiveEmoteStatsForServerSince() {
         setupServer();
         List<EmoteStatsResult> results = getEmoteStatsResults();
-        when(usedEmoteRepository.getCurrentlyExistingEmoteStatsForServerSince(SERVER_ID, Instant.EPOCH)).thenReturn(results);
-        List<EmoteStatsResult> returnedResult = testUnit.loadActiveEmoteStatsForServerSince(server, Instant.EPOCH);
+        when(usedEmoteRepository.getCurrentlyExistingEmoteStatsForServerSince(SERVER_ID, Instant.EPOCH, UsedEmoteType.REACTION.name())).thenReturn(results);
+        List<EmoteStatsResult> returnedResult = testUnit.loadActiveEmoteStatsForServerSince(server, Instant.EPOCH, UsedEmoteType.REACTION);
         Assert.assertEquals(results.size(), returnedResult.size());
         Assert.assertEquals(results, returnedResult);
     }

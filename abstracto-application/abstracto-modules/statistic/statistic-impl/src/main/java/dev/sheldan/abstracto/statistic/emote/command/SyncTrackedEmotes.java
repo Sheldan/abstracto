@@ -7,12 +7,16 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
+import dev.sheldan.abstracto.statistic.config.StatisticSlashCommandNames;
 import dev.sheldan.abstracto.statistic.emote.config.EmoteTrackingModuleDefinition;
 import dev.sheldan.abstracto.statistic.emote.model.TrackedEmoteSynchronizationResult;
 import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,12 +32,17 @@ import java.util.concurrent.CompletableFuture;
 @Component
 public class SyncTrackedEmotes extends AbstractConditionableCommand {
 
-    public static final String SYNC_TRACKED_EMOTES_RESULT_RESPONSE = "syncTrackedEmotes_result_response";
     @Autowired
     private TrackedEmoteService trackedEmoteService;
 
     @Autowired
     private ChannelService channelService;
+
+    @Autowired
+    private InteractionService interactionService;
+
+    static final String SYNC_TRACKED_EMOTES_RESULT_RESPONSE = "syncTrackedEmotes_result_response";
+    private static final String SYNC_TRACKED_EMOTES_COMMAND_NAME = "syncTrackedEmotes";
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
@@ -44,16 +53,34 @@ public class SyncTrackedEmotes extends AbstractConditionableCommand {
     }
 
     @Override
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        TrackedEmoteSynchronizationResult syncResult = trackedEmoteService.synchronizeTrackedEmotes(event.getGuild());
+        // show a result of how many emotes were deleted/added
+        return interactionService.replyEmbed(SYNC_TRACKED_EMOTES_RESULT_RESPONSE, syncResult, event)
+            .thenApply(unused -> CommandResult.fromIgnored());
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         HelpInfo helpInfo = HelpInfo
                 .builder()
                 .templated(true)
                 .build();
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+            .builder()
+            .enabled(true)
+            .rootCommandName(StatisticSlashCommandNames.STATISTIC_INTERNAL)
+            .groupName("manage")
+            .commandName("synctrackedemotes")
+            .build();
+
         return CommandConfiguration.builder()
-                .name("syncTrackedEmotes")
+                .name(SYNC_TRACKED_EMOTES_COMMAND_NAME)
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
+                .slashCommandConfig(slashCommandConfig)
                 .messageCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)

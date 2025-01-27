@@ -10,7 +10,6 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.AttachedFile;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FileService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -167,7 +166,7 @@ public class InteractionServiceBean implements InteractionService {
     }
 
     @Override
-    public CompletableFuture<Message> editOriginal(MessageToSend messageToSend, InteractionHook interactionHook) {
+    public CompletableFuture<Message> replaceOriginal(MessageToSend messageToSend, InteractionHook interactionHook) {
         Long serverId = interactionHook.getInteraction().getGuild().getIdLong();
 
         if(messageToSend.getEphemeral()) {
@@ -231,7 +230,15 @@ public class InteractionServiceBean implements InteractionService {
         if(action == null) {
             throw new AbstractoRunTimeException("The callback did not result in any message.");
         }
+        action.setReplace(true);
         return action.submit();
+    }
+
+    @Override
+    public CompletableFuture<Message> replaceOriginal(String template, Object model, InteractionHook interactionHook) {
+        Long serverId = interactionHook.getInteraction().getGuild().getIdLong();
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(template, new Object(), serverId);
+        return replaceOriginal(messageToSend, interactionHook);
     }
 
     public CompletableFuture<InteractionHook> replyMessageToSend(MessageToSend messageToSend, IReplyCallback callback) {

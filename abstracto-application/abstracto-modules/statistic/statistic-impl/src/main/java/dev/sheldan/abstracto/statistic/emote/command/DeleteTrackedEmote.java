@@ -7,11 +7,21 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandService;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
+import dev.sheldan.abstracto.statistic.config.StatisticSlashCommandNames;
 import dev.sheldan.abstracto.statistic.emote.config.EmoteTrackingModuleDefinition;
+import dev.sheldan.abstracto.statistic.emote.exception.TrackedEmoteNotFoundException;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
 import dev.sheldan.abstracto.statistic.emote.service.management.TrackedEmoteManagementService;
+import java.util.concurrent.CompletableFuture;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +40,16 @@ public class DeleteTrackedEmote extends AbstractConditionableCommand {
     @Autowired
     private TrackedEmoteService trackedEmoteService;
 
+    @Autowired
+    private SlashCommandParameterService slashCommandParameterService;
+
+    @Autowired
+    private SlashCommandService slashCommandService;
+
+    private static final String DELETE_TRACKED_EMOTE_TRACKED_EMOTE = "trackedEmote";
+    private static final String DELETE_TRACKED_EMOTE_COMMAND_NAME = "deleteTrackedEmote";
+    private static final String DELETE_TRACKED_EMOTE_RESPONSE = "deleteTrackedEmote_response";
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
@@ -41,23 +61,51 @@ public class DeleteTrackedEmote extends AbstractConditionableCommand {
     }
 
     @Override
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        String emote = slashCommandParameterService.getCommandOption(DELETE_TRACKED_EMOTE_TRACKED_EMOTE, event, String.class);
+        Emoji emoji = slashCommandParameterService.loadEmoteFromString(emote, event.getGuild());
+        if(!(emoji instanceof CustomEmoji)) {
+            throw new TrackedEmoteNotFoundException();
+        }
+        Long emoteId = ((CustomEmoji) emoji).getIdLong();
+        ServerSpecificId serverEmoteId = new ServerSpecificId(event.getGuild().getIdLong(), emoteId);
+        TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(serverEmoteId);
+        trackedEmoteService.deleteTrackedEmote(trackedEmote);
+        return slashCommandService.completeConfirmableCommand(event, DELETE_TRACKED_EMOTE_RESPONSE);
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         Parameter trackedEmoteParameter = Parameter
                 .builder()
-                .name("trackedEmote")
+                .name(DELETE_TRACKED_EMOTE_TRACKED_EMOTE)
                 .templated(true)
                 .type(TrackedEmote.class)
                 .build();
         parameters.add(trackedEmoteParameter);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+
+        HelpInfo helpInfo = HelpInfo
+            .builder()
+            .templated(true)
+            .build();
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+            .builder()
+            .enabled(true)
+            .rootCommandName(StatisticSlashCommandNames.STATISTIC_INTERNAL)
+            .groupName("manage")
+            .commandName("deletetrackedemote")
+            .build();
+
         return CommandConfiguration.builder()
-                .name("deleteTrackedEmote")
+                .name(DELETE_TRACKED_EMOTE_COMMAND_NAME)
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .messageCommandOnly(true)
+                .slashCommandConfig(slashCommandConfig)
                 .requiresConfirmation(true)
                 .parameters(parameters)
                 .help(helpInfo)

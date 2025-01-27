@@ -42,8 +42,6 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class ExportEmoteStats extends AbstractConditionableCommand {
 
-    public static final String DOWNLOAD_EMOTE_STATS_NO_STATS_AVAILABLE_RESPONSE_TEMPLATE_KEY = "downloadEmoteStats_no_stats_available_response";
-    public static final String DOWNLOAD_EMOTE_STATS_RESPONSE_TEMPLATE_KEY = "downloadEmoteStats_response";
     @Autowired
     private ServerManagementService serverManagementService;
 
@@ -58,6 +56,11 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
 
     @Autowired
     private FileService fileService;
+
+    public static final String DOWNLOAD_EMOTE_STATS_NO_STATS_AVAILABLE_RESPONSE_TEMPLATE_KEY = "downloadEmoteStats_no_stats_available_response";
+    private static final String DOWNLOAD_EMOTE_STATS_RESPONSE_TEMPLATE_KEY = "downloadEmoteStats_response";
+    private static final String EXPORT_EMOTE_STATS_COMMAND_NAME = "exportEmoteStats";
+    private static final String EXPORT_EMOTE_STATS_PERIOD = "period";
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
@@ -99,7 +102,7 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
         List<Parameter> parameters = new ArrayList<>();
         Parameter periodParameter = Parameter
                 .builder()
-                .name("period")
+                .name(EXPORT_EMOTE_STATS_PERIOD)
                 .templated(true)
                 .optional(true)
                 .type(Duration.class)
@@ -110,7 +113,7 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
                 .templated(true)
                 .build();
         return CommandConfiguration.builder()
-                .name("exportEmoteStats")
+                .name(EXPORT_EMOTE_STATS_COMMAND_NAME)
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
                 .async(true)

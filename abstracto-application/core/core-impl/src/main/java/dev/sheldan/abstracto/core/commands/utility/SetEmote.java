@@ -51,7 +51,7 @@ public class SetEmote extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String emoteKey = slashCommandParameterService.getCommandOption(EMOTE_KEY_PARAMETER, event, String.class);
         String emote = slashCommandParameterService.getCommandOption(EMOTE_PARAMETER, event, String.class);
-        AEmote aEmote = slashCommandParameterService.loadAEmoteFromString(emote, event);
+        AEmote aEmote = slashCommandParameterService.loadAEmoteFromString(emote, event.getGuild());
         emoteManagementService.setEmoteToAEmote(emoteKey, aEmote, event.getGuild().getIdLong());
         return interactionService.replyEmbed(RESPONSE_TEMPLATE, new Object(), event)
                 .thenApply(interactionHook -> CommandResult.fromSuccess());

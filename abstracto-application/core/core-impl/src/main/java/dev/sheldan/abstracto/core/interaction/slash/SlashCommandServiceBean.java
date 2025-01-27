@@ -2,17 +2,20 @@ package dev.sheldan.abstracto.core.interaction.slash;
 
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.model.database.ACommandInAServer;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.*;
@@ -51,6 +54,9 @@ public class SlashCommandServiceBean implements SlashCommandService {
 
     @Autowired
     private FeatureFlagService featureFlagService;
+
+    @Autowired
+    private InteractionService interactionService;
 
     @Override
     public void convertCommandConfigToCommandData(CommandConfiguration commandConfiguration, List<Pair<List<CommandConfiguration>, SlashCommandData>> existingCommands, Long serverId) {
@@ -104,6 +110,22 @@ public class SlashCommandServiceBean implements SlashCommandService {
             } else {
                 existingCommands.add(Pair.of(new ArrayList<>(Arrays.asList(commandConfiguration)), rootCommand));
             }
+        }
+    }
+
+    @Override
+    public CompletableFuture<CommandResult> completeConfirmableCommand(SlashCommandInteractionEvent event, String template) {
+        return completeConfirmableCommand(event, template, new Object());
+    }
+
+    @Override
+    public CompletableFuture<CommandResult> completeConfirmableCommand(SlashCommandInteractionEvent event, String template, Object parameter) {
+        if(event.isAcknowledged()) {
+            return interactionService.replaceOriginal(template, parameter, event.getInteraction().getHook())
+                .thenApply(interactionHook -> CommandResult.fromIgnored());
+        } else {
+            return interactionService.replyMessage(template, parameter, event)
+                .thenApply(interactionHook -> CommandResult.fromIgnored());
         }
     }
 

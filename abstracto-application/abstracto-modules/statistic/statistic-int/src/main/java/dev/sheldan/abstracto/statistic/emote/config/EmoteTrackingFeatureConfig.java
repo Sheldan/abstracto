@@ -29,6 +29,9 @@ public class EmoteTrackingFeatureConfig implements FeatureConfig {
      */
     @Override
     public List<FeatureMode> getAvailableModes() {
-        return Arrays.asList(EmoteTrackingMode.EXTERNAL_EMOTES, EmoteTrackingMode.AUTO_TRACK, EmoteTrackingMode.AUTO_TRACK_EXTERNAL);
+        return Arrays.asList(EmoteTrackingMode.EXTERNAL_EMOTES,
+            EmoteTrackingMode.AUTO_TRACK,
+            EmoteTrackingMode.AUTO_TRACK_EXTERNAL,
+            EmoteTrackingMode.TRACK_REACTIONS);
     }
 }

@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageReceivedListene
 import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
+import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmoteType;
 import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
@@ -46,7 +47,7 @@ public class EmoteTrackingListener implements AsyncMessageReceivedListener {
                 .stream()
                 .collect(Collectors.groupingBy(CustomEmoji::getIdLong));
         collect.values().forEach(groupedEmotes ->
-            trackedEmoteService.addEmoteToRuntimeStorage(groupedEmotes.get(0), guildService.getGuildById(model.getServerId()), (long) groupedEmotes.size())
+            trackedEmoteService.addEmoteToRuntimeStorage(groupedEmotes.get(0), guildService.getGuildById(model.getServerId()), (long) groupedEmotes.size(), UsedEmoteType.MESSAGE)
         );
         return DefaultListenerResult.PROCESSED;
     }
