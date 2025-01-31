@@ -4,13 +4,10 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.config.StatisticSlashCommandNames;
 import dev.sheldan.abstracto.statistic.emote.config.EmoteTrackingModuleDefinition;
@@ -36,21 +33,10 @@ public class SyncTrackedEmotes extends AbstractConditionableCommand {
     private TrackedEmoteService trackedEmoteService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private InteractionService interactionService;
 
     static final String SYNC_TRACKED_EMOTES_RESULT_RESPONSE = "syncTrackedEmotes_result_response";
     private static final String SYNC_TRACKED_EMOTES_COMMAND_NAME = "syncTrackedEmotes";
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        TrackedEmoteSynchronizationResult syncResult = trackedEmoteService.synchronizeTrackedEmotes(commandContext.getGuild());
-        // show a result of how many emotes were deleted/added
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(SYNC_TRACKED_EMOTES_RESULT_RESPONSE, syncResult, commandContext.getChannel()))
-                .thenApply(unused -> CommandResult.fromIgnored());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -81,7 +67,7 @@ public class SyncTrackedEmotes extends AbstractConditionableCommand {
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
                 .slashCommandConfig(slashCommandConfig)
-                .messageCommandOnly(true)
+                .slashCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)

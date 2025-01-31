@@ -4,14 +4,13 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.PaginatorService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
@@ -24,7 +23,6 @@ import dev.sheldan.abstracto.statistic.emote.service.UsedEmoteService;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -47,7 +45,7 @@ public class EmoteStats extends AbstractConditionableCommand {
     private UsedEmoteService usedEmoteService;
 
     @Autowired
-    private ChannelService channelService;
+    private PaginatorService paginatorService;
 
     @Autowired
     private ServerManagementService serverManagementService;
@@ -64,39 +62,6 @@ public class EmoteStats extends AbstractConditionableCommand {
     private static final String EMOTE_STATS_USED_EMOTE_TYPE = "type";
     private static final String EMOTE_STATS_DURATION = "period";
     private static final String EMOTE_STATS_COMMAND_NAME = "emoteStats";
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        // default is 1.1.1970
-        Instant statsSince = Instant.EPOCH;
-        if(!parameters.isEmpty()) {
-            // subtract the given Duration from the current point in time, if there is any
-            Duration duration = (Duration) parameters.get(0);
-            statsSince = Instant.now().minus(duration);
-        }
-        AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        EmoteStatsModel emoteStatsModel = usedEmoteService.getActiveEmoteStatsForServerSince(server, statsSince, null);
-        List<CompletableFuture<Message>> messagePromises = new ArrayList<>();
-        // only show embed if static emote stats are available
-        if(!emoteStatsModel.getStaticEmotes().isEmpty()) {
-            log.debug("Emote stats has {} static emotes since {}.", emoteStatsModel.getStaticEmotes().size(), statsSince);
-            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_STATIC_RESPONSE, emoteStatsModel, commandContext.getChannel()));
-        }
-        // only show embed if animated emote stats are available
-        if(!emoteStatsModel.getAnimatedEmotes().isEmpty()) {
-            log.debug("Emote stats has {} animated emotes since {}.", emoteStatsModel.getAnimatedEmotes(), statsSince);
-            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_ANIMATED_RESPONSE, emoteStatsModel, commandContext.getChannel()));
-        }
-        // show an embed if no emote stats are available indicating so
-        if(!emoteStatsModel.areStatsAvailable()) {
-            log.info("No emote stats available for guild {} since {}.", commandContext.getGuild().getIdLong(), statsSince);
-            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), commandContext.getChannel()));
-        }
-
-        return FutureUtils.toSingleFutureGeneric(messagePromises)
-                .thenApply(unused -> CommandResult.fromIgnored());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -117,22 +82,23 @@ public class EmoteStats extends AbstractConditionableCommand {
         }
         AServer server = serverManagementService.loadServer(event.getGuild());
         EmoteStatsModel emoteStatsModel = usedEmoteService.getActiveEmoteStatsForServerSince(server, startTime, UsedEmoteTypeParameter.convertToUsedEmoteType(typeEnum));
-        List<CompletableFuture<Message>> messagePromises = new ArrayList<>();
+        List<CompletableFuture<Void>> messagePromises = new ArrayList<>();
         return event.deferReply().submit().thenCompose(interactionHook -> {
             // only show embed if static emote stats are available
             if(!emoteStatsModel.getStaticEmotes().isEmpty()) {
                 log.debug("Emote stats has {} static emotes since {}.", emoteStatsModel.getStaticEmotes().size(), startTime);
-                messagePromises.addAll(interactionService.sendMessageToInteraction(EMOTE_STATS_STATIC_RESPONSE, emoteStatsModel, interactionHook));
+                messagePromises.add(paginatorService.sendPaginatorToInteraction(EMOTE_STATS_STATIC_RESPONSE, emoteStatsModel, interactionHook));
             }
             // only show embed if animated emote stats are available
             if(!emoteStatsModel.getAnimatedEmotes().isEmpty()) {
                 log.debug("Emote stats has {} animated emotes since {}.", emoteStatsModel.getAnimatedEmotes(), startTime);
-                messagePromises.addAll(interactionService.sendMessageToInteraction(EMOTE_STATS_ANIMATED_RESPONSE, emoteStatsModel, interactionHook));
+                messagePromises.add(paginatorService.sendPaginatorToInteraction(EMOTE_STATS_ANIMATED_RESPONSE, emoteStatsModel, interactionHook));
             }
             // show an embed if no emote stats are available indicating so
             if(!emoteStatsModel.areStatsAvailable()) {
                 log.info("No emote stats available for guild {} since {}.", event.getGuild().getIdLong(), startTime);
-                messagePromises.addAll(interactionService.sendMessageToInteraction(EMOTE_STATS_NO_STATS_AVAILABLE, emoteStatsModel, interactionHook));
+                return FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), interactionHook))
+                    .thenApply(unused -> CommandResult.fromSuccess());
             }
             return FutureUtils.toSingleFutureGeneric(messagePromises)
                 .thenApply(unused -> CommandResult.fromIgnored());
@@ -183,6 +149,7 @@ public class EmoteStats extends AbstractConditionableCommand {
                 .messageCommandOnly(true)
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

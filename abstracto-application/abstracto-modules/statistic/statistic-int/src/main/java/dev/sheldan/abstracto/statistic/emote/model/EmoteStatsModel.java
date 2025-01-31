@@ -33,8 +33,8 @@ public class EmoteStatsModel {
     private Guild guild;
 
     /**
-     * Whether or not this model contains *any* stats to render.
-     * @return Whether or not there are any stats to display
+     * Whether this model contains *any* stats to render.
+     * @return Whether there are any stats to display
      */
     public boolean areStatsAvailable() {
         return !animatedEmotes.isEmpty() || !staticEmotes.isEmpty();

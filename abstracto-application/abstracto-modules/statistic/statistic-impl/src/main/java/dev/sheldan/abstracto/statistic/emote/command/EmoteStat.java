@@ -4,15 +4,12 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
-import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.config.StatisticSlashCommandNames;
@@ -29,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -48,9 +46,6 @@ public class EmoteStat extends AbstractConditionableCommand {
     private UsedEmoteService usedEmoteService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private TrackedEmoteManagementService trackedEmoteManagementService;
 
     @Autowired
@@ -65,27 +60,6 @@ public class EmoteStat extends AbstractConditionableCommand {
     private static final String EMOTE_STAT_DURATION = "period";
     private static final String EMOTE_STAT_TRACKED_EMOTE = "trackedEmote";
     private static final String EMOTE_STAT_COMMAND_NAME = "emoteStat";
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        // default is 1.1.1970
-        Instant statsSince = Instant.EPOCH;
-        TrackedEmote emote = (TrackedEmote) parameters.get(0);
-        TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(emote.getTrackedEmoteId());
-        if(parameters.size() == 2) {
-            // subtract the given Duration from the current point in time, if there is any
-            Duration duration = (Duration) parameters.get(1);
-            statsSince = Instant.now().minus(duration);
-        }
-        EmoteStatsResultDisplay emoteStatsModel = usedEmoteService.getEmoteStatForEmote(trackedEmote, statsSince, null);
-        if(emoteStatsModel.getResult().getAmount() == null) {
-            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), commandContext.getChannel()))
-                    .thenApply(unused -> CommandResult.fromIgnored());
-        }
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STAT_RESPONSE, emoteStatsModel, commandContext.getChannel()))
-                .thenApply(unused -> CommandResult.fromIgnored());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -108,17 +82,26 @@ public class EmoteStat extends AbstractConditionableCommand {
         Emoji emoji = slashCommandParameterService.loadEmoteFromString(emote, event.getGuild());
         if(emoji instanceof CustomEmoji) {
             Long emoteId = ((CustomEmoji) emoji).getIdLong();
-            TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(new ServerSpecificId(event.getGuild().getIdLong(), emoteId));
-            EmoteStatsResultDisplay emoteStatsModel = usedEmoteService.getEmoteStatForEmote(trackedEmote, startTime, UsedEmoteTypeParameter.convertToUsedEmoteType(typeEnum));
-            if(emoteStatsModel.getResult().getAmount() == null) {
-                return interactionService.replyEmbed(EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), event)
-                    .thenApply(unused -> CommandResult.fromIgnored());
-            }
-            return interactionService.replyEmbed(EMOTE_STAT_RESPONSE, emoteStatsModel, event)
-                .thenApply(unused -> CommandResult.fromIgnored());
+            return showResponse(event, emoteId, startTime, typeEnum);
+        } else if(StringUtils.isNumeric(emote)) {
+            return showResponse(event, Long.parseLong(emote), startTime, typeEnum);
         } else {
             throw new TrackedEmoteNotFoundException();
         }
+    }
+
+    private CompletableFuture<CommandResult> showResponse(SlashCommandInteractionEvent event, Long emoteId, Instant startTime,
+                                                                               UsedEmoteTypeParameter typeEnum)
+    {
+        TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(new ServerSpecificId(event.getGuild().getIdLong(), emoteId));
+        EmoteStatsResultDisplay emoteStatsModel = usedEmoteService.getEmoteStatForEmote(trackedEmote,
+            startTime, UsedEmoteTypeParameter.convertToUsedEmoteType(typeEnum));
+        if(emoteStatsModel.getResult().getAmount() == null) {
+            return interactionService.replyEmbed(EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), event)
+                .thenApply(unused -> CommandResult.fromIgnored());
+        }
+        return interactionService.replyEmbed(EMOTE_STAT_RESPONSE, emoteStatsModel, event)
+            .thenApply(unused -> CommandResult.fromIgnored());
     }
 
     @Override
@@ -176,7 +159,7 @@ public class EmoteStat extends AbstractConditionableCommand {
                 .templated(true)
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
-                .messageCommandOnly(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

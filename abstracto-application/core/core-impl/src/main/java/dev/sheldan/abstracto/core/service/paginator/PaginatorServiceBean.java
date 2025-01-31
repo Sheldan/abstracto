@@ -14,6 +14,7 @@ import dev.sheldan.abstracto.core.templating.model.EmbedFooter;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.templating.service.TemplateServiceBean;
+import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.scheduling.model.JobParameters;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
@@ -23,6 +24,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -136,6 +138,16 @@ public class PaginatorServiceBean implements PaginatorService {
         return interactionService.replyMessageToSend(setup.getMessageToSend(), callback)
                 .thenCompose(interactionHook -> interactionHook.retrieveOriginal().submit())
                 .thenAccept(message -> self.setupButtonPayloads(message, setup, serverId));
+    }
+
+    @Override
+    public CompletableFuture<Void> sendPaginatorToInteraction(String templateKey, Object model, InteractionHook interactionHook) {
+        Long serverId = interactionHook.getInteraction().getGuild().getIdLong();
+        PaginatorSetup setup = getPaginatorSetup(templateKey, model, interactionHook.getInteraction().getUser().getIdLong(), serverId);
+        CompletableFutureList<Message> futures =
+            new CompletableFutureList<>(interactionService.sendMessageToInteraction(setup.getMessageToSend(), interactionHook));
+        return futures
+            .getMainFuture().thenAccept(aVoid -> self.setupButtonPayloads(futures.getFutures().get(0).join(), setup, serverId));
     }
 
     private void setupFooters(PaginatorConfiguration configuration, Long serverId) {

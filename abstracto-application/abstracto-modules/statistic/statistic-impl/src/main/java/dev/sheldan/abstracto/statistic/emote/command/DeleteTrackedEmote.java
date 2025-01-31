@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
@@ -22,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -51,23 +51,20 @@ public class DeleteTrackedEmote extends AbstractConditionableCommand {
     private static final String DELETE_TRACKED_EMOTE_RESPONSE = "deleteTrackedEmote_response";
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        TrackedEmote fakeTrackedEmote = (TrackedEmote) parameters.get(0);
-        // need to actually load the TrackedEmote
-        TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(fakeTrackedEmote.getTrackedEmoteId());
-        trackedEmoteService.deleteTrackedEmote(trackedEmote);
-        return CommandResult.fromSuccess();
-    }
-
-    @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String emote = slashCommandParameterService.getCommandOption(DELETE_TRACKED_EMOTE_TRACKED_EMOTE, event, String.class);
         Emoji emoji = slashCommandParameterService.loadEmoteFromString(emote, event.getGuild());
-        if(!(emoji instanceof CustomEmoji)) {
+        if(emoji instanceof CustomEmoji) {
+            Long emoteId = ((CustomEmoji) emoji).getIdLong();
+            return createResponse(event, emoteId);
+        } else if(StringUtils.isNumeric(emote)) {
+            return createResponse(event, Long.parseLong(emote));
+        } else {
             throw new TrackedEmoteNotFoundException();
         }
-        Long emoteId = ((CustomEmoji) emoji).getIdLong();
+    }
+
+    private CompletableFuture<CommandResult> createResponse(SlashCommandInteractionEvent event, Long emoteId) {
         ServerSpecificId serverEmoteId = new ServerSpecificId(event.getGuild().getIdLong(), emoteId);
         TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(serverEmoteId);
         trackedEmoteService.deleteTrackedEmote(trackedEmote);
@@ -104,7 +101,7 @@ public class DeleteTrackedEmote extends AbstractConditionableCommand {
                 .templated(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
-                .messageCommandOnly(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .requiresConfirmation(true)
                 .parameters(parameters)

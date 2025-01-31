@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
@@ -23,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -56,29 +56,20 @@ public class PurgeEmoteStats extends AbstractConditionableCommand {
     private static final String PURGE_EMOTE_STATS_RESPONSE = "purgeEmoteStats_response";
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        TrackedEmote fakeTrackedEmote = (TrackedEmote) parameters.get(0);
-        TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(fakeTrackedEmote.getTrackedEmoteId());
-        // default 1.1.1970
-        Instant since = Instant.EPOCH;
-        if(parameters.size() > 1) {
-            // if a Duration is given, subtract it from the current point in time
-            Duration parameter = (Duration) parameters.get(1);
-            since = Instant.now().minus(parameter);
-        }
-        usedEmoteService.purgeEmoteUsagesSince(trackedEmote, since);
-        return CommandResult.fromSuccess();
-    }
-
-    @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String emote = slashCommandParameterService.getCommandOption(PURGE_EMOTE_STATS_TRACKED_EMOTE, event, String.class);
         Emoji emoji = slashCommandParameterService.loadEmoteFromString(emote, event.getGuild());
-        if(!(emoji instanceof CustomEmoji)) {
+        if(emoji instanceof CustomEmoji) {
+            Long emoteId = ((CustomEmoji) emoji).getIdLong();
+            return createResponse(event, emoteId);
+        } else if(StringUtils.isNumeric(emote)) {
+            return createResponse(event, Long.parseLong(emote));
+        } else {
             throw new TrackedEmoteNotFoundException();
         }
-        Long emoteId = ((CustomEmoji) emoji).getIdLong();
+    }
+
+    private CompletableFuture<CommandResult> createResponse(SlashCommandInteractionEvent event, Long emoteId) {
         TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(new ServerSpecificId(event.getGuild().getIdLong(), emoteId));
         // default 1.1.1970
         Instant since = Instant.EPOCH;
@@ -128,7 +119,7 @@ public class PurgeEmoteStats extends AbstractConditionableCommand {
                 .name(PURGE_EMOTE_STATS_COMMAND_NAME)
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
-                .messageCommandOnly(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .requiresConfirmation(true)

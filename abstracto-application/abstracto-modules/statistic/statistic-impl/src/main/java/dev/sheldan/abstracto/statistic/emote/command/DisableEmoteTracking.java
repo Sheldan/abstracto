@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
@@ -14,6 +13,7 @@ import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.config.StatisticSlashCommandNames;
 import dev.sheldan.abstracto.statistic.emote.config.EmoteTrackingModuleDefinition;
+import dev.sheldan.abstracto.statistic.emote.exception.TrackedEmoteNotFoundException;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
 import dev.sheldan.abstracto.statistic.emote.service.management.TrackedEmoteManagementService;
@@ -21,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -51,33 +52,30 @@ public class DisableEmoteTracking extends AbstractConditionableCommand {
 
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        if(!parameters.isEmpty()) {
-            TrackedEmote fakeTrackedEmote = (TrackedEmote) parameters.get(0);
-            // need to reload the tracked emote
-            TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(fakeTrackedEmote.getTrackedEmoteId());
-            trackedEmoteManagementService.disableTrackedEmote(trackedEmote);
-        } else {
-            trackedEmoteService.disableEmoteTracking(commandContext.getGuild());
-        }
-        return CommandResult.fromSuccess();
-    }
-
-    @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         if(slashCommandParameterService.hasCommandOption(DISABLE_EMOTE_TRACKING_TRACKED_EMOTE, event)) {
             String emote = slashCommandParameterService.getCommandOption(DISABLE_EMOTE_TRACKING_TRACKED_EMOTE, event, String.class);
             Emoji emoji = slashCommandParameterService.loadEmoteFromString(emote, event.getGuild());
-            Long emoteId = ((CustomEmoji) emoji).getIdLong();
-            ServerSpecificId serverEmoteId = new ServerSpecificId(event.getGuild().getIdLong(), emoteId);
-            TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(serverEmoteId);
-            trackedEmoteManagementService.disableTrackedEmote(trackedEmote);
+            if(emoji instanceof CustomEmoji) {
+                Long emoteId = ((CustomEmoji) emoji).getIdLong();
+                disableTracking(event, emoteId);
+            } else if(StringUtils.isNumeric(emote)) {
+                disableTracking(event, Long.parseLong(emote));
+            } else {
+                throw new TrackedEmoteNotFoundException();
+            }
+
         } else {
             trackedEmoteService.disableEmoteTracking(event.getGuild());
         }
         return interactionService.replyEmbed(DISABLE_EMOTE_TRACKING_RESPONSE, event)
             .thenApply(interactionHook -> CommandResult.fromIgnored());
+    }
+
+    private void disableTracking(SlashCommandInteractionEvent event, Long emoteId) {
+        ServerSpecificId serverEmoteId = new ServerSpecificId(event.getGuild().getIdLong(), emoteId);
+        TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(serverEmoteId);
+        trackedEmoteManagementService.disableTrackedEmote(trackedEmote);
     }
 
     @Override
@@ -110,7 +108,7 @@ public class DisableEmoteTracking extends AbstractConditionableCommand {
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
                 .slashCommandConfig(slashCommandConfig)
-                .messageCommandOnly(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

@@ -4,13 +4,11 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
@@ -40,9 +38,6 @@ public class ShowTrackedEmotes extends AbstractConditionableCommand {
     private TrackedEmoteService trackedEmoteService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private FeatureModeService featureModeService;
 
     @Autowired
@@ -61,67 +56,6 @@ public class ShowTrackedEmotes extends AbstractConditionableCommand {
 
     private static final String SHOW_TRACKED_EMOTES_COMMAND_NAME = "showTrackedEmotes";
     private static final String SHOW_TRACKED_EMOTES_SHOW_ALL = "showAll";
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        // per default, do not show TrackedEmote for which tracking has been disabled
-        Boolean showTrackingDisabled = false;
-        if(!commandContext.getParameters().getParameters().isEmpty()) {
-            showTrackingDisabled = (Boolean) commandContext.getParameters().getParameters().get(0);
-        }
-
-        TrackedEmoteOverview trackedEmoteOverview = trackedEmoteService.loadTrackedEmoteOverview(commandContext.getGuild(), showTrackingDisabled);
-        boolean noTrackedEmotesAvailable = true;
-        List<CompletableFuture<Message>> messagePromises = new ArrayList<>();
-        // only show the embed, if there are static tracked emotes
-        if(!trackedEmoteOverview.getStaticEmotes().isEmpty()) {
-            noTrackedEmotesAvailable = false;
-            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(SHOW_TRACKED_EMOTES_STATIC_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
-        }
-
-        // only show the embed if there are animated tracked emotes
-        if(!trackedEmoteOverview.getAnimatedEmotes().isEmpty()) {
-            noTrackedEmotesAvailable = false;
-            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(SHOW_TRACKED_EMOTES_ANIMATED_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
-        }
-
-        // only show the embed, if there are deleted static emotes
-        if(!trackedEmoteOverview.getDeletedStaticEmotes().isEmpty()) {
-            noTrackedEmotesAvailable = false;
-            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(SHOW_TRACKED_EMOTES_DELETED_STATIC_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
-        }
-
-        // only show the embed, if there are deleted animated emotes
-        if(!trackedEmoteOverview.getDeletedAnimatedEmotes().isEmpty()) {
-            noTrackedEmotesAvailable = false;
-            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(SHOW_TRACKED_EMOTES_DELETED_ANIMATED_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
-        }
-
-        boolean externalTrackingEnabled = featureModeService.featureModeActive(StatisticFeatureDefinition.EMOTE_TRACKING, commandContext.getGuild().getIdLong(), EmoteTrackingMode.EXTERNAL_EMOTES);
-
-        // only show external emotes if external emotes are enabled
-        if(externalTrackingEnabled) {
-
-            // only show the embed if there are external static emotes
-            if(!trackedEmoteOverview.getExternalStaticEmotes().isEmpty()) {
-                noTrackedEmotesAvailable = false;
-                messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(SHOW_TRACKED_EMOTES_EXTERNAL_STATIC_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
-            }
-
-            // only show the embed if there are external animated emotes
-            if(!trackedEmoteOverview.getExternalAnimatedEmotes().isEmpty()) {
-                noTrackedEmotesAvailable = false;
-                messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(SHOW_TRACKED_EMOTES_EXTERNAL_ANIMATED_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
-            }
-        }
-
-        // if there are no tracked emotes available, show an embed indicating so
-        if(noTrackedEmotesAvailable) {
-            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(SHOW_TRACKED_EMOTES_NO_STATS_AVAILABLE, new Object(), commandContext.getChannel()));
-        }
-        return FutureUtils.toSingleFutureGeneric(messagePromises)
-                .thenApply(unused -> CommandResult.fromIgnored());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -215,7 +149,7 @@ public class ShowTrackedEmotes extends AbstractConditionableCommand {
                 .templated(true)
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)
-                .messageCommandOnly(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

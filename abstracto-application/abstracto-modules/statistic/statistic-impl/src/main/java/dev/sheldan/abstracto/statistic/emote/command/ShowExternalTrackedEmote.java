@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
@@ -14,7 +13,6 @@ import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.config.StatisticSlashCommandNames;
 import dev.sheldan.abstracto.statistic.emote.config.EmoteTrackingMode;
@@ -25,6 +23,7 @@ import dev.sheldan.abstracto.statistic.emote.service.management.TrackedEmoteMana
 import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -57,34 +56,26 @@ public class ShowExternalTrackedEmote extends AbstractConditionableCommand {
     private static final String SHOW_EXTERNAL_TRACKED_EMOTE_TRACKED_EMOTE = "trackedEmote";
 
     @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        TrackedEmote fakeTrackedEmote = (TrackedEmote) parameters.get(0);
-        // load the actual TrackedEmote instance
-        TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(fakeTrackedEmote.getTrackedEmoteId());
-        // the command only works for external emotes
-        if(!trackedEmote.getExternal()) {
-            throw new AbstractoTemplatedException("Emote is not external", "showExternalTrackedEmote_emote_is_not_external");
-        }
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(SHOW_EXTERNAL_TRACKED_EMOTE_RESPONSE_TEMPLATE_KEY, trackedEmote, commandContext.getChannel()))
-                .thenApply(unused -> CommandResult.fromIgnored());
-    }
-
-    @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String emote = slashCommandParameterService.getCommandOption(SHOW_EXTERNAL_TRACKED_EMOTE_TRACKED_EMOTE, event, String.class);
         Emoji emoji = slashCommandParameterService.loadEmoteFromString(emote, event.getGuild());
         if(emoji instanceof CustomEmoji) {
             Long emoteId = ((CustomEmoji) emoji).getIdLong();
-            TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(new ServerSpecificId(event.getGuild().getIdLong(), emoteId));
-            if(!trackedEmote.getExternal()) {
-                throw new AbstractoTemplatedException("Emote is not external", "showExternalTrackedEmote_emote_is_not_external");
-            }
-            return interactionService.replyEmbed(SHOW_EXTERNAL_TRACKED_EMOTE_RESPONSE_TEMPLATE_KEY, trackedEmote, event)
-                .thenApply(unused -> CommandResult.fromIgnored());
+            return createResponse(event, emoteId);
+        } else if(StringUtils.isNumeric(emote)) {
+            return createResponse(event, Long.parseLong(emote));
         } else {
             throw new TrackedEmoteNotFoundException();
         }
+    }
+
+    private CompletableFuture<CommandResult> createResponse(SlashCommandInteractionEvent event, Long emoteId) {
+        TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(new ServerSpecificId(event.getGuild().getIdLong(), emoteId));
+        if(!trackedEmote.getExternal()) {
+            throw new AbstractoTemplatedException("Emote is not external", "showExternalTrackedEmote_emote_is_not_external");
+        }
+        return interactionService.replyEmbed(SHOW_EXTERNAL_TRACKED_EMOTE_RESPONSE_TEMPLATE_KEY, trackedEmote, event)
+            .thenApply(unused -> CommandResult.fromIgnored());
     }
 
     @Override
@@ -117,7 +108,7 @@ public class ShowExternalTrackedEmote extends AbstractConditionableCommand {
                 .templated(true)
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)
-                .messageCommandOnly(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

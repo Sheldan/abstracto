@@ -4,14 +4,13 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.PaginatorService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
@@ -24,7 +23,6 @@ import dev.sheldan.abstracto.statistic.emote.service.UsedEmoteService;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -48,7 +46,7 @@ public class DeletedEmoteStats extends AbstractConditionableCommand {
     private UsedEmoteService usedEmoteService;
 
     @Autowired
-    private ChannelService channelService;
+    private PaginatorService paginatorService;
 
     @Autowired
     private ServerManagementService serverManagementService;
@@ -63,39 +61,6 @@ public class DeletedEmoteStats extends AbstractConditionableCommand {
     public static final String EMOTE_STATS_ANIMATED_DELETED_RESPONSE = "deletedEmoteStats_animated_response";
     private static final String DELETED_EMOTE_STATS_PERIOD = "period";
     private static final String DELETED_EMOTE_STATS_USED_EMOTE_TYPE = "type";
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        // default is 1.1.1970
-        Instant statsSince = Instant.EPOCH;
-        if(!parameters.isEmpty()) {
-            // if a duration parameter is available, subtract the current time of this to get the true Instant
-            Duration duration = (Duration) parameters.get(0);
-            statsSince = Instant.now().minus(duration);
-        }
-        AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        EmoteStatsModel emoteStatsModel = usedEmoteService.getDeletedEmoteStatsForServerSince(server, statsSince, null);
-        List<CompletableFuture<Message>> messagePromises = new ArrayList<>();
-        // only show the embed, if there are static emotes to show
-        if(!emoteStatsModel.getStaticEmotes().isEmpty()) {
-            log.debug("Deleted emote stats has {} static emotes since {}.", emoteStatsModel.getStaticEmotes().size(), statsSince);
-            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_STATIC_DELETED_RESPONSE, emoteStatsModel, commandContext.getChannel()));
-        }
-        // only show the embed, if there are animated emotes to show
-        if(!emoteStatsModel.getAnimatedEmotes().isEmpty()) {
-            log.debug("Deleted emote stats has {} animated emotes since {}.", emoteStatsModel.getAnimatedEmotes(), statsSince);
-            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(EMOTE_STATS_ANIMATED_DELETED_RESPONSE, emoteStatsModel, commandContext.getChannel()));
-        }
-        // if neither static nor animated emote stats are available, show an embed indicating so
-        if(!emoteStatsModel.areStatsAvailable()) {
-            log.info("No delete emote stats available for guild {} since {}.", commandContext.getGuild().getIdLong(), statsSince);
-            messagePromises.addAll(channelService.sendEmbedTemplateInMessageChannel(EmoteStats.EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), commandContext.getChannel()));
-        }
-
-        return FutureUtils.toSingleFutureGeneric(messagePromises)
-                .thenApply(unused -> CommandResult.fromIgnored());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -116,22 +81,23 @@ public class DeletedEmoteStats extends AbstractConditionableCommand {
         }
         AServer server = serverManagementService.loadServer(event.getGuild());
         EmoteStatsModel emoteStatsModel = usedEmoteService.getDeletedEmoteStatsForServerSince(server, startTime, UsedEmoteTypeParameter.convertToUsedEmoteType(typeEnum));
-        List<CompletableFuture<Message>> messagePromises = new ArrayList<>();
+        List<CompletableFuture<Void>> messagePromises = new ArrayList<>();
         return event.deferReply().submit().thenCompose(interactionHook -> {
             // only show embed if static emote stats are available
             if(!emoteStatsModel.getStaticEmotes().isEmpty()) {
                 log.debug("Deleted emote stats has {} static emotes since {}.", emoteStatsModel.getStaticEmotes().size(), startTime);
-                messagePromises.addAll(interactionService.sendMessageToInteraction(EMOTE_STATS_STATIC_DELETED_RESPONSE, emoteStatsModel, interactionHook));
+                messagePromises.add(paginatorService.sendPaginatorToInteraction(EMOTE_STATS_STATIC_DELETED_RESPONSE, emoteStatsModel, interactionHook));
             }
             // only show embed if animated emote stats are available
             if(!emoteStatsModel.getAnimatedEmotes().isEmpty()) {
                 log.debug("Deleted emote stats has {} animated emotes since {}.", emoteStatsModel.getAnimatedEmotes(), startTime);
-                messagePromises.addAll(interactionService.sendMessageToInteraction(EMOTE_STATS_ANIMATED_DELETED_RESPONSE, emoteStatsModel, interactionHook));
+                messagePromises.add(paginatorService.sendPaginatorToInteraction(EMOTE_STATS_ANIMATED_DELETED_RESPONSE, emoteStatsModel, interactionHook));
             }
             // show an embed if no emote stats are available indicating so
             if(!emoteStatsModel.areStatsAvailable()) {
                 log.info("No delete emote stats available for guild {} since {}.", event.getGuild().getIdLong(), startTime);
-                messagePromises.addAll(interactionService.sendMessageToInteraction(EmoteStats.EMOTE_STATS_NO_STATS_AVAILABLE, emoteStatsModel, interactionHook));
+                return FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(EmoteStats.EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), interactionHook))
+                    .thenApply(unused -> CommandResult.fromSuccess());
             }
             return FutureUtils.toSingleFutureGeneric(messagePromises)
                 .thenApply(unused -> CommandResult.fromIgnored());
@@ -187,7 +153,7 @@ public class DeletedEmoteStats extends AbstractConditionableCommand {
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
-                .messageCommandOnly(true)
+                .slashCommandOnly(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
@@ -38,12 +37,6 @@ public class ResetEmoteStats extends AbstractConditionableCommand {
     private static final String RESET_EMOTE_STATS_RESPONSE = "resetEmoteStats_response";
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
-        trackedEmoteService.resetEmoteStats(commandContext.getGuild());
-        return CommandResult.fromSuccess();
-    }
-
-    @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         trackedEmoteService.resetEmoteStats(event.getGuild());
         return slashCommandService.completeConfirmableCommand(event, RESET_EMOTE_STATS_RESPONSE);
@@ -71,6 +64,7 @@ public class ResetEmoteStats extends AbstractConditionableCommand {
                 .messageCommandOnly(true)
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .requiresConfirmation(true)

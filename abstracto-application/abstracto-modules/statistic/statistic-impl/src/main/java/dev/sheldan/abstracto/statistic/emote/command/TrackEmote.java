@@ -4,8 +4,6 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
@@ -63,30 +61,6 @@ public class TrackEmote extends AbstractConditionableCommand {
     private static final String TRACK_EMOTE_RESPONSE = "trackEmote_response";
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
-        TrackEmoteParameter emoteToTrack = (TrackEmoteParameter) commandContext.getParameters().getParameters().get(0);
-        Long emoteId = emoteToTrack.getTrackedEmote().getTrackedEmoteId().getId();
-        long serverId = commandContext.getGuild().getIdLong();
-        // if its already a tracked emote, just set the tracking_enabled flag to true
-        if(trackedEmoteManagementService.trackedEmoteExists(emoteId, serverId)) {
-            TrackedEmote trackedemote = trackedEmoteManagementService.loadByEmoteId(emoteId, serverId);
-            trackedEmoteManagementService.enableTrackedEmote(trackedemote);
-        } else if(emoteToTrack.getEmote() != null) {
-            // if its a new emote, lets see if its external
-            boolean external = !emoteService.emoteIsFromGuild(emoteToTrack.getEmote(), commandContext.getGuild());
-            if(external) {
-                // this throws an exception if the feature mode is not enabled
-                featureModeService.validateActiveFeatureMode(serverId, StatisticFeatureDefinition.EMOTE_TRACKING, EmoteTrackingMode.EXTERNAL_EMOTES);
-            }
-            trackedEmoteService.createTrackedEmote(emoteToTrack.getEmote(), commandContext.getGuild(), external);
-        } else {
-            // in case the ID was not an existing TrackedEmote, and no Emote was given, we need to fail
-            throw new IncorrectParameterException(this, getConfiguration().getParameters().get(0).getName());
-        }
-        return CommandResult.fromSuccess();
-    }
-
-    @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String emote = slashCommandParameterService.getCommandOption(TRACK_EMOTE_EMOTE, event, String.class);
         Emoji emoji = slashCommandParameterService.loadEmoteFromString(emote, event.getGuild());
@@ -102,8 +76,7 @@ public class TrackEmote extends AbstractConditionableCommand {
             } else {
                 // if its a new emote, lets see if its external
                 boolean external = !emoteService.emoteIsFromGuild(customEmoji, event.getGuild());
-                if (external)
-                {
+                if (external) {
                     // this throws an exception if the feature mode is not enabled
                     featureModeService.validateActiveFeatureMode(serverId, StatisticFeatureDefinition.EMOTE_TRACKING, EmoteTrackingMode.EXTERNAL_EMOTES);
                 }
@@ -144,7 +117,7 @@ public class TrackEmote extends AbstractConditionableCommand {
                 .name(TRACK_EMOTE_COMMAND_NAME)
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
-                .messageCommandOnly(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .causesReaction(true)
