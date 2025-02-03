@@ -52,11 +52,6 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("messageReceivedListener");
     }
 
-    @Bean(name = "messageEmbeddedExecutor")
-    public TaskExecutor messageEmbeddedExecutor() {
-        return executorService.setupExecutorFor("messageEmbeddedListener");
-    }
-
     @Bean(name = "messageUpdatedExecutor")
     public TaskExecutor messageUpdatedExecutor() {
         return executorService.setupExecutorFor("messageUpdatedListener");

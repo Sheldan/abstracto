@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 public class ContextUtils {
 
     public static boolean isGuildKnown(Interaction interaction) {
-        return interaction.hasFullGuild();
+        return interaction.isFromAttachedGuild();
     }
 
     public static boolean isGuildNotKnown(Interaction interaction) {
@@ -25,7 +25,7 @@ public class ContextUtils {
     }
 
     public static boolean isUserCommand(Interaction interaction) {
-        return interaction.getIntegrationOwners().getUserIntegration() != null && interaction.getIntegrationOwners().getGuildIntegration() == null;
+        return interaction.getIntegrationOwners().isUserIntegration();
     }
 
     public static boolean isNotUserCommand(Interaction interaction) {
