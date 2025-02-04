@@ -78,7 +78,10 @@ public class SlashCommandServiceBean implements SlashCommandService {
         String internalCommandName = commandConfiguration.getName();
         if(!isTemplated) {
             description = commandConfiguration.getDescription();
-        } else {
+        } else if(commandConfiguration.isUserInstallable() && userCommandsOnly)  {
+            description = templateService.renderSimpleTemplate(internalCommandName + "_description_user", serverId);
+        }
+        else {
             description = templateService.renderSimpleTemplate(internalCommandName + "_description", serverId);
         }
         String rootName = userCommandsOnly ? StringUtils.defaultString(slashConfig.getUserSlashCompatibleRootName(), slashConfig.getSlashCompatibleRootName()) : slashConfig.getSlashCompatibleRootName();

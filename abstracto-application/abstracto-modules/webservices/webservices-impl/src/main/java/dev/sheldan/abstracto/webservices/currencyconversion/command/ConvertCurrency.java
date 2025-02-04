@@ -127,6 +127,7 @@ public class ConvertCurrency extends AbstractConditionableCommand {
             .enabled(true)
             .rootCommandName(WebServicesSlashCommandNames.CONVERSION)
             .commandName("currency")
+            .userInstallable(true)
             .build();
 
         return CommandConfiguration.builder()

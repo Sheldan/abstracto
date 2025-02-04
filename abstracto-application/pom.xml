@@ -33,7 +33,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <url>https://github.com/Sheldan/abstracto.git</url>
-        <tag>v1.5.62</tag>
+        <tag>v1.6.0</tag>
     </scm>
 
     <repositories>
