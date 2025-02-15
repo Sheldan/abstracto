@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -15,10 +14,8 @@ import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
@@ -48,9 +45,6 @@ public class UserNotes extends AbstractConditionableCommand {
     private UserInServerManagementService userInServerManagementService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private UserNotesConverter userNotesConverter;
 
     @Autowired
@@ -61,40 +55,6 @@ public class UserNotes extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        List<UserNote> userNotes;
-
-        ListNotesModel model = ListNotesModel
-                .builder()
-                .member(commandContext.getAuthor())
-                .build();
-        if(parameters.size() == 1) {
-            Member member = (Member) parameters.get(0);
-            if(!member.getGuild().equals(commandContext.getGuild())) {
-                throw new EntityGuildMismatchException();
-            }
-            AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(member);
-            userNotes = userNoteManagementService.loadNotesForUser(userInAServer);
-            FullUserInServer specifiedUser = FullUserInServer
-                    .builder()
-                    .aUserInAServer(userInAServer)
-                    .member(member)
-                    .build();
-            model.setSpecifiedUser(specifiedUser);
-        } else {
-            AServer server = serverManagementService.loadServer(commandContext.getGuild());
-            userNotes = userNoteManagementService.loadNotesForServer(server);
-        }
-        CompletableFuture<List<NoteEntryModel>> listCompletableFuture = userNotesConverter.fromNotes(userNotes);
-        return listCompletableFuture.thenCompose(noteEntryModels -> {
-            model.setUserNotes(noteEntryModels);
-            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(USER_NOTES_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
-                    .thenApply(aVoid -> CommandResult.fromIgnored());
-        });
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -157,6 +117,7 @@ public class UserNotes extends AbstractConditionableCommand {
                 .name(USER_NOTES_COMMAND)
                 .module(ModerationModuleDefinition.MODERATION)
                 .templated(true)
+                .slashCommandOnly(true)
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)

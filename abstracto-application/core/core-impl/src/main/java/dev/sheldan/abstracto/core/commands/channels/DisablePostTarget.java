@@ -7,7 +7,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
@@ -38,16 +37,6 @@ public class DisablePostTarget extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        String targetName = (String) commandContext.getParameters().getParameters().get(0);
-        if(!postTargetService.validPostTarget(targetName)) {
-            throw new PostTargetNotValidException(targetName, postTargetService.getAvailablePostTargets());
-        }
-        postTargetService.disablePostTarget(targetName, commandContext.getGuild().getIdLong());
-        return CommandResult.fromSuccess();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -86,6 +75,7 @@ public class DisablePostTarget extends AbstractConditionableCommand {
                 .name(DISABLE_POSTTARGET_COMMAND)
                 .module(ChannelsModuleDefinition.CHANNELS)
                 .parameters(parameters)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .help(helpInfo)

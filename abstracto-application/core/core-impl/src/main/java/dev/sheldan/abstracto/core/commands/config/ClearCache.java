@@ -9,7 +9,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
@@ -38,13 +37,6 @@ public class ClearCache extends AbstractConditionableCommand {
     @Autowired
     private BotOwnerOnlyCondition botOwnerOnlyCondition;
 
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        cacheServiceBean.clearCaches();
-        return CommandResult.fromSuccess();
-    }
-
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         cacheServiceBean.clearCaches();
@@ -72,6 +64,7 @@ public class ClearCache extends AbstractConditionableCommand {
                 .name(CLEAR_CACHE_COMMAND)
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .help(helpInfo)

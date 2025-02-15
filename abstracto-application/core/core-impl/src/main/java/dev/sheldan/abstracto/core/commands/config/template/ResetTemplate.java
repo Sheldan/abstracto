@@ -9,7 +9,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
@@ -50,18 +49,6 @@ public class ResetTemplate extends AbstractConditionableCommand {
 
     @Autowired
     private BotOwnerOnlyCondition botOwnerOnlyCondition;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        String templateKey = (String) commandContext.getParameters().getParameters().get(0);
-        Optional<CustomTemplate> templateOptional = customTemplateManagementService.getCustomTemplate(templateKey, commandContext.getGuild().getIdLong());
-        if (templateOptional.isPresent()) {
-            customTemplateManagementService.deleteCustomTemplate(templateOptional.get());
-            templateService.clearCache();
-            return CommandResult.fromSuccess();
-        }
-        throw new CustomTemplateNotFoundException(templateKey, commandContext.getGuild());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -106,6 +93,7 @@ public class ResetTemplate extends AbstractConditionableCommand {
                 .parameters(parameters)
                 .slashCommandConfig(slashCommandConfig)
                 .help(helpInfo)
+                .slashCommandOnly(true)
                 .templated(true)
                 .causesReaction(true)
                 .build();

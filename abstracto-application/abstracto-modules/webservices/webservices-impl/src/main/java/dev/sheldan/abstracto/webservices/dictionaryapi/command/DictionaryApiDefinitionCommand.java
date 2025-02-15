@@ -6,18 +6,15 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.ContextUtils;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.webservices.config.WebServicesSlashCommandNames;
 import dev.sheldan.abstracto.webservices.config.WebserviceFeatureDefinition;
 import dev.sheldan.abstracto.webservices.dictionaryapi.model.template.DictionaryMeaning;
@@ -45,9 +42,6 @@ public class DictionaryApiDefinitionCommand extends AbstractConditionableCommand
     private TemplateService templateService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private SlashCommandParameterService slashCommandParameterService;
 
     @Autowired
@@ -55,18 +49,6 @@ public class DictionaryApiDefinitionCommand extends AbstractConditionableCommand
 
     @Autowired
     private DictionaryApiService dictionaryApiService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        String parameter = (String) commandContext.getParameters().getParameters().get(0);
-        try {
-            MessageToSend message = getMessageToSend(commandContext.getGuild().getIdLong(), parameter);
-            return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(message, commandContext.getChannel()))
-                    .thenApply(unused -> CommandResult.fromSuccess());
-        } catch (IOException e) {
-            throw new AbstractoRunTimeException(e);
-        }
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -127,6 +109,7 @@ public class DictionaryApiDefinitionCommand extends AbstractConditionableCommand
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
                 .aliases(aliases)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)

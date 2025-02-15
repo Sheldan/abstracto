@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
@@ -12,12 +11,9 @@ import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.templating.model.MessageToSend;
-import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition;
@@ -57,36 +53,7 @@ public class CreditLeaderboard extends AbstractConditionableCommand {
     private InteractionService interactionService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
-    private TemplateService templateService;
-
-    @Autowired
     private MemberService memberService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        // parameter is optional, in case its not present, we default to the 0th page
-        Integer page = !parameters.isEmpty() ? (Integer) parameters.get(0) : 1;
-        List<CreditsLeaderboardEntry> creditLeaderboard = economyService.getCreditLeaderboard(server, page);
-        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
-        CreditsLeaderboardEntry ownRank = economyService.getRankOfUser(aUserInAServer);
-        CreditsLeaderboardResponseModel model = CreditsLeaderboardResponseModel
-                .builder()
-                .entries(creditLeaderboard)
-                .ownRank(ownRank)
-                .build();
-        return enrichModelWithMembers(model, commandContext.getGuild().getIdLong())
-                .thenCompose(model1 -> {
-                    MessageToSend message = templateService.renderEmbedTemplate(CREDIT_LEADERBOARD_RESPONSE, model1, commandContext.getGuild().getIdLong());
-                    return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(message, commandContext.getChannel()));
-                })
-                .thenApply(unused -> CommandResult.fromSuccess());
-    }
-
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -165,6 +132,7 @@ public class CreditLeaderboard extends AbstractConditionableCommand {
                 .templated(true)
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)

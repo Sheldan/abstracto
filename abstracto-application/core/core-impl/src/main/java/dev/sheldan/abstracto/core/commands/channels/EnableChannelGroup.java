@@ -39,13 +39,6 @@ public class EnableChannelGroup extends AbstractConditionableCommand {
     private InteractionService interactionService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
-        String channelGroupName = (String) commandContext.getParameters().getParameters().get(0);
-        channelGroupService.enableChannelGroup(channelGroupName, commandContext.getGuild().getIdLong());
-        return CommandResult.fromSuccess();
-    }
-
-    @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String channelGroupName = slashCommandParameterService.getCommandOption(CHANNEL_GROUP_NAME_PARAMETER, event, String.class);
         channelGroupService.enableChannelGroup(channelGroupName, event.getGuild().getIdLong());
@@ -79,6 +72,7 @@ public class EnableChannelGroup extends AbstractConditionableCommand {
             .name(ENABLE_CHANNEL_GROUP_COMMAND)
             .module(ChannelsModuleDefinition.CHANNELS)
             .parameters(parameters)
+            .slashCommandOnly(true)
             .slashCommandConfig(slashCommandConfig)
             .supportsEmbedException(true)
             .help(helpInfo)

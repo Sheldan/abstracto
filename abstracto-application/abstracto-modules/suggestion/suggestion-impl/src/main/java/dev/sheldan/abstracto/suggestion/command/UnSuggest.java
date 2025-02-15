@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.command.UtilityModuleDefinition;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValidator;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -36,14 +35,6 @@ public class UnSuggest extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        Long suggestionId = (Long) parameters.get(0);
-        return suggestionService.removeSuggestion(commandContext.getGuild().getIdLong(), suggestionId, commandContext.getAuthor())
-                .thenApply(aVoid ->  CommandResult.fromSuccess());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -83,6 +74,7 @@ public class UnSuggest extends AbstractConditionableCommand {
                 .templated(true)
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

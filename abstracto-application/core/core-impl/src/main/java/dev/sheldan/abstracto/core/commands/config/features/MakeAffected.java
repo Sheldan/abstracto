@@ -7,7 +7,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
@@ -45,18 +44,6 @@ public class MakeAffected extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        String name = (String) commandContext.getParameters().getParameters().get(0);
-        Role role = (Role) commandContext.getParameters().getParameters().get(1);
-        if(!role.getGuild().getId().equals(commandContext.getGuild().getId())) {
-            throw new EntityGuildMismatchException();
-        }
-        ARole aRole = roleManagementService.findRole(role.getIdLong());
-        roleImmunityService.makeRoleAffected(aRole, name);
-        return CommandResult.fromSuccess();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -108,6 +95,7 @@ public class MakeAffected extends AbstractConditionableCommand {
                 .parameters(parameters)
                 .supportsEmbedException(true)
                 .help(helpInfo)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .templated(true)
                 .causesReaction(true)

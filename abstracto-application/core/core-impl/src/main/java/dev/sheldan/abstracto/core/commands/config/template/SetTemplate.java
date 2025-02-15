@@ -10,7 +10,6 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
@@ -60,28 +59,6 @@ public class SetTemplate extends AbstractConditionableCommand {
 
     @Autowired
     private BotOwnerOnlyCondition botOwnerOnlyCondition;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        List<Object> parameter = commandContext.getParameters().getParameters();
-        String templateKey = (String) parameter.get(0);
-        File templateFile = (File) parameter.get(1);
-        try {
-            String templateContent = FileUtils.readFileToString(templateFile, StandardCharsets.UTF_8);
-            customTemplateManagementService.createOrUpdateCustomTemplate(templateKey, templateContent, commandContext.getGuild().getIdLong());
-            templateService.clearCache();
-            return CommandResult.fromSuccess();
-        } catch (IOException e) {
-            log.error("IO Exception when loading input file.", e);
-            throw new AbstractoTemplatedException("Failed to set template.", "failed_to_set_template_exception", e);
-        } finally {
-            try {
-                fileService.safeDelete(templateFile);
-            } catch (IOException e) {
-                log.error("Failed to delete downloaded template file.", e);
-            }
-        }
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -155,6 +132,7 @@ public class SetTemplate extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .help(helpInfo)
                 .templated(true)
+                .slashCommandOnly(true)
                 .causesReaction(true)
                 .build();
     }

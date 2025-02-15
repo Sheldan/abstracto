@@ -6,15 +6,12 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.template.display.EmoteDisplay;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.UtilityFeatureDefinition;
 import dev.sheldan.abstracto.utility.config.UtilitySlashCommandNames;
 import dev.sheldan.abstracto.utility.model.ServerInfoModel;
@@ -36,21 +33,10 @@ public class ServerInfo extends AbstractConditionableCommand {
     private static final String SERVER_INFO_COMMAND = "serverInfo";
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private TemplateService templateService;
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        log.info("Displaying serverinfo for server {}", commandContext.getGuild().getId());
-        return FutureUtils.toSingleFutureGeneric(
-                channelService.sendMessageToSendToChannel(getMessageToSend(commandContext.getGuild()), commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromIgnored());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -103,6 +89,7 @@ public class ServerInfo extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .slashCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)

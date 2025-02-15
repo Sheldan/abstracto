@@ -90,6 +90,7 @@ public class CancelGiveaway extends AbstractConditionableCommand {
                 .name(COMMAND_NAME)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
                 .supportsEmbedException(true)

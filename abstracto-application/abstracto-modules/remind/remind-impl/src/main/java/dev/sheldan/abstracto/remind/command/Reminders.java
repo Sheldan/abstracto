@@ -6,20 +6,17 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.ContextUtils;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.remind.config.RemindFeatureDefinition;
 import dev.sheldan.abstracto.remind.config.RemindSlashCommandNames;
 import dev.sheldan.abstracto.remind.model.database.Reminder;
@@ -48,9 +45,6 @@ public class Reminders extends AbstractConditionableCommand {
     private ReminderManagementService reminderManagementService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private UserInServerManagementService userInServerManagementService;
 
     @Autowired
@@ -64,15 +58,6 @@ public class Reminders extends AbstractConditionableCommand {
 
     @Autowired
     private UserManagementService userManagementService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        Long serverId = commandContext.getGuild().getIdLong();
-        Member member = commandContext.getAuthor();
-        MessageToSend messageToSend = getServerReminders(serverId, member);
-        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromIgnored());
-    }
 
     private MessageToSend getServerReminders(Long serverId, Member member) {
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(member);
@@ -147,6 +132,7 @@ public class Reminders extends AbstractConditionableCommand {
         return CommandConfiguration.builder()
                 .name("reminders")
                 .async(true)
+                .slashCommandOnly(true)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .slashCommandConfig(slashCommandConfig)

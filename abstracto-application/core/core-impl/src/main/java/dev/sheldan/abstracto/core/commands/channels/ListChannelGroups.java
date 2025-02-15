@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
@@ -51,13 +50,6 @@ public class ListChannelGroups extends AbstractConditionableCommand {
     @Autowired
     private InteractionService interactionService;
 
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        MessageToSend response = getMessageToSend(commandContext.getGuild());
-        channelService.sendMessageToSendToChannel(response, commandContext.getChannel());
-        return CommandResult.fromIgnored();
-    }
-
     private MessageToSend getMessageToSend(Guild guild) {
         AServer server = serverManagementService.loadServer(guild);
         List<AChannelGroup> channelGroups = channelGroupManagementService.findAllInServer(server);
@@ -96,6 +88,7 @@ public class ListChannelGroups extends AbstractConditionableCommand {
             .module(ChannelsModuleDefinition.CHANNELS)
             .slashCommandConfig(slashCommandConfig)
             .aliases(aliases)
+            .slashCommandOnly(true)
             .templated(true)
             .help(helpInfo)
             .supportsEmbedException(true)

@@ -5,19 +5,16 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.ServerUser;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.ContextUtils;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentModuleDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentSlashCommandNames;
@@ -26,7 +23,6 @@ import dev.sheldan.abstracto.entertainment.model.command.games.MineBoard;
 import dev.sheldan.abstracto.entertainment.model.database.EconomyUser;
 import dev.sheldan.abstracto.entertainment.service.GameService;
 import dev.sheldan.abstracto.entertainment.service.management.EconomyUserManagementService;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -64,9 +60,6 @@ public class Mines extends AbstractConditionableCommand {
 
     @Autowired
     private EconomyUserManagementService economyUserManagementService;
-
-    @Autowired
-    private ChannelService channelService;
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -118,53 +111,6 @@ public class Mines extends AbstractConditionableCommand {
                     gameService.persistMineBoardMessage(board, message, serverId);
                     return CommandResult.fromSuccess();
                 });
-    }
-
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        Integer width = 5;
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        if(!parameters.isEmpty()) {
-            width = (Integer) parameters.get(0);
-        }
-        Integer height = 5;
-        if(parameters.size() >= 2) {
-            height = (Integer) parameters.get(1);
-        }
-        Integer mines = 5;
-        if(parameters.size() >= 3) {
-            mines = (Integer) parameters.get(2);
-        }
-        Integer credit = null;
-        Long serverId = commandContext.getGuild().getIdLong();
-        boolean economyEnabled = featureFlagService.getFeatureFlagValue(EntertainmentFeatureDefinition.ECONOMY, serverId);
-        if(economyEnabled){
-            credit = 50;
-            if(parameters.size() == 4) {
-                credit = (Integer) parameters.get(3);
-            }
-
-            Optional<EconomyUser> userOptional = economyUserManagementService.getUser(ServerUser.fromMember(commandContext.getAuthor()));
-            if(!userOptional.isPresent()) {
-                throw new NotEnoughCreditsException();
-            }
-            EconomyUser user = userOptional.get();
-            if(user.getCredits() < credit) {
-                throw new NotEnoughCreditsException();
-            }
-        }
-        MineBoard board = gameService.createBoard(width, height, mines, serverId);
-        board.setCreditsEnabled(economyEnabled);
-        board.setUserId(commandContext.getAuthor().getIdLong());
-        board.setServerId(serverId);
-        board.setCredits(credit);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(MINE_BOARD_TEMPLATE_KEY, board, serverId);
-        List<CompletableFuture<Message>> futures = channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
-        return FutureUtils.toSingleFutureGeneric(futures)
-                .thenAccept(unused ->  gameService.persistMineBoardMessage(board, futures.get(0).join(), serverId))
-                .thenApply(unused -> CommandResult.fromSuccess());
-
     }
 
     @Override
@@ -227,6 +173,7 @@ public class Mines extends AbstractConditionableCommand {
                 .async(true)
                 .module(EntertainmentModuleDefinition.ENTERTAINMENT)
                 .templated(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)

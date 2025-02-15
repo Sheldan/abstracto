@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -41,20 +40,6 @@ public class UnMute extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        Member member = (Member) parameters.get(0);
-        if(!member.getGuild().equals(commandContext.getGuild())) {
-            throw new EntityGuildMismatchException();
-        }
-        ServerUser userToUnmute = ServerUser.fromMember(member);
-        ServerUser unMutingMember = ServerUser.fromMember(commandContext.getAuthor());
-        return muteService.unMuteUser(userToUnmute, unMutingMember, commandContext.getGuild()).thenApply(aVoid ->
-            CommandResult.fromSuccess()
-        );
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -98,6 +83,7 @@ public class UnMute extends AbstractConditionableCommand {
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
+                .slashCommandOnly(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

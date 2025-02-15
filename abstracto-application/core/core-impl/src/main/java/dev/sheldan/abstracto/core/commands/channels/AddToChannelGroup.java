@@ -7,7 +7,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
@@ -42,17 +41,6 @@ public class AddToChannelGroup extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        String name = (String) commandContext.getParameters().getParameters().get(0);
-        TextChannel channel = (TextChannel) commandContext.getParameters().getParameters().get(1);
-        if(!channel.getGuild().equals(commandContext.getGuild())) {
-             throw new EntityGuildMismatchException();
-        }
-        channelGroupService.addChannelToChannelGroup(name, channel);
-        return CommandResult.fromSuccess();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -100,6 +88,7 @@ public class AddToChannelGroup extends AbstractConditionableCommand {
                 .name(ADD_TO_CHANNEL_GROUP_COMMAND)
                 .module(ChannelsModuleDefinition.CHANNELS)
                 .aliases(aliases)
+                .slashCommandOnly(true)
                 .parameters(parameters)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)

@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
@@ -14,9 +13,7 @@ import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.database.EffectType;
 import dev.sheldan.abstracto.core.models.template.commands.ShowEffectsModel;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.EffectTypeManagementService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,18 +32,7 @@ public class ShowEffects extends AbstractConditionableCommand {
     private EffectTypeManagementService effectTypeManagementService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        ShowEffectsModel model = getModel();
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(SHOW_EFFECTS_RESPONSE_TEMPLATE,
-                model, commandContext.getChannel()))
-                .thenApply(unused -> CommandResult.fromSuccess());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -84,6 +70,7 @@ public class ShowEffects extends AbstractConditionableCommand {
                 .module(ConfigModuleDefinition.CONFIG)
                 .templated(true)
                 .async(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .help(helpInfo)
                 .build();

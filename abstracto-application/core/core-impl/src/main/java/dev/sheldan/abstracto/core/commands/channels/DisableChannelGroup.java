@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
@@ -36,13 +35,6 @@ public class DisableChannelGroup extends AbstractConditionableCommand {
 
     @Autowired
     private ChannelGroupService channelGroupService;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        String channelGroupName = (String) commandContext.getParameters().getParameters().get(0);
-        channelGroupService.disableChannelGroup(channelGroupName, commandContext.getGuild().getIdLong());
-        return CommandResult.fromSuccess();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -77,6 +69,7 @@ public class DisableChannelGroup extends AbstractConditionableCommand {
         return CommandConfiguration.builder()
             .name(DISABLE_CHANNEL_GROUP_COMMAND)
             .module(ChannelsModuleDefinition.CHANNELS)
+            .slashCommandOnly(true)
             .parameters(parameters)
             .slashCommandConfig(slashCommandConfig)
             .supportsEmbedException(true)

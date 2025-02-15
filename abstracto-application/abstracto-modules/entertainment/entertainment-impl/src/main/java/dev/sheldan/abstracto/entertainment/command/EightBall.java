@@ -6,15 +6,12 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.utils.ContextUtils;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentModuleDefinition;
@@ -42,22 +39,10 @@ public class EightBall extends AbstractConditionableCommand {
     private TemplateService templateService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private SlashCommandParameterService slashCommandParameterService;
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        String text = (String) commandContext.getParameters().getParameters().get(0);
-        MessageToSend messageToSend = getMessageToSend(text, commandContext.getGuild().getIdLong());
-        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                .thenApply(unused -> CommandResult.fromIgnored());
-    }
-
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -108,6 +93,7 @@ public class EightBall extends AbstractConditionableCommand {
                 .module(EntertainmentModuleDefinition.ENTERTAINMENT)
                 .templated(true)
                 .supportsEmbedException(true)
+                .slashCommandOnly(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
@@ -18,14 +17,12 @@ import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureSwitchModel;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,9 +45,6 @@ public class EnableFeature extends AbstractConditionableCommand {
     private FeatureFlagService featureFlagService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private TemplateService templateService;
 
     @Autowired
@@ -66,41 +60,6 @@ public class EnableFeature extends AbstractConditionableCommand {
     private static final String ENABLE_FEATURE_RESPONSE_TEMPLATE_KEY = "enableFeature_response";
     private static final String FEATURE_NAME_PARAMETER = "featureName";
     private static final String ENABLE_FEATURE_COMMAND = "enableFeature";
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        Long serverId = commandContext.getGuild().getIdLong();
-        String featureKey = (String) commandContext.getParameters().getParameters().get(0);
-        EnableFeatureResult result = enableFeature(serverId, featureKey);
-
-        if(result.featureDependencies.isEmpty()) {
-            if(!result.validationResult.getValidationResult()) {
-                FeatureSwitchModel model = FeatureSwitchModel
-                        .builder()
-                        .validationText(result.validationResult.getValidationText())
-                        .build();
-                MessageToSend messageToSend = templateService.renderEmbedTemplate(ENABLE_FEATURE_RESPONSE_TEMPLATE_KEY, model, serverId);
-                return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                        .thenApply(message -> CommandResult.fromIgnored());
-            } else {
-                return CompletableFuture.completedFuture(CommandResult.fromSuccess());
-            }
-        } else {
-            List<String> additionalFeatures = result.featureDependencies
-                    .stream()
-                    .map(featureDef -> featureDef.getFeature().getKey()).
-                    collect(Collectors.toList());
-            FeatureSwitchModel model = FeatureSwitchModel
-                    .builder()
-                    .features(additionalFeatures)
-                    .validationText(result.validationResult.getValidationText())
-                    .build();
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(ENABLE_FEATURE_DEPENDENCIES_RESPONSE_TEMPLATE_KEY,
-                    model, serverId);
-            return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                    .thenApply(message -> CommandResult.fromIgnored());
-        }
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -183,6 +142,7 @@ public class EnableFeature extends AbstractConditionableCommand {
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .async(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .templated(true)

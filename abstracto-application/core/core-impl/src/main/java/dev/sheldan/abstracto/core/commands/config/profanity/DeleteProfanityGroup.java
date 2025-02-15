@@ -7,7 +7,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
@@ -38,13 +37,6 @@ public class DeleteProfanityGroup extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        String profanityGroupName = (String) commandContext.getParameters().getParameters().get(0);
-        profanityService.deleteProfanityGroup(commandContext.getGuild().getIdLong(), profanityGroupName);
-        return CommandResult.fromSuccess();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -81,6 +73,7 @@ public class DeleteProfanityGroup extends AbstractConditionableCommand {
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .slashCommandConfig(slashCommandConfig)
+                .slashCommandOnly(true)
                 .templated(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)

@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
@@ -45,16 +44,6 @@ public class Snooze extends AbstractConditionableCommand {
 
     @Autowired
     private SlashCommandParameterService slashCommandParameterService;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        List<Object> newParameters = commandContext.getParameters().getParameters();
-        Long reminderId = (Long) newParameters.get(0);
-        Duration newDuration = (Duration) newParameters.get(1);
-        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
-        reminderService.snoozeReminder(reminderId, aUserInAServer, newDuration);
-        return CommandResult.fromSuccess();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -100,6 +89,7 @@ public class Snooze extends AbstractConditionableCommand {
                 .templated(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .parameters(parameters)
                 .help(helpInfo)

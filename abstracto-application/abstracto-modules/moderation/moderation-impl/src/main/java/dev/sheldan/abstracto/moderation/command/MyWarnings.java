@@ -5,12 +5,10 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
@@ -31,8 +29,6 @@ public class MyWarnings extends AbstractConditionableCommand {
 
     public static final String MY_WARNINGS_RESPONSE_EMBED_TEMPLATE = "myWarnings_response";
     private static final String MY_WARNINGS_COMMAND = "myWarnings";
-    @Autowired
-    private ChannelService channelService;
 
     @Autowired
     private WarnManagementService warnManagementService;
@@ -42,21 +38,6 @@ public class MyWarnings extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
-        Long currentWarnCount = warnManagementService.getActiveWarnCountForUser(userInAServer);
-        Long totalWarnCount = warnManagementService.getTotalWarnsForUser(userInAServer);
-        MyWarningsModel model = MyWarningsModel
-                .builder()
-                .member(commandContext.getAuthor())
-                .totalWarnCount(totalWarnCount)
-                .currentWarnCount(currentWarnCount)
-                .build();
-        channelService.sendEmbedTemplateInMessageChannel(MY_WARNINGS_RESPONSE_EMBED_TEMPLATE, model, commandContext.getChannel());
-        return CommandResult.fromIgnored();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -92,6 +73,7 @@ public class MyWarnings extends AbstractConditionableCommand {
                 .templated(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
+                .slashCommandOnly(true)
                 .causesReaction(true)
                 .aliases(aliases)
                 .parameters(parameters)

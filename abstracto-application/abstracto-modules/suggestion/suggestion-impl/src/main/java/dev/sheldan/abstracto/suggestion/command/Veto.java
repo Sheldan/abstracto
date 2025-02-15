@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.command.UtilityModuleDefinition;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValidator;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
@@ -40,16 +39,6 @@ public class Veto extends AbstractConditionableCommand {
 
     @Autowired
     private SlashCommandParameterService slashCommandParameterService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        Long suggestionId = (Long) parameters.get(0);
-        String text = parameters.size() == 2 ? (String) parameters.get(1) : "";
-        log.debug("Using default reason for veto: {}.", parameters.size() != 2);
-        return suggestionService.vetoSuggestion(commandContext.getGuild().getIdLong(), suggestionId, commandContext.getAuthor(), text)
-                .thenApply(aVoid ->  CommandResult.fromSuccess());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -103,6 +92,7 @@ public class Veto extends AbstractConditionableCommand {
                 .name(VETO_COMMAND)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .slashCommandOnly(true)
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)

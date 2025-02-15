@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.exception.SlashCommandParameterMissingException;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
@@ -26,7 +25,6 @@ import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -71,21 +69,6 @@ public class PostTargetCommand extends AbstractConditionableCommand {
 
     @Autowired
     private SlashCommandParameterService slashCommandParameterService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        Guild guild = commandContext.getGuild();
-        if (commandContext.getParameters().getParameters().isEmpty()) {
-            log.debug("Displaying existing post targets for guild {}.", guild.getId());
-            MessageToSend messageToSend = getMessageToSendForPosttargetDisplay(guild);
-            return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromSuccess());
-        }
-        String targetName = (String) commandContext.getParameters().getParameters().get(0);
-        GuildChannel channel = (GuildChannel) commandContext.getParameters().getParameters().get(1);
-        validateAndCreatePosttarget(guild, targetName, channel);
-        return CompletableFuture.completedFuture(CommandResult.fromSuccess());
-    }
 
     private void validateAndCreatePosttarget(Guild guild, String targetName, GuildChannel channel) {
         if (!postTargetService.validPostTarget(targetName)) {
@@ -190,6 +173,7 @@ public class PostTargetCommand extends AbstractConditionableCommand {
             .module(ChannelsModuleDefinition.CHANNELS)
             .parameters(parameters)
             .async(true)
+            .slashCommandOnly(true)
             .slashCommandConfig(slashCommandConfig)
             .supportsEmbedException(true)
             .help(helpInfo)

@@ -3,20 +3,15 @@ package dev.sheldan.abstracto.moderation.command;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.config.*;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.ServerUser;
-import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
 import dev.sheldan.abstracto.core.utils.SnowflakeUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
@@ -30,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -60,40 +54,6 @@ public class Mute extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Autowired
-    private ChannelService channelService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        Member member = (Member) parameters.get(0);
-        Guild guild = commandContext.getGuild();
-        if(!member.getGuild().equals(guild)) {
-            throw new EntityGuildMismatchException();
-        }
-        Duration duration = (Duration) parameters.get(1);
-        String defaultReason = templateService.renderSimpleTemplate(MUTE_DEFAULT_REASON_TEMPLATE, guild.getIdLong());
-        String reason = parameters.size() == 3 ? (String) parameters.get(2) : defaultReason;
-        Instant oldTimeoutDate = null;
-        if(member.getTimeOutEnd() != null && member.isTimedOut()) {
-            oldTimeoutDate = member.getTimeOutEnd().toInstant();
-        }
-        ServerUser userToMute = ServerUser.fromMember(member);
-        ServerUser mutingUser = ServerUser.fromMember(commandContext.getAuthor());
-        Long serverId = commandContext.getGuild().getIdLong();
-        ServerChannelMessage serverChannelMessage = ServerChannelMessage.fromMessage(commandContext.getMessage());
-        return muteService.muteMemberWithLog(userToMute, mutingUser, reason, duration, commandContext.getGuild(), serverChannelMessage, oldTimeoutDate)
-                .thenCompose(muteResult -> {
-                    if(muteResult == NOTIFICATION_FAILED) {
-                        MessageToSend errorNotification = templateService.renderEmbedTemplate(MUTE_NOTIFICATION_NOT_POSSIBLE_TEMPLATE_KEY, new Object(), serverId);
-                        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(errorNotification, commandContext.getChannel()));
-                    } else {
-                        return CompletableFuture.completedFuture(null);
-                    }
-                })
-                .thenApply(aVoid -> CommandResult.fromSuccess());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -182,6 +142,7 @@ public class Mute extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .effects(effectConfig)
                 .causesReaction(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)

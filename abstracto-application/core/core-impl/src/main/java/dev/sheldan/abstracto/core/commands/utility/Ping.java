@@ -39,7 +39,6 @@ public class Ping extends AbstractConditionableCommand {
                 .thenApply(message -> CommandResult.fromIgnored());
     }
 
-
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         PingModel model = buildModel(event.getJDA());

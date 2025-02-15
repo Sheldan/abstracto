@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -43,32 +42,6 @@ public class SlowMode extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        TextChannel channel;
-        String durationString = (String) commandContext.getParameters().getParameters().get(0);
-        Duration duration;
-        if(durationString.equalsIgnoreCase("off")) {
-            duration = Duration.ZERO;
-        } else {
-            duration = ParseUtils.parseDuration(durationString);
-        }
-        if(commandContext.getParameters().getParameters().size() == 2) {
-            channel = (TextChannel) commandContext.getParameters().getParameters().get(1);
-            if(!channel.getGuild().equals(commandContext.getGuild())) {
-                throw new EntityGuildMismatchException();
-            }
-        } else {
-            if(commandContext.getChannel() instanceof TextChannel) {
-                channel = (TextChannel) commandContext.getChannel();
-            } else {
-                throw new IllegalArgumentException("Not a text channel.");
-            }
-        }
-        return slowModeService.setSlowMode(channel, duration)
-                .thenApply(aVoid -> CommandResult.fromSuccess());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -134,6 +107,7 @@ public class SlowMode extends AbstractConditionableCommand {
                 .templated(true)
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

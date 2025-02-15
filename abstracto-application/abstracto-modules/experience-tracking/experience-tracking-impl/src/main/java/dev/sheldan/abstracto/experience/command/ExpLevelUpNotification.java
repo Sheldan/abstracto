@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
@@ -44,13 +43,6 @@ public class ExpLevelUpNotification extends AbstractConditionableCommand {
 
     @Autowired
     private SlashCommandParameterService slashCommandParameterService;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        Boolean newValue = (Boolean) commandContext.getParameters().getParameters().get(0);
-        updateExpLevelNotification(commandContext.getAuthor(), newValue);
-        return CommandResult.fromSuccess();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -97,6 +89,7 @@ public class ExpLevelUpNotification extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .causesReaction(true)
                 .supportsEmbedException(true)
+                .slashCommandOnly(true)
                 .templated(true)
                 .parameters(parameters)
                 .help(helpInfo)

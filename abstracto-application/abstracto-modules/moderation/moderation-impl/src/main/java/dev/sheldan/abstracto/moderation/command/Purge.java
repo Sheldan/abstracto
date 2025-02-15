@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.moderation.command;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValidator;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
@@ -42,20 +41,6 @@ public class Purge extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        Integer amountOfMessages = (Integer) commandContext.getParameters().getParameters().get(0);
-        Member memberToPurgeMessagesOf = null;
-        if(commandContext.getParameters().getParameters().size() == 2) {
-            memberToPurgeMessagesOf = (Member) commandContext.getParameters().getParameters().get(1);
-            if(!memberToPurgeMessagesOf.getGuild().equals(commandContext.getGuild())) {
-                throw new EntityGuildMismatchException();
-            }
-        }
-        return purgeService.purgeMessagesInChannel(amountOfMessages, commandContext.getChannel(), commandContext.getMessage(), memberToPurgeMessagesOf)
-                .thenApply(aVoid -> CommandResult.fromSelfDestruct());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -113,6 +98,7 @@ public class Purge extends AbstractConditionableCommand {
                 .name(PURGE_COMMAND)
                 .module(ModerationModuleDefinition.MODERATION)
                 .templated(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
                 .supportsEmbedException(true)

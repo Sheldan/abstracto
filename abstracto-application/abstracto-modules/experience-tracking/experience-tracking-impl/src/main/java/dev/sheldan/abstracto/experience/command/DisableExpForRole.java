@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -49,22 +48,6 @@ public class DisableExpForRole extends AbstractConditionableCommand {
 
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        Role role = (Role) parameters.get(0);
-        ARole actualRole = roleManagementService.findRole(role.getIdLong());
-        if(!actualRole.getServer().getId().equals(commandContext.getGuild().getIdLong())) {
-            throw new EntityGuildMismatchException();
-        }
-        // as we manage experience disabled roles via the existence of them in a table, we should not do anything
-        // in case it is used a second time as a disabled experience role
-        if(!disabledExpRoleManagementService.isExperienceDisabledForRole(actualRole)) {
-            disabledExpRoleManagementService.setRoleToBeDisabledForExp(actualRole);
-        }
-        return CommandResult.fromSuccess();
-    }
-
-    @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         Role role = slashCommandParameterService.getCommandOption(ROLE_PARAMETER, event, Role.class);
         ARole actualRole = roleManagementService.findRole(role.getIdLong());
@@ -106,6 +89,7 @@ public class DisableExpForRole extends AbstractConditionableCommand {
                 .name(DISABLE_EXP_FOR_ROLE_COMMAND)
                 .module(ExperienceModuleDefinition.EXPERIENCE)
                 .templated(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .causesReaction(true)

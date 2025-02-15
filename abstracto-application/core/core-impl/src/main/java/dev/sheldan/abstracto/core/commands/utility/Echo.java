@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
@@ -18,7 +17,6 @@ import dev.sheldan.abstracto.core.models.template.commands.EchoModel;
 import dev.sheldan.abstracto.core.models.template.commands.EchoRedirectResponseModel;
 import dev.sheldan.abstracto.core.models.template.display.ChannelDisplay;
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -39,9 +37,6 @@ public class Echo extends AbstractConditionableCommand {
     public static final String TARGET_CHANNEL_PARAMETER = "targetChannel";
 
     @Autowired
-    private TemplateService templateService;
-
-    @Autowired
     private ChannelService channelService;
 
     @Autowired
@@ -49,21 +44,6 @@ public class Echo extends AbstractConditionableCommand {
 
     @Autowired
     private SlashCommandParameterService slashCommandParameterService;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        StringBuilder sb = new StringBuilder();
-        commandContext.getParameters().getParameters().forEach(o ->
-                sb.append(o.toString())
-        );
-        EchoModel model = EchoModel
-                .builder()
-                .text(sb.toString())
-                .build();
-        String textToSend = templateService.renderTemplate(TEMPLATE_NAME, model, commandContext.getGuild().getIdLong());
-        channelService.sendTextToChannel(textToSend, commandContext.getChannel());
-        return CommandResult.fromIgnored();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -129,6 +109,7 @@ public class Echo extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name(ECHO_COMMAND)
+                .slashCommandOnly(true)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .supportsEmbedException(true)

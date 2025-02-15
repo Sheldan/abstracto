@@ -6,15 +6,12 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.starboard.config.StarboardFeatureDefinition;
 import dev.sheldan.abstracto.starboard.config.StarboardSlashCommandNames;
 import dev.sheldan.abstracto.starboard.model.template.MemberStarStatsModel;
@@ -40,9 +37,6 @@ public class StarStats extends AbstractConditionableCommand {
     private StarboardService starboardService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private TemplateService templateService;
 
     @Autowired
@@ -50,24 +44,6 @@ public class StarStats extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        if(parameters.isEmpty()) {
-            return starboardService.retrieveStarStats(commandContext.getGuild().getIdLong())
-                    .thenCompose(starStatsModel -> {
-                            MessageToSend messageToSend = templateService.renderEmbedTemplate(STARSTATS_RESPONSE_TEMPLATE, starStatsModel, commandContext.getGuild().getIdLong());
-                            return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()));
-                    }).thenApply(o -> CommandResult.fromIgnored());
-        } else {
-            Member targetMember = (Member) parameters.get(0);
-            MemberStarStatsModel memberStarStatsModel = starboardService.retrieveStarStatsForMember(targetMember);
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(STARSTATS_SINGLE_MEMBER_RESPONSE_TEMPLATE, memberStarStatsModel, commandContext.getGuild().getIdLong());
-            return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                    .thenApply(unused -> CommandResult.fromIgnored());
-        }
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -114,6 +90,7 @@ public class StarStats extends AbstractConditionableCommand {
                 .templated(true)
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)

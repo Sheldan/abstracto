@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -46,15 +45,6 @@ public class ExpScale extends AbstractConditionableCommand {
     private InteractionService interactionService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
-        Double scale = (Double) commandContext.getParameters().getParameters().get(0);
-        Long guildId = commandContext.getGuild().getIdLong();
-        configService.setDoubleValue(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, guildId, scale);
-        log.info("Setting experience scale to {} for {}", scale, guildId);
-        return CommandResult.fromSuccess();
-    }
-
-    @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         Double newScale = slashCommandParameterService.getCommandOption(SCALE_PARAMETER, event, Double.class);
         configService.setDoubleValue(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, event.getGuild().getIdLong(), newScale);
@@ -90,6 +80,7 @@ public class ExpScale extends AbstractConditionableCommand {
                 .name(EXP_SCALE_COMMAND)
                 .module(ExperienceModuleDefinition.EXPERIENCE)
                 .causesReaction(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .templated(true)
                 .supportsEmbedException(true)

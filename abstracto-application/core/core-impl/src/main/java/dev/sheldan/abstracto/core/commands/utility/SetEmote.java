@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.config.validator.MaxStringLengthValidator;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
@@ -38,15 +37,6 @@ public class SetEmote extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        String emoteKey = (String) parameters.get(0);
-        AEmote emote = (AEmote) parameters.get(1);
-        emoteManagementService.setEmoteToAEmote(emoteKey, emote, commandContext.getGuild().getIdLong());
-        return CommandResult.fromSuccess();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -91,6 +81,7 @@ public class SetEmote extends AbstractConditionableCommand {
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .supportsEmbedException(true)
+                .slashCommandOnly(true)
                 .help(helpInfo)
                 .slashCommandConfig(slashCommandConfig)
                 .templated(true)

@@ -5,14 +5,10 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.handler.parameter.CombinedParameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
-import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.UtilityFeatureDefinition;
 import dev.sheldan.abstracto.utility.config.UtilitySlashCommandNames;
 import dev.sheldan.abstracto.utility.model.ShowAvatarModel;
@@ -42,9 +38,6 @@ public class ShowAvatar extends AbstractConditionableCommand {
     private static final String SHOW_AVATAR_COMMAND = "showAvatar";
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private SlashCommandParameterService slashCommandParameterService;
 
     @Autowired
@@ -52,23 +45,6 @@ public class ShowAvatar extends AbstractConditionableCommand {
 
     @Value("${abstracto.feature.avatar.imagesize}")
     private Integer imageSize;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        Member memberToShow = parameters.size() == 1 ? (Member) parameters.get(0) : commandContext.getUserInitiatedContext().getMember();
-        if(!memberToShow.getGuild().equals(commandContext.getGuild())) {
-            throw new EntityGuildMismatchException();
-        }
-        ShowAvatarModel model = ShowAvatarModel
-                .builder()
-                .avatarUrl(memberToShow.getEffectiveAvatar().getUrl(imageSize))
-                .build();
-        log.info("Showing avatar for member {} towards user {} in channel {} in server {}.",
-                memberToShow.getId(), commandContext.getAuthor().getId(), commandContext.getChannel().getId(), commandContext.getGuild().getId());
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(SHOW_AVATAR_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromIgnored());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -135,6 +111,7 @@ public class ShowAvatar extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .slashCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)

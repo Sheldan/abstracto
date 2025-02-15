@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -13,13 +12,11 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.PaginatorService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
@@ -57,9 +54,6 @@ public class Mutes extends AbstractConditionableCommand {
     private TemplateService templateService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private MuteEntryConverter muteEntryConverter;
 
     @Autowired
@@ -73,39 +67,6 @@ public class Mutes extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<dev.sheldan.abstracto.moderation.model.database.Mute> mutesToDisplay;
-        if(commandContext.getParameters().getParameters().isEmpty()) {
-            AServer server = serverManagementService.loadServer(commandContext.getGuild().getIdLong());
-            mutesToDisplay = muteManagementService.getAllMutes(server);
-        } else {
-            Member member = (Member) commandContext.getParameters().getParameters().get(0);
-            if(!member.getGuild().equals(commandContext.getGuild())) {
-                throw new EntityGuildMismatchException();
-            }
-            mutesToDisplay = muteManagementService.getAllMutesOf(userInServerManagementService.loadOrCreateUser(member));
-        }
-        if(mutesToDisplay.isEmpty()) {
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(NO_MUTES_TEMPLATE_KEY, new Object(), commandContext.getGuild().getIdLong());
-            return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                    .thenApply(unused -> CommandResult.fromSuccess());
-        } else {
-            return muteEntryConverter.fromMutes(mutesToDisplay)
-                    .thenCompose(muteEntries -> self.renderMutes(commandContext, muteEntries)
-                    .thenApply(unused -> CommandResult.fromIgnored()));
-        }
-    }
-
-    @Transactional
-    public CompletableFuture<Void> renderMutes(CommandContext commandContext, List<MuteEntry> mutes) {
-        MutesModel model = MutesModel
-                .builder()
-                .mutes(mutes)
-                .build();
-        return paginatorService.createPaginatorFromTemplate(MUTES_DISPLAY_TEMPLATE_KEY, model, commandContext.getChannel(), commandContext.getAuthor().getIdLong());
-    }
 
     @Transactional
     public CompletableFuture<Void> renderMutes(SlashCommandInteractionEvent event, List<MuteEntry> mutes) {
@@ -168,6 +129,7 @@ public class Mutes extends AbstractConditionableCommand {
                 .name(MUTES_COMMAND)
                 .module(ModerationModuleDefinition.MODERATION)
                 .templated(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .async(true)

@@ -5,18 +5,13 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValidator;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.templating.model.MessageToSend;
-import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentModuleDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentSlashCommandNames;
@@ -51,24 +46,6 @@ public class Slots extends AbstractConditionableCommand {
 
     @Autowired
     private UserInServerManagementService userInServerManagementService;
-
-    @Autowired
-    private TemplateService templateService;
-
-    @Autowired
-    private ChannelService channelService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        Integer bid = (Integer) commandContext.getParameters().getParameters().get(0);
-        Member member = commandContext.getAuthor();
-        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(member);
-        SlotsResult slotsResult = economyUserServiceBean.triggerSlots(aUserInAServer, bid.longValue());
-        SlotsResponseModel responseModel = SlotsResponseModel.fromSlotsResult(slotsResult);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(SLOTS_RESPONSE, responseModel, member.getGuild().getIdLong());
-        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                .thenApply(unused -> CommandResult.fromSuccess());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -111,6 +88,7 @@ public class Slots extends AbstractConditionableCommand {
                 .async(true)
                 .module(EntertainmentModuleDefinition.ENTERTAINMENT)
                 .templated(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)

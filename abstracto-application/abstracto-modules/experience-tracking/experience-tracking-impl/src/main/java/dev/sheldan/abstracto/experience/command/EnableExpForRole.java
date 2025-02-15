@@ -6,12 +6,10 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.exception.SlashCommandParameterMissingException;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
@@ -49,20 +47,6 @@ public class EnableExpForRole extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        ARole role = (ARole) commandContext.getParameters().getParameters().get(0);
-        ARole actualRole = roleManagementService.findRole(role.getId());
-        if(!actualRole.getServer().getId().equals(commandContext.getGuild().getIdLong())) {
-            throw new EntityGuildMismatchException();
-        }
-        // If its not disabled for the role, we can remove it
-        if(disabledExpRoleManagementService.isExperienceDisabledForRole(actualRole)) {
-            disabledExpRoleManagementService.removeRoleToBeDisabledForExp(actualRole);
-        }
-        return CommandResult.fromSuccess();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -112,6 +96,7 @@ public class EnableExpForRole extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .causesReaction(true)
                 .supportsEmbedException(true)
+                .slashCommandOnly(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

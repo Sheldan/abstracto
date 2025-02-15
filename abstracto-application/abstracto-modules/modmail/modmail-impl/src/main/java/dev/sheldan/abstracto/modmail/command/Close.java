@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -68,27 +67,6 @@ public class Close extends AbstractConditionableCommand {
 
     @Autowired
     private Close self;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        // the default value of the note is configurable via template
-        String note = parameters.size() == 1 ? (String) parameters.get(0) : templateService.renderTemplate(MODMAIL_CLOSE_DEFAULT_NOTE_TEMPLATE_KEY, new Object(), commandContext.getGuild()
-            .getIdLong());
-        ModMailThread modMailThread = modMailThreadManagementService.getByChannelId(commandContext.getChannel().getIdLong());
-        if(ModMailThreadState.CLOSED.equals(modMailThread.getState()) || ModMailThreadState.CLOSING.equals(modMailThread.getState())) {
-            throw new ModMailThreadClosedException();
-        }
-        ClosingContext context = ClosingContext
-                .builder()
-                .closingMember(commandContext.getAuthor())
-                .notifyUser(true)
-                .log(true)
-                .note(note)
-                .build();
-        return modMailThreadService.closeModMailThread(modMailThread, context, commandContext.getUndoActions())
-                .thenApply(aVoid -> CommandResult.fromIgnored());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -183,6 +161,7 @@ public class Close extends AbstractConditionableCommand {
                 .help(helpInfo)
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .templated(true)
                 .causesReaction(false)

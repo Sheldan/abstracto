@@ -7,7 +7,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
@@ -46,24 +45,6 @@ public class ResetConfig extends AbstractConditionableCommand {
     private static final String RESPONSE_TEMPLATE = "resetConfig_response";
     private static final String KEY_PARAMETER = "key";
     private static final String RESET_CONFIG_COMMAND = "resetConfig";
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        Long serverId = commandContext.getGuild().getIdLong();
-        if(!commandContext.getParameters().getParameters().isEmpty()) {
-            String name = (String) commandContext.getParameters().getParameters().get(0);
-            if(featureManagementService.featureExists(name)) {
-                configService.resetConfigForFeature(name, serverId);
-            } else if(defaultConfigManagementService.configKeyExists(name)) {
-                configService.resetConfigForKey(name, serverId);
-            } else {
-                throw new ConfigurationKeyNotFoundException(name);
-            }
-        } else {
-            configService.resetConfigForServer(serverId);
-        }
-        return CompletableFuture.completedFuture(CommandResult.fromSuccess());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -114,6 +95,7 @@ public class ResetConfig extends AbstractConditionableCommand {
                 .templated(true)
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)
                 .causesReaction(true)

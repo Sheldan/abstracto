@@ -7,7 +7,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
@@ -49,17 +48,6 @@ public class DisableMode extends AbstractConditionableCommand {
     private static final String FEATURE_PARAMETER = "feature";
     private static final String MODE_PARAMETER = "mode";
     private static final String DISABLE_MODE_COMMAND = "disableMode";
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        String featureName = (String) commandContext.getParameters().getParameters().get(0);
-        String modeName = (String) commandContext.getParameters().getParameters().get(1);
-        FeatureDefinition featureDefinition = featureConfigService.getFeatureEnum(featureName);
-        FeatureMode featureMode = featureModeService.getFeatureModeForKey(featureName, modeName);
-        AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        featureModeService.disableFeatureModeForFeature(featureDefinition, server, featureMode);
-        return CommandResult.fromSuccess();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -108,6 +96,7 @@ public class DisableMode extends AbstractConditionableCommand {
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .templated(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .help(helpInfo)

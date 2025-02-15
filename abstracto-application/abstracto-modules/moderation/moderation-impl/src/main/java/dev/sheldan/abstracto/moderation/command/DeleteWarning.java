@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.moderation.command;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValidator;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
@@ -38,14 +37,6 @@ public class DeleteWarning extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        Long warnId = (Long) commandContext.getParameters().getParameters().get(0);
-        Warning warning = warnManagementService.findById(warnId, commandContext.getGuild().getIdLong());
-        warnManagementService.deleteWarning(warning);
-        return CommandResult.fromSuccess();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -89,6 +80,7 @@ public class DeleteWarning extends AbstractConditionableCommand {
                 .templated(true)
                 .supportsEmbedException(true)
                 .aliases(aliases)
+                .slashCommandOnly(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

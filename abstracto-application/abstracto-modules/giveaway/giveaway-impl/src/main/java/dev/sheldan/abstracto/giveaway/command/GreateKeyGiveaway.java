@@ -143,6 +143,7 @@ public class GreateKeyGiveaway extends AbstractConditionableCommand {
             .templated(true)
             .slashCommandConfig(slashCommandConfig)
             .async(true)
+            .slashCommandOnly(true)
             .supportsEmbedException(true)
             .causesReaction(false)
             .parameters(parameters)

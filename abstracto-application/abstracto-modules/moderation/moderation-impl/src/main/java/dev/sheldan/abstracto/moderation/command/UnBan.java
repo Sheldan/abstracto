@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -44,16 +43,6 @@ public class UnBan extends AbstractConditionableCommand {
 
     @Autowired
     private UserService userService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        String userIdStr = (String) parameters.get(0);
-        Long userId = Long.parseLong(userIdStr);
-        return userService.retrieveUserForId(userId)
-                .thenCompose(user -> banService.unbanUser(commandContext.getGuild(), user, commandContext.getAuthor()))
-                .thenApply(aVoid -> CommandResult.fromSuccess());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -96,6 +85,7 @@ public class UnBan extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .causesReaction(true)
+                .slashCommandOnly(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

@@ -7,9 +7,7 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.UtilityFeatureDefinition;
@@ -31,12 +29,6 @@ public class ShowEmote extends AbstractConditionableCommand {
 
     @Autowired
     private ChannelService channelService;
-
-    @Autowired
-    private InteractionService interactionService;
-
-    @Autowired
-    private SlashCommandParameterService slashCommandParameterService;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {

@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.remind.command;
 import dev.sheldan.abstracto.core.command.UtilityModuleDefinition;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.*;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -48,13 +47,6 @@ public class UnRemind extends AbstractConditionableCommand {
     private InteractionService interactionService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
-        Long reminderId = (Long) commandContext.getParameters().getParameters().get(0);
-        reminderService.unRemind(reminderId, userInServerManagementService.loadOrCreateUser(commandContext.getAuthor()));
-        return CommandResult.fromSuccess();
-    }
-
-    @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         Long reminderId = slashCommandParameterService.getCommandOption(REMINDER_ID_PARAMETER, event, Long.class, Integer.class).longValue();
         if(ContextUtils.isUserCommand(event)) {
@@ -93,6 +85,7 @@ public class UnRemind extends AbstractConditionableCommand {
                 .name(UN_REMIND_COMMAND)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .slashCommandConfig(slashCommandConfig)
                 .causesReaction(true)

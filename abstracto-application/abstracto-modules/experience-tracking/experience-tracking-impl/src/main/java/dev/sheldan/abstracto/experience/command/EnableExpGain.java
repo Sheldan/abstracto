@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -49,17 +48,6 @@ public class EnableExpGain extends AbstractConditionableCommand {
     private InteractionService interactionService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
-        Member member = (Member) commandContext.getParameters().getParameters().get(0);
-        if(!member.getGuild().equals(commandContext.getGuild())) {
-            throw new EntityGuildMismatchException();
-        }
-        AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(member);
-        aUserExperienceService.enableExperienceForUser(userInAServer);
-        return CommandResult.fromSuccess();
-    }
-
-    @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         Member member = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER, event, Member.class);
         if(!member.getGuild().equals(event.getGuild())) {
@@ -100,6 +88,7 @@ public class EnableExpGain extends AbstractConditionableCommand {
                 .causesReaction(true)
                 .supportsEmbedException(true)
                 .templated(true)
+                .slashCommandOnly(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -13,13 +12,11 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.PaginatorService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
@@ -67,48 +64,10 @@ public class Warnings extends AbstractConditionableCommand {
     private TemplateService templateService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private SlashCommandParameterService slashCommandParameterService;
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Warning> warnsToDisplay;
-        if(!commandContext.getParameters().getParameters().isEmpty()) {
-            Member member = (Member) commandContext.getParameters().getParameters().get(0);
-            if(!member.getGuild().equals(commandContext.getGuild())) {
-                throw new EntityGuildMismatchException();
-            }
-            warnsToDisplay = warnManagementService.getAllWarnsForUser(userInServerManagementService.loadOrCreateUser(member));
-        } else {
-            AServer server = serverManagementService.loadServer(commandContext.getGuild());
-            warnsToDisplay = warnManagementService.getAllWarningsOfServer(server);
-        }
-        if(warnsToDisplay.isEmpty()) {
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(NO_WARNINGS_TEMPLATE_KEY, new Object(), commandContext.getGuild().getIdLong());
-            return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                    .thenApply(unused -> CommandResult.fromSuccess());
-
-        } else {
-            return warnEntryConverter.fromWarnings(warnsToDisplay)
-                    .thenCompose(warnEntries -> self.renderWarnings(commandContext, warnEntries))
-                    .thenApply(unused -> CommandResult.fromIgnored());
-        }
-    }
-
-    @Transactional
-    public CompletableFuture<Void> renderWarnings(CommandContext commandContext, List<WarnEntry> warnEntries) {
-        WarningsModel model = WarningsModel
-                .builder()
-                .warnings(warnEntries)
-                .build();
-
-        return paginatorService.createPaginatorFromTemplate(WARNINGS_RESPONSE_TEMPLATE, model, commandContext.getChannel(), commandContext.getAuthor().getIdLong());
-    }
 
     @Transactional
     public CompletableFuture<Void> renderWarnings(SlashCommandInteractionEvent event, List<WarnEntry> warnEntries) {
@@ -175,6 +134,7 @@ public class Warnings extends AbstractConditionableCommand {
                 .templated(true)
                 .async(true)
                 .causesReaction(false)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .parameters(parameters)

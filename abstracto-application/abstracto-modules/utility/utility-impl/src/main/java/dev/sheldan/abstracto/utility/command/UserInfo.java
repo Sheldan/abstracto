@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.handler.parameter.CombinedParameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
@@ -13,10 +12,8 @@ import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.template.display.MemberNameDisplay;
 import dev.sheldan.abstracto.core.models.template.display.RoleDisplay;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.utils.ContextUtils;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.UtilityFeatureDefinition;
 import dev.sheldan.abstracto.utility.config.UtilitySlashCommandNames;
 import dev.sheldan.abstracto.utility.model.UserInfoModel;
@@ -25,7 +22,6 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
@@ -45,8 +41,6 @@ public class UserInfo extends AbstractConditionableCommand {
     public static final String USER_INFO_COMMAND = "userInfo";
     public static final String MEMBER_PARAMETER = "member";
     public static final String USER_INFO_RESPONSE = "userInfo_response";
-    @Autowired
-    private ChannelService channelService;
 
     @Autowired
     private MemberService memberService;
@@ -59,35 +53,6 @@ public class UserInfo extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        Member memberToShow = parameters.size() == 1 ? (Member) parameters.get(0) : commandContext.getAuthor();
-        if(!memberToShow.getGuild().equals(commandContext.getGuild())) {
-            throw new EntityGuildMismatchException();
-        }
-        UserInfoModel model = UserInfoModel
-                .builder()
-                .build();
-        if(!memberToShow.hasTimeJoined()) {
-            log.info("Force reloading member {} in guild {} for user info.", memberToShow.getId(), memberToShow.getGuild().getId());
-            return memberService.forceReloadMember(memberToShow).thenCompose(member -> {
-                fillUserInfoModel(model,  member, false);
-                return self.sendResponse(commandContext.getChannel(), model)
-                        .thenApply(aVoid -> CommandResult.fromIgnored());
-            });
-        } else {
-            fillUserInfoModel(model, memberToShow, false);
-            return self.sendResponse(commandContext.getChannel(), model)
-                .thenApply(aVoid -> CommandResult.fromIgnored());
-        }
-    }
-
-    @Transactional
-    public CompletableFuture<Void> sendResponse(MessageChannel channel, UserInfoModel model) {
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(USER_INFO_RESPONSE, model, channel));
-    }
 
     @Transactional
     public CompletableFuture<InteractionHook> sendResponse(IReplyCallback callback, UserInfoModel model) {
@@ -204,6 +169,7 @@ public class UserInfo extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .slashCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)

@@ -7,7 +7,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
@@ -38,15 +37,6 @@ public class SetConfig extends AbstractConditionableCommand {
     private InteractionService interactionService;
 
     private static final String RESPONSE_TEMPLATE = "setConfig_response";
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        String key = (String) commandContext.getParameters().getParameters().get(0);
-        String value = (String) commandContext.getParameters().getParameters().get(1);
-        configService.setOrCreateConfigValue(key, commandContext.getGuild().getIdLong(), value);
-
-        return CommandResult.fromSuccess();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -90,6 +80,7 @@ public class SetConfig extends AbstractConditionableCommand {
                 .name(SET_CONFIG_COMMAND)
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .templated(true)
                 .supportsEmbedException(true)

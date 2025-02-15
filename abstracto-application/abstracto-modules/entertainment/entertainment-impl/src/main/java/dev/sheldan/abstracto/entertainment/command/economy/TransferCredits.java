@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
@@ -12,9 +11,7 @@ import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentModuleDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentSlashCommandNames;
@@ -47,27 +44,6 @@ public class TransferCredits extends AbstractConditionableCommand {
 
     @Autowired
     private EconomyService economyService;
-
-    @Autowired
-    private ChannelService channelService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        Member targetMember = (Member) parameters.get(0);
-        Integer amount = (Integer) parameters.get(1);
-        AUserInAServer targetUser = userInServerManagementService.loadOrCreateUser(targetMember);
-        AUserInAServer sourceUser = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
-        economyService.transferCredits(sourceUser, targetUser, amount.longValue());
-        TransferCreditsModel responseModel = TransferCreditsModel
-                .builder()
-                .sourceMember(MemberDisplay.fromMember(commandContext.getAuthor()))
-                .targetMember(MemberDisplay.fromMember(targetMember))
-                .credits(amount)
-                .build();
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(TRANSFER_CREDITS_RESPONSE, responseModel, commandContext.getChannel()))
-                .thenApply(unused -> CommandResult.fromSuccess());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -123,6 +99,7 @@ public class TransferCredits extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .module(EntertainmentModuleDefinition.ENTERTAINMENT)
                 .templated(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .causesReaction(false)

@@ -5,26 +5,22 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.FullRole;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
 import dev.sheldan.abstracto.experience.config.ExperienceSlashCommandNames;
 import dev.sheldan.abstracto.experience.model.database.ADisabledExpRole;
 import dev.sheldan.abstracto.experience.model.template.DisabledExperienceRolesModel;
 import dev.sheldan.abstracto.experience.service.management.DisabledExpRoleManagementService;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,9 +47,6 @@ public class ListDisabledExperienceRoles extends AbstractConditionableCommand {
     private RoleService roleService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private ServerManagementService serverManagementService;
 
     @Autowired
@@ -61,14 +54,6 @@ public class ListDisabledExperienceRoles extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        Long serverId = commandContext.getGuild().getIdLong();
-        MessageToSend messageToSend = getResponseModel(serverId, commandContext.getAuthor());
-        List<CompletableFuture<Message>> futures = channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
-        return FutureUtils.toSingleFutureGeneric(futures).thenApply(aVoid -> CommandResult.fromIgnored());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -124,6 +109,7 @@ public class ListDisabledExperienceRoles extends AbstractConditionableCommand {
                 .templated(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
+                .slashCommandOnly(true)
                 .async(true)
                 .aliases(aliases)
                 .parameters(parameters)

@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
@@ -17,12 +16,10 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.PaginatorService;
-import dev.sheldan.abstracto.core.service.UserService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
@@ -75,35 +72,6 @@ public class Infractions extends AbstractConditionableCommand {
 
     @Autowired
     private SlashCommandParameterService slashCommandParameterService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Infraction> infractions;
-        if(!commandContext.getParameters().getParameters().isEmpty()) {
-            Member member = (Member) commandContext.getParameters().getParameters().get(0);
-            if(!member.getGuild().equals(commandContext.getGuild())) {
-                throw new EntityGuildMismatchException();
-            }
-            infractions = infractionManagementService.getInfractionsForUser(userInServerManagementService.loadOrCreateUser(member));
-        } else {
-            AServer server = serverManagementService.loadServer(commandContext.getGuild());
-            infractions = infractionManagementService.getInfractionsForServer(server);
-        }
-        if(infractions.isEmpty()) {
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(NO_INFRACTIONS_TEMPLATE_KEY, new Object(), commandContext.getGuild().getIdLong());
-            return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                    .thenApply(unused -> CommandResult.fromSuccess());
-
-        } else {
-            List<InfractionEntry> convertedInfractions = fromInfractions(infractions);
-            InfractionsModel model = InfractionsModel
-                    .builder()
-                    .entries(convertedInfractions)
-                    .build();
-            return paginatorService.createPaginatorFromTemplate(INFRACTIONS_RESPONSE_TEMPLATE, model, commandContext.getChannel(), commandContext.getAuthor().getIdLong())
-                    .thenApply(unused -> CommandResult.fromSuccess());
-        }
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -195,6 +163,7 @@ public class Infractions extends AbstractConditionableCommand {
                 .name(INFRACTIONS_COMMAND)
                 .module(ModerationModuleDefinition.MODERATION)
                 .templated(true)
+                .slashCommandOnly(true)
                 .async(true)
                 .causesReaction(false)
                 .slashCommandConfig(slashCommandConfig)

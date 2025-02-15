@@ -4,15 +4,12 @@ import dev.sheldan.abstracto.core.command.UtilityModuleDefinition;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValidator;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
-import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.suggestion.config.SuggestionFeatureDefinition;
 import dev.sheldan.abstracto.suggestion.config.SuggestionSlashCommandNames;
 import dev.sheldan.abstracto.suggestion.model.template.SuggestionInfoModel;
@@ -36,24 +33,10 @@ public class ShowSuggestion extends AbstractConditionableCommand {
     private SuggestionService suggestionService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private SlashCommandParameterService slashCommandParameterService;
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        Long suggestionId = (Long) parameters.get(0);
-
-        SuggestionInfoModel suggestionInfoModel = suggestionService.getSuggestionInfo(commandContext.getGuild().getIdLong(), suggestionId);
-        return FutureUtils.toSingleFutureGeneric(
-                channelService.sendEmbedTemplateInMessageChannel(SHOW_SUGGESTION_TEMPLATE_KEY, suggestionInfoModel, commandContext.getChannel()))
-                .thenApply(unused -> CommandResult.fromSuccess());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -96,6 +79,7 @@ public class ShowSuggestion extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .slashCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)

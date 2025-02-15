@@ -9,7 +9,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
@@ -17,13 +16,11 @@ import dev.sheldan.abstracto.core.exception.TemplateNotFoundException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.template.commands.GetTemplateModel;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.templating.service.management.TemplateManagementService;
 import dev.sheldan.abstracto.core.utils.FileService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,9 +42,6 @@ public class GetTemplate extends AbstractConditionableCommand {
     private TemplateManagementService templateManagementService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private SlashCommandParameterService slashCommandParameterService;
 
     @Autowired
@@ -61,16 +55,6 @@ public class GetTemplate extends AbstractConditionableCommand {
 
     @Autowired
     private BotOwnerOnlyCondition botOwnerOnlyCondition;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        String templateKey = (String) commandContext.getParameters().getParameters().get(0);
-        GetTemplateModel model = getModel(templateKey);
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(GET_TEMPLATE_RESPONSE_TEMPLATE_KEY, model, commandContext.getGuild().getIdLong());
-            return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                    .thenAccept(interactionHook -> fileService.safeDeleteIgnoreException(messageToSend.getAttachedFiles().get(0).getFile()))
-                    .thenApply(unused -> CommandResult.fromSuccess());
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -122,6 +106,7 @@ public class GetTemplate extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
                 .parameters(parameters)
+                .slashCommandOnly(true)
                 .help(helpInfo)
                 .templated(true)
                 .causesReaction(true)

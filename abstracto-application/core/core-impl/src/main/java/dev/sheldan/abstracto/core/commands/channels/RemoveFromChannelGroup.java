@@ -8,10 +8,8 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.exception.SlashCommandParameterMissingException;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.database.AChannel;
@@ -46,18 +44,6 @@ public class RemoveFromChannelGroup extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Override
-    public CommandResult execute(CommandContext commandContext) {
-        String name = (String) commandContext.getParameters().getParameters().get(0);
-        AChannel fakeChannel = (AChannel) commandContext.getParameters().getParameters().get(1);
-        AChannel actualChannel = channelManagementService.loadChannel(fakeChannel.getId());
-        if (!actualChannel.getServer().getId().equals(commandContext.getGuild().getIdLong())) {
-            throw new EntityGuildMismatchException();
-        }
-        channelGroupService.removeChannelFromChannelGroup(name, actualChannel);
-        return CommandResult.fromSuccess();
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -110,6 +96,7 @@ public class RemoveFromChannelGroup extends AbstractConditionableCommand {
             .name(REMOVE_FROM_CHANNEL_GROUP_COMMAND)
             .module(ChannelsModuleDefinition.CHANNELS)
             .aliases(aliases)
+            .slashCommandOnly(true)
             .parameters(parameters)
             .slashCommandConfig(slashCommandConfig)
             .templated(true)

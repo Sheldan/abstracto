@@ -9,7 +9,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
@@ -17,14 +16,12 @@ import dev.sheldan.abstracto.core.exception.CustomTemplateNotFoundException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.template.commands.GetCustomTemplateModel;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.model.database.CustomTemplate;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.templating.service.management.CustomTemplateManagementService;
 import dev.sheldan.abstracto.core.utils.FileService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -48,9 +45,6 @@ public class GetCustomTemplate extends AbstractConditionableCommand {
     private CustomTemplateManagementService customTemplateManagementService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private SlashCommandParameterService slashCommandParameterService;
 
     @Autowired
@@ -64,16 +58,6 @@ public class GetCustomTemplate extends AbstractConditionableCommand {
 
     @Autowired
     private BotOwnerOnlyCondition botOwnerOnlyCondition;
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        String templateKey = (String) commandContext.getParameters().getParameters().get(0);
-        GetCustomTemplateModel model = getModel(templateKey, commandContext.getGuild());
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(GET_CUSTOM_TEMPLATE_RESPONSE_TEMPLATE_KEY, model, commandContext.getGuild().getIdLong());
-        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                .thenAccept(interactionHook -> fileService.safeDeleteIgnoreException(messageToSend.getAttachedFiles().get(0).getFile()))
-                .thenApply(unused -> CommandResult.fromSuccess());
-    }
 
     private GetCustomTemplateModel getModel(String templateKey, Guild guild) {
         Optional<CustomTemplate> templateOptional = customTemplateManagementService.getCustomTemplate(templateKey, guild.getIdLong());
@@ -127,6 +111,7 @@ public class GetCustomTemplate extends AbstractConditionableCommand {
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .async(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .help(helpInfo)
                 .templated(true)

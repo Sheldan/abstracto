@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
@@ -17,14 +16,12 @@ import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureSwitchModel;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -46,9 +43,6 @@ public class DisableFeature extends AbstractConditionableCommand {
     private FeatureFlagService featureFlagService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private TemplateService templateService;
 
     @Autowired
@@ -63,31 +57,6 @@ public class DisableFeature extends AbstractConditionableCommand {
     private static final String DISABLE_FEATURE_DEPENDENCIES_RESPONSE_TEMPLATE_KEY = "disableFeature_feature_dependencies_response";
     private static final String DISABLE_FEATURE_RESPONSE_TEMPLATE_KEY = "disableFeature_response";
     private static final String FEATURE_NAME_PARAMETER = "featureName";
-
-
-    @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        String flagKey = (String) commandContext.getParameters().getParameters().get(0);
-        FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(flagKey);
-        Long serverId = commandContext.getGuild().getIdLong();
-        List<FeatureConfig> featureDependencies = disableFeature(feature, serverId);
-        if (featureDependencies.isEmpty()) {
-            return CompletableFuture.completedFuture(CommandResult.fromSuccess());
-        } else {
-            List<String> additionalFeatures = featureDependencies
-                    .stream()
-                    .map(featureDef -> featureDef.getFeature().getKey()).
-                            collect(Collectors.toList());
-            FeatureSwitchModel model = FeatureSwitchModel
-                    .builder()
-                    .features(additionalFeatures)
-                    .build();
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(DISABLE_FEATURE_DEPENDENCIES_RESPONSE_TEMPLATE_KEY,
-                    model, serverId);
-            return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                    .thenApply(message -> CommandResult.fromIgnored());
-        }
-    }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -160,6 +129,7 @@ public class DisableFeature extends AbstractConditionableCommand {
                 .parameters(parameters)
                 .async(true)
                 .help(helpInfo)
+                .slashCommandOnly(true)
                 .templated(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
