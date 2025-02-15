@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.RoleImmunityService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -96,6 +97,7 @@ public class MakeAffected extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
                 .rootCommandName(CoreSlashCommandNames.CONFIG)
                 .commandName(MAKE_AFFECTED_COMMAND_NAME)
                 .build();

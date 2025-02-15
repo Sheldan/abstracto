@@ -21,6 +21,8 @@ public class SlashCommandConfig {
     private String userGroupName;
     private String commandName;
     private String userCommandName;
+    @Builder.Default
+    private SlashCommandPrivilegeLevels defaultPrivilege = SlashCommandPrivilegeLevels.NONE;
 
     @Builder.Default
     private boolean userInstallable = false;

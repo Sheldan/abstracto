@@ -1,11 +1,9 @@
 package dev.sheldan.abstracto.core.commands.channels;
 
-import dev.sheldan.abstracto.core.interaction.slash.CoreSlashCommandNames;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.exception.SlashCommandParameterMissingException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
@@ -14,32 +12,34 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.CoreSlashCommandNames;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.models.template.commands.PostTargetDisplayModel;
 import dev.sheldan.abstracto.core.models.template.commands.PostTargetModelEntry;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -75,11 +75,11 @@ public class PostTargetCommand extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         Guild guild = commandContext.getGuild();
-        if(commandContext.getParameters().getParameters().isEmpty()) {
+        if (commandContext.getParameters().getParameters().isEmpty()) {
             log.debug("Displaying existing post targets for guild {}.", guild.getId());
             MessageToSend messageToSend = getMessageToSendForPosttargetDisplay(guild);
             return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                    .thenApply(aVoid -> CommandResult.fromSuccess());
+                .thenApply(aVoid -> CommandResult.fromSuccess());
         }
         String targetName = (String) commandContext.getParameters().getParameters().get(0);
         GuildChannel channel = (GuildChannel) commandContext.getParameters().getParameters().get(1);
@@ -88,10 +88,10 @@ public class PostTargetCommand extends AbstractConditionableCommand {
     }
 
     private void validateAndCreatePosttarget(Guild guild, String targetName, GuildChannel channel) {
-        if(!postTargetService.validPostTarget(targetName)) {
+        if (!postTargetService.validPostTarget(targetName)) {
             throw new PostTargetNotValidException(targetName, postTargetService.getAvailablePostTargets());
         }
-        if(!channel.getGuild().equals(guild)) {
+        if (!channel.getGuild().equals(guild)) {
             throw new EntityGuildMismatchException();
         }
         postTargetManagement.createOrUpdate(targetName, guild.getIdLong(), channel.getIdLong());
@@ -135,15 +135,15 @@ public class PostTargetCommand extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
-        if(!slashCommandParameterService.hasCommandOption(CHANNEL_PARAMETER, event) && !slashCommandParameterService.hasCommandOption(NAME_PARAMETER, event)) {
+        if (!slashCommandParameterService.hasCommandOption(CHANNEL_PARAMETER, event) && !slashCommandParameterService.hasCommandOption(NAME_PARAMETER, event)) {
             MessageToSend messageToSend = getMessageToSendForPosttargetDisplay(event.getGuild());
             return interactionService.replyMessageToSend(messageToSend, event)
                     .thenApply(interactionHook -> CommandResult.fromSuccess());
         } else {
-            if(!slashCommandParameterService.hasCommandOption(NAME_PARAMETER, event)) {
+            if (!slashCommandParameterService.hasCommandOption(NAME_PARAMETER, event)) {
                 throw new SlashCommandParameterMissingException(NAME_PARAMETER);
             }
-            if(!slashCommandParameterService.hasCommandOption(CHANNEL_PARAMETER, event)) {
+            if (!slashCommandParameterService.hasCommandOption(CHANNEL_PARAMETER, event)) {
                 throw new SlashCommandParameterMissingException(CHANNEL_PARAMETER);
             }
             String postTargetName = slashCommandParameterService.getCommandOption(NAME_PARAMETER, event, String.class);
@@ -157,44 +157,45 @@ public class PostTargetCommand extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         Parameter postTargetName = Parameter
-                .builder()
-                .name(NAME_PARAMETER)
-                .type(String.class)
-                .optional(true)
-                .templated(true)
-                .build();
+            .builder()
+            .name(NAME_PARAMETER)
+            .type(String.class)
+            .optional(true)
+            .templated(true)
+            .build();
         Parameter channel = Parameter
-                .builder()
-                .name(CHANNEL_PARAMETER)
-                .type(TextChannel.class)
-                .optional(true)
-                .templated(true)
-                .build();
+            .builder()
+            .name(CHANNEL_PARAMETER)
+            .type(TextChannel.class)
+            .optional(true)
+            .templated(true)
+            .build();
         List<Parameter> parameters = Arrays.asList(postTargetName, channel);
         HelpInfo helpInfo = HelpInfo
-                .builder()
-                .templated(true)
-                .hasExample(true)
-                .build();
+            .builder()
+            .templated(true)
+            .hasExample(true)
+            .build();
 
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
-                .builder()
-                .enabled(true)
-                .rootCommandName(CoreSlashCommandNames.POST_TARGET)
-                .commandName(POSTTARGET_COMMAND)
-                .build();
+            .builder()
+            .enabled(true)
+            .rootCommandName(CoreSlashCommandNames.POST_TARGET)
+            .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
+            .commandName(POSTTARGET_COMMAND)
+            .build();
 
         return CommandConfiguration.builder()
-                .name(POSTTARGET_COMMAND)
-                .module(ChannelsModuleDefinition.CHANNELS)
-                .parameters(parameters)
-                .async(true)
-                .slashCommandConfig(slashCommandConfig)
-                .supportsEmbedException(true)
-                .help(helpInfo)
-                .templated(true)
-                .causesReaction(true)
-                .build();
+            .name(POSTTARGET_COMMAND)
+            .module(ChannelsModuleDefinition.CHANNELS)
+            .parameters(parameters)
+            .async(true)
+            .slashCommandConfig(slashCommandConfig)
+            .supportsEmbedException(true)
+            .help(helpInfo)
+            .templated(true)
+            .causesReaction(true)
+            .build();
     }
 
     @Override

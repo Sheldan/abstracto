@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.template.commands.EchoModel;
 import dev.sheldan.abstracto.core.models.template.commands.EchoRedirectResponseModel;
@@ -122,6 +123,7 @@ public class Echo extends AbstractConditionableCommand {
                 .enabled(true)
                 .userInstallable(true)
                 .userCommandConfig(UserCommandConfig.all())
+                .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
                 .rootCommandName(ECHO_COMMAND)
                 .build();
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();

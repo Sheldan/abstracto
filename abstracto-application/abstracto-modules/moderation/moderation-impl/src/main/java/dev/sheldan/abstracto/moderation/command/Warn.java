@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
@@ -123,6 +124,7 @@ public class Warn extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(ModerationSlashCommandNames.WARNINGS)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
                 .commandName("create")
                 .build();
 

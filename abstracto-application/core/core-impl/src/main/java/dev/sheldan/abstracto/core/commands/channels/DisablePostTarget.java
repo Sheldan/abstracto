@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -77,6 +78,7 @@ public class DisablePostTarget extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(CoreSlashCommandNames.POST_TARGET)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
                 .commandName("disable")
                 .build();
 

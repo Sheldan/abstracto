@@ -15,11 +15,13 @@ import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.IntegrationType;
 import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.*;
 import org.apache.commons.lang3.StringUtils;
@@ -92,7 +94,17 @@ public class SlashCommandServiceBean implements SlashCommandService {
                 .filter(commandData -> commandData.getSecond().getName().equals(rootName))
                 .map(Pair::getSecond)
                 .findAny();
-        SlashCommandData rootCommand = existingRootCommand.orElseGet(() -> Commands.slash(rootName, description));
+        DefaultMemberPermissions defaultPermissions;
+        if(slashConfig.getDefaultPrivilege() != null) {
+            defaultPermissions = switch (slashConfig.getDefaultPrivilege()) {
+                case ADMIN -> DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR);
+                case INVITER -> DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER);
+                case NONE -> DefaultMemberPermissions.ENABLED;
+            };
+        } else {
+            defaultPermissions = DefaultMemberPermissions.ENABLED;
+        }
+        SlashCommandData rootCommand = existingRootCommand.orElseGet(() -> Commands.slash(rootName, description).setDefaultPermissions(defaultPermissions));
         if(commandConfiguration.isUserInstallable() && userCommandsOnly) {
             rootCommand.setIntegrationTypes(IntegrationType.USER_INSTALL);
             if(commandConfiguration.getSlashCommandConfig().getUserCommandConfig() != null) {

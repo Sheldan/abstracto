@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.giveaway.config.GiveawayFeatureDefinition;
 import dev.sheldan.abstracto.giveaway.config.GiveawayMode;
@@ -66,6 +67,7 @@ public class RemoveGiveawayKey extends AbstractConditionableCommand {
         .builder()
         .enabled(true)
         .rootCommandName(GiveawaySlashCommandNames.GIVEAWAY)
+        .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
         .groupName("keys")
         .commandName("remove")
         .build();

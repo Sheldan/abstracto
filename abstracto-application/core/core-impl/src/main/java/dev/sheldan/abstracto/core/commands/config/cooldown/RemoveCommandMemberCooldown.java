@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.CoreSlashCommandNames;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,7 @@ public class RemoveCommandMemberCooldown extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
                 .rootCommandName(CoreSlashCommandNames.COOLDOWN)
                 .groupName("commandMember")
                 .commandName("remove")

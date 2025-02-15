@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
@@ -139,6 +140,7 @@ public class ChangeTwitchStreamer extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
                 .rootCommandName(TwitchSlashCommandNames.TWITCH)
                 .groupName("streamer")
                 .commandName("edit")

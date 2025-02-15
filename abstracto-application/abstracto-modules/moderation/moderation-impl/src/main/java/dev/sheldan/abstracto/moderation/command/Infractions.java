@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -182,6 +183,7 @@ public class Infractions extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(ModerationSlashCommandNames.INFRACTIONS)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
                 .commandName("list")
                 .build();
 

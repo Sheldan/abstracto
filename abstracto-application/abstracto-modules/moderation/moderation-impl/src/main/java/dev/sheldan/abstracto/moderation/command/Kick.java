@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
@@ -100,6 +101,7 @@ public class Kick extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(ModerationSlashCommandNames.MODERATION)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
                 .commandName(KICK_COMMAND)
                 .build();
 

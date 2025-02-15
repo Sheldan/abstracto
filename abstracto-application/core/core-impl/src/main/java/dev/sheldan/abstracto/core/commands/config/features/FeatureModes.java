@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.command.service.management.FeatureManagementSe
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureModeDisplay;
@@ -116,6 +117,7 @@ public class FeatureModes extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
                 .rootCommandName(CoreSlashCommandNames.FEATURE)
                 .commandName(FEATURE_MODES_COMMAND)
                 .build();

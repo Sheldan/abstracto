@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.core.commands.config.template;
 
+import dev.sheldan.abstracto.core.command.condition.CommandCondition;
+import dev.sheldan.abstracto.core.command.condition.BotOwnerOnlyCondition;
 import dev.sheldan.abstracto.core.interaction.slash.CoreSlashCommandNames;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
@@ -13,6 +15,7 @@ import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.TemplateNotFoundException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.template.commands.GetTemplateModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -55,6 +58,9 @@ public class GetTemplate extends AbstractConditionableCommand {
 
     @Autowired
     private FileService fileService;
+
+    @Autowired
+    private BotOwnerOnlyCondition botOwnerOnlyCondition;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
@@ -105,6 +111,7 @@ public class GetTemplate extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(CoreSlashCommandNames.INTERNAL)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
                 .commandName(GET_TEMPLATE_COMMAND)
                 .build();
 
@@ -124,5 +131,12 @@ public class GetTemplate extends AbstractConditionableCommand {
     @Override
     public FeatureDefinition getFeature() {
         return CoreFeatureDefinition.CORE_FEATURE;
+    }
+
+    @Override
+    public List<CommandCondition> getConditions() {
+        List<CommandCondition> conditions = super.getConditions();
+        conditions.add(botOwnerOnlyCondition);
+        return conditions;
     }
 }

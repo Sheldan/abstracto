@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.FullRole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
@@ -112,6 +113,7 @@ public class ListDisabledExperienceRoles extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(ExperienceSlashCommandNames.EXPERIENCE_CONFIG)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
                 .commandName(LIST_DISABLED_EXPERIENCE_ROLES_COMMAND)
                 .build();
 

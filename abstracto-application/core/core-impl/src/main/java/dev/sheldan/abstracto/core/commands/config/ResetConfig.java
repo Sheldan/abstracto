@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.command.service.management.FeatureManagementSe
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.ConfigurationKeyNotFoundException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
@@ -97,6 +98,7 @@ public class ResetConfig extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
                 .rootCommandName(CoreSlashCommandNames.CONFIG)
                 .commandName("reset")
                 .build();

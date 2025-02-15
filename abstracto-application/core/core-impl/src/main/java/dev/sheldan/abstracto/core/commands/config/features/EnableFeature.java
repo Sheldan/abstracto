@@ -14,6 +14,7 @@ import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureSwitchModel;
@@ -172,6 +173,7 @@ public class EnableFeature extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
                 .rootCommandName(CoreSlashCommandNames.FEATURE)
                 .commandName("enable")
                 .build();

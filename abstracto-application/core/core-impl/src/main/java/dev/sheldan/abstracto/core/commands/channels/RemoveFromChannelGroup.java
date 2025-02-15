@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.ChannelGroupService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -51,7 +52,7 @@ public class RemoveFromChannelGroup extends AbstractConditionableCommand {
         String name = (String) commandContext.getParameters().getParameters().get(0);
         AChannel fakeChannel = (AChannel) commandContext.getParameters().getParameters().get(1);
         AChannel actualChannel = channelManagementService.loadChannel(fakeChannel.getId());
-        if(!actualChannel.getServer().getId().equals(commandContext.getGuild().getIdLong())) {
+        if (!actualChannel.getServer().getId().equals(commandContext.getGuild().getIdLong())) {
             throw new EntityGuildMismatchException();
         }
         channelGroupService.removeChannelFromChannelGroup(name, actualChannel);
@@ -62,10 +63,11 @@ public class RemoveFromChannelGroup extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String channelGroupName = slashCommandParameterService.getCommandOption(NAME_PARAMETER, event, String.class);
         AChannel actualChannel;
-        if(slashCommandParameterService.hasCommandOptionWithFullType(CHANNEL_PARAMETER, event, OptionType.CHANNEL)) {
-            GuildMessageChannel guildChannel = slashCommandParameterService.getCommandOption(CHANNEL_PARAMETER, event, AChannel.class, GuildMessageChannel.class);
+        if (slashCommandParameterService.hasCommandOptionWithFullType(CHANNEL_PARAMETER, event, OptionType.CHANNEL)) {
+            GuildMessageChannel guildChannel =
+                slashCommandParameterService.getCommandOption(CHANNEL_PARAMETER, event, AChannel.class, GuildMessageChannel.class);
             actualChannel = channelManagementService.loadChannel(guildChannel.getIdLong());
-        } else if(slashCommandParameterService.hasCommandOptionWithFullType(CHANNEL_PARAMETER, event, OptionType.STRING)) {
+        } else if (slashCommandParameterService.hasCommandOptionWithFullType(CHANNEL_PARAMETER, event, OptionType.STRING)) {
             String channelId = slashCommandParameterService.getCommandOption(CHANNEL_PARAMETER, event, AChannel.class, String.class);
             actualChannel = channelManagementService.loadChannel(Long.parseLong(channelId));
         } else {
@@ -73,47 +75,48 @@ public class RemoveFromChannelGroup extends AbstractConditionableCommand {
         }
         channelGroupService.removeChannelFromChannelGroup(channelGroupName, actualChannel);
         return interactionService.replyEmbed(REMOVE_FROM_CHANNEL_GROUP_RESPONSE, event)
-                .thenApply(interactionHook -> CommandResult.fromSuccess());
+            .thenApply(interactionHook -> CommandResult.fromSuccess());
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         Parameter channelGroupName = Parameter
-                .builder()
-                .name(NAME_PARAMETER)
-                .type(String.class)
-                .build();
+            .builder()
+            .name(NAME_PARAMETER)
+            .type(String.class)
+            .build();
         Parameter channelToAdd = Parameter
-                .builder()
-                .name(CHANNEL_PARAMETER)
-                .type(AChannel.class)
-                .build();
+            .builder()
+            .name(CHANNEL_PARAMETER)
+            .type(AChannel.class)
+            .build();
         List<Parameter> parameters = Arrays.asList(channelGroupName, channelToAdd);
         List<String> aliases = Arrays.asList("rmChChgrp", "chGrpCh-");
         HelpInfo helpInfo = HelpInfo
-                .builder()
-                .templated(true)
-                .hasExample(true)
-                .build();
+            .builder()
+            .templated(true)
+            .hasExample(true)
+            .build();
 
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
-                .builder()
-                .enabled(true)
-                .rootCommandName(CoreSlashCommandNames.CHANNELS)
-                .commandName(REMOVE_FROM_CHANNEL_GROUP_COMMAND)
-                .build();
+            .builder()
+            .enabled(true)
+            .rootCommandName(CoreSlashCommandNames.CHANNELS)
+            .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
+            .commandName(REMOVE_FROM_CHANNEL_GROUP_COMMAND)
+            .build();
 
         return CommandConfiguration.builder()
-                .name(REMOVE_FROM_CHANNEL_GROUP_COMMAND)
-                .module(ChannelsModuleDefinition.CHANNELS)
-                .aliases(aliases)
-                .parameters(parameters)
-                .slashCommandConfig(slashCommandConfig)
-                .templated(true)
-                .help(helpInfo)
-                .supportsEmbedException(true)
-                .causesReaction(true)
-                .build();
+            .name(REMOVE_FROM_CHANNEL_GROUP_COMMAND)
+            .module(ChannelsModuleDefinition.CHANNELS)
+            .aliases(aliases)
+            .parameters(parameters)
+            .slashCommandConfig(slashCommandConfig)
+            .templated(true)
+            .help(helpInfo)
+            .supportsEmbedException(true)
+            .causesReaction(true)
+            .build();
     }
 
     @Override

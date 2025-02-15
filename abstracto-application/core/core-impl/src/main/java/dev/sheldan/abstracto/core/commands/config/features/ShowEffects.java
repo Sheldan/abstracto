@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.database.EffectType;
 import dev.sheldan.abstracto.core.models.template.commands.ShowEffectsModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
@@ -73,6 +74,7 @@ public class ShowEffects extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
                 .rootCommandName(CoreSlashCommandNames.CONFIG)
                 .commandName(SHOW_EFFECTS_COMMAND)
                 .build();

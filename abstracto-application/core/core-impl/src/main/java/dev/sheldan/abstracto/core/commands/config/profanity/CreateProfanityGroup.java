@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.service.ProfanityService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -70,6 +71,7 @@ public class CreateProfanityGroup extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
                 .rootCommandName(CoreSlashCommandNames.PROFANITY)
                 .commandName(CREATE_PROFANITY_GROUP_COMMAND)
                 .build();

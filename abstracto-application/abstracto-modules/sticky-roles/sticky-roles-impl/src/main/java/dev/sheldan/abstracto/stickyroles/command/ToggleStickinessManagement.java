@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.service.UserService;
 import dev.sheldan.abstracto.stickyroles.config.StickyRolesFeatureDefinition;
@@ -99,6 +100,7 @@ public class ToggleStickinessManagement extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(StickyRolesSlashCommandNames.STICKY_ROLES)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
                 .commandName("manage")
                 .build();
 

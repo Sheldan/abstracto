@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.database.ChannelGroupType;
 import dev.sheldan.abstracto.core.service.ChannelGroupService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -82,6 +83,7 @@ public class CreateChannelGroup extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
                 .rootCommandName(CoreSlashCommandNames.CHANNELS)
                 .commandName(CREATE_CHANNEL_GROUP_COMMAND)
                 .build();

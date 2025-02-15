@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.core.commands.config.template;
 
+import dev.sheldan.abstracto.core.command.condition.CommandCondition;
+import dev.sheldan.abstracto.core.command.condition.BotOwnerOnlyCondition;
 import dev.sheldan.abstracto.core.interaction.slash.CoreSlashCommandNames;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
@@ -13,6 +15,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.templating.service.management.CustomTemplateManagementService;
@@ -54,6 +57,9 @@ public class SetTemplate extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
+
+    @Autowired
+    private BotOwnerOnlyCondition botOwnerOnlyCondition;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
@@ -136,6 +142,7 @@ public class SetTemplate extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
                 .rootCommandName(CoreSlashCommandNames.INTERNAL)
                 .commandName(SET_TEMPLATE_COMMAND)
                 .build();
@@ -150,5 +157,12 @@ public class SetTemplate extends AbstractConditionableCommand {
                 .templated(true)
                 .causesReaction(true)
                 .build();
+    }
+
+    @Override
+    public List<CommandCondition> getConditions() {
+        List<CommandCondition> conditions = super.getConditions();
+        conditions.add(botOwnerOnlyCondition);
+        return conditions;
     }
 }

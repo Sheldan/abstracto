@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.service.ChannelGroupService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -90,6 +91,7 @@ public class AddToChannelGroup extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
                 .rootCommandName(CoreSlashCommandNames.CHANNELS)
                 .commandName(ADD_TO_CHANNEL_GROUP_COMMAND)
                 .build();

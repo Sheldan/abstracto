@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.ListChannelGroupsModel;
@@ -61,9 +62,9 @@ public class ListChannelGroups extends AbstractConditionableCommand {
         AServer server = serverManagementService.loadServer(guild);
         List<AChannelGroup> channelGroups = channelGroupManagementService.findAllInServer(server);
         ListChannelGroupsModel template = ListChannelGroupsModel
-                .builder()
-                .groups(channelGroupService.convertAChannelGroupToChannelGroupChannel(channelGroups))
-                .build();
+            .builder()
+            .groups(channelGroupService.convertAChannelGroupToChannelGroupChannel(channelGroups))
+            .build();
         return templateService.renderEmbedTemplate("listChannelGroups_response", template, guild.getIdLong());
     }
 
@@ -71,34 +72,35 @@ public class ListChannelGroups extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         MessageToSend response = getMessageToSend(event.getGuild());
         return interactionService.replyMessageToSend(response, event)
-                .thenApply(interactionHook -> CommandResult.fromSuccess());
+            .thenApply(interactionHook -> CommandResult.fromSuccess());
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         List<String> aliases = Arrays.asList("lsChGrp");
         HelpInfo helpInfo = HelpInfo
-                .builder()
-                .templated(true)
-                .build();
+            .builder()
+            .templated(true)
+            .build();
 
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
-                .builder()
-                .enabled(true)
-                .rootCommandName(CoreSlashCommandNames.CHANNELS)
-                .commandName(LIST_CHANNEL_GROUPS_COMMAND)
-                .build();
+            .builder()
+            .enabled(true)
+            .rootCommandName(CoreSlashCommandNames.CHANNELS)
+            .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
+            .commandName(LIST_CHANNEL_GROUPS_COMMAND)
+            .build();
 
         return CommandConfiguration.builder()
-                .name(LIST_CHANNEL_GROUPS_COMMAND)
-                .module(ChannelsModuleDefinition.CHANNELS)
-                .slashCommandConfig(slashCommandConfig)
-                .aliases(aliases)
-                .templated(true)
-                .help(helpInfo)
-                .supportsEmbedException(true)
-                .causesReaction(true)
-                .build();
+            .name(LIST_CHANNEL_GROUPS_COMMAND)
+            .module(ChannelsModuleDefinition.CHANNELS)
+            .slashCommandConfig(slashCommandConfig)
+            .aliases(aliases)
+            .templated(true)
+            .help(helpInfo)
+            .supportsEmbedException(true)
+            .causesReaction(true)
+            .build();
     }
 
     @Override

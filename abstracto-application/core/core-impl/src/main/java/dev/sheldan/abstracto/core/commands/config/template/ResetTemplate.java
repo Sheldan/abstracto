@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.core.commands.config.template;
 
+import dev.sheldan.abstracto.core.command.condition.CommandCondition;
+import dev.sheldan.abstracto.core.command.condition.BotOwnerOnlyCondition;
 import dev.sheldan.abstracto.core.interaction.slash.CoreSlashCommandNames;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
@@ -13,6 +15,7 @@ import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.CustomTemplateNotFoundException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.templating.model.database.CustomTemplate;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
@@ -44,6 +47,9 @@ public class ResetTemplate extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
+
+    @Autowired
+    private BotOwnerOnlyCondition botOwnerOnlyCondition;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
@@ -89,6 +95,7 @@ public class ResetTemplate extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(CoreSlashCommandNames.INTERNAL)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
                 .commandName(RESET_TEMPLATE_COMMAND)
                 .build();
 
@@ -107,5 +114,12 @@ public class ResetTemplate extends AbstractConditionableCommand {
     @Override
     public FeatureDefinition getFeature() {
         return CoreFeatureDefinition.CORE_FEATURE;
+    }
+
+    @Override
+    public List<CommandCondition> getConditions() {
+        List<CommandCondition> conditions = super.getConditions();
+        conditions.add(botOwnerOnlyCondition);
+        return conditions;
     }
 }

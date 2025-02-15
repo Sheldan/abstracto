@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.config.StatisticSlashCommandNames;
 import dev.sheldan.abstracto.statistic.emote.config.EmoteTrackingModuleDefinition;
@@ -58,6 +59,7 @@ public class SyncTrackedEmotes extends AbstractConditionableCommand {
             .builder()
             .enabled(true)
             .rootCommandName(StatisticSlashCommandNames.STATISTIC_INTERNAL)
+            .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
             .groupName("manage")
             .commandName("synctrackedemotes")
             .build();

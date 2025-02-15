@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.service.ChannelGroupService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -49,40 +50,41 @@ public class EnableChannelGroup extends AbstractConditionableCommand {
         String channelGroupName = slashCommandParameterService.getCommandOption(CHANNEL_GROUP_NAME_PARAMETER, event, String.class);
         channelGroupService.enableChannelGroup(channelGroupName, event.getGuild().getIdLong());
         return interactionService.replyEmbed(ENABLE_CHANNEL_GROUP_RESPONSE, event)
-                .thenApply(interactionHook -> CommandResult.fromSuccess());
+            .thenApply(interactionHook -> CommandResult.fromSuccess());
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         Parameter channelGroupName = Parameter
-                .builder()
-                .name(CHANNEL_GROUP_NAME_PARAMETER)
-                .type(String.class)
-                .templated(true)
-                .build();
+            .builder()
+            .name(CHANNEL_GROUP_NAME_PARAMETER)
+            .type(String.class)
+            .templated(true)
+            .build();
         List<Parameter> parameters = Arrays.asList(channelGroupName);
         HelpInfo helpInfo = HelpInfo
-                .builder()
-                .templated(true)
-                .build();
+            .builder()
+            .templated(true)
+            .build();
 
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
-                .builder()
-                .enabled(true)
-                .rootCommandName(CoreSlashCommandNames.CHANNELS)
-                .commandName(ENABLE_CHANNEL_GROUP_COMMAND)
-                .build();
+            .builder()
+            .enabled(true)
+            .rootCommandName(CoreSlashCommandNames.CHANNELS)
+            .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
+            .commandName(ENABLE_CHANNEL_GROUP_COMMAND)
+            .build();
 
         return CommandConfiguration.builder()
-                .name(ENABLE_CHANNEL_GROUP_COMMAND)
-                .module(ChannelsModuleDefinition.CHANNELS)
-                .parameters(parameters)
-                .slashCommandConfig(slashCommandConfig)
-                .supportsEmbedException(true)
-                .help(helpInfo)
-                .templated(true)
-                .causesReaction(true)
-                .build();
+            .name(ENABLE_CHANNEL_GROUP_COMMAND)
+            .module(ChannelsModuleDefinition.CHANNELS)
+            .parameters(parameters)
+            .slashCommandConfig(slashCommandConfig)
+            .supportsEmbedException(true)
+            .help(helpInfo)
+            .templated(true)
+            .causesReaction(true)
+            .build();
     }
 
     @Override

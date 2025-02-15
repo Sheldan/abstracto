@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandService;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.config.StatisticSlashCommandNames;
@@ -55,6 +56,7 @@ public class ResetEmoteStats extends AbstractConditionableCommand {
             .builder()
             .enabled(true)
             .rootCommandName(StatisticSlashCommandNames.STATISTIC_INTERNAL)
+            .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
             .groupName("manage")
             .commandName("resetemotestats")
             .build();

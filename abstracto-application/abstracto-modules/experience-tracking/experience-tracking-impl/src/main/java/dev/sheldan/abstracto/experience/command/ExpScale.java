@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
@@ -80,6 +81,7 @@ public class ExpScale extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(ExperienceSlashCommandNames.EXPERIENCE_CONFIG)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
                 .commandName(EXP_SCALE_COMMAND)
                 .build();
 

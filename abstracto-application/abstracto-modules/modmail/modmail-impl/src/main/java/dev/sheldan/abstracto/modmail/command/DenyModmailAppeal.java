@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
@@ -92,6 +93,7 @@ public class DenyModmailAppeal extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(ModMailSlashCommandNames.MODMAIL)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
                 .commandName(COMMAND_NAME)
                 .build();
 

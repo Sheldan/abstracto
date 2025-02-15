@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureMode;
 import dev.sheldan.abstracto.experience.config.ExperienceSlashCommandNames;
@@ -51,6 +52,7 @@ public class ShowLevelActions extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(ExperienceSlashCommandNames.EXPERIENCE_CONFIG)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
                 .groupName("levelAction")
                 .commandName("show")
                 .build();

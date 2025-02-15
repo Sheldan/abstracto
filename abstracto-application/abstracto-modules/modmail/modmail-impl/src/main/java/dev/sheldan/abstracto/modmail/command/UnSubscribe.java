@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
@@ -74,6 +75,7 @@ public class UnSubscribe extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(ModMailSlashCommandNames.MODMAIL)
+                .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
                 .commandName(UN_SUBSCRIBE_COMMAND)
                 .build();
 
