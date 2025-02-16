@@ -1,8 +1,9 @@
 package dev.sheldan.abstracto.statistic.emote.command.parameter;
 
+import dev.sheldan.abstracto.core.command.execution.CommandParameterKey;
 import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmoteType;
 
-public enum UsedEmoteTypeParameter {
+public enum UsedEmoteTypeParameter implements CommandParameterKey {
     REACTION,
     MESSAGE;
 

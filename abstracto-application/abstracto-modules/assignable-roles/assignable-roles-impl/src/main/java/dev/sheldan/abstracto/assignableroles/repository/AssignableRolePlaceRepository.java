@@ -37,5 +37,6 @@ public interface AssignableRolePlaceRepository extends JpaRepository<AssignableR
      * @return A list of {@link AssignableRolePlace places} which were found in the given {@link AServer server}
      */
     List<AssignableRolePlace> findByServer(AServer server);
+    List<AssignableRolePlace> findByKeyContainingIgnoreCaseAndServer(String name, AServer server);
 
 }

@@ -33,7 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import dev.sheldan.abstracto.core.utils.ContextUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -200,7 +199,7 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     }
 
     @Transactional
-    public void continueSlashCommand(Long interactionId, ButtonInteractionEvent buttonInteractionEvent) {
+    public void continueSlashCommand(Long interactionId, ButtonInteractionEvent buttonInteractionEvent, SlashCommandConfirmationPayload  slashCommandConfirmationPayload) {
         if(COMMANDS_WAITING_FOR_CONFIRMATION.containsKey(interactionId)) {
             DriedSlashCommand driedSlashCommand = COMMANDS_WAITING_FOR_CONFIRMATION.get(interactionId);
             Command commandInstance = driedSlashCommand.getCommand();
@@ -212,16 +211,24 @@ public class SlashCommandListenerBean extends ListenerAdapter {
             }).thenAccept(commandResult -> {
                 self.executePostCommandListener(commandInstance, driedSlashCommand.getEvent(), commandResult);
                 COMMANDS_WAITING_FOR_CONFIRMATION.remove(interactionId);
+                self.cleanupSlashCommandConfirmation(slashCommandConfirmationPayload, buttonInteractionEvent);
             }).exceptionally(throwable -> {
                 log.error("Error while handling post execution of command with confirmation {}", commandName, throwable);
                 CommandResult commandResult = CommandResult.fromError(throwable.getMessage(), throwable);
                 self.executePostCommandListener(commandInstance, driedSlashCommand.getEvent(), commandResult);
                 COMMANDS_WAITING_FOR_CONFIRMATION.remove(interactionId);
+                self.cleanupSlashCommandConfirmation(slashCommandConfirmationPayload, buttonInteractionEvent);
                 return null;
             });
         } else {
             log.warn("Interaction was not found in internal map - not continuing interaction from user {} in server {}.", buttonInteractionEvent.getUser().getIdLong(), buttonInteractionEvent.getGuild().getIdLong());
         }
+    }
+
+    @Transactional
+    public void cleanupSlashCommandConfirmation(SlashCommandConfirmationPayload  slashCommandConfirmationPayload, ButtonInteractionEvent buttonInteractionEvent) {
+        log.debug("Cleaning up component {} and {}.", slashCommandConfirmationPayload.getConfirmationPayloadId(), slashCommandConfirmationPayload.getAbortPayloadId());
+        componentPayloadManagementService.deletePayloads(Arrays.asList(slashCommandConfirmationPayload.getAbortPayloadId(), slashCommandConfirmationPayload.getConfirmationPayloadId()));
     }
 
     @Transactional
@@ -253,6 +260,8 @@ public class SlashCommandListenerBean extends ListenerAdapter {
                 .builder()
                 .action(SlashCommandConfirmationPayload.CommandConfirmationAction.CONFIRM)
                 .interactionId(event.getIdLong())
+                .abortPayloadId(abortId)
+                .confirmationPayloadId(confirmationId)
                 .build();
             Long serverId = event.getGuild().getIdLong();
             AServer server = serverManagementService.loadServer(event.getGuild());
@@ -261,6 +270,8 @@ public class SlashCommandListenerBean extends ListenerAdapter {
                 .builder()
                 .action(SlashCommandConfirmationPayload.CommandConfirmationAction.ABORT)
                 .interactionId(event.getIdLong())
+                .abortPayloadId(abortId)
+                .confirmationPayloadId(confirmationId)
                 .build();
             componentPayloadService.createButtonPayload(abortId, denialPayload, SLASH_COMMAND_CONFIRMATION_ORIGIN, server);
             CommandConfirmationModel model = CommandConfirmationModel

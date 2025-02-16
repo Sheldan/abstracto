@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.CommandParameterKey;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
@@ -111,17 +112,11 @@ public class ChangeTwitchStreamer extends AbstractConditionableCommand {
                 .type(String.class)
                 .build();
 
-        List<String> streamerProperties = Arrays
-                .stream(StreamerProperty.values())
-                .map(Enum::name)
-                .collect(Collectors.toList());
-
         Parameter streamerPropertyParameter = Parameter
                 .builder()
                 .templated(true)
                 .name(STREAMER_PROPERTY_PARAMETER)
-                .type(String.class)
-                .choices(streamerProperties)
+                .type(StreamerProperty.class)
                 .build();
 
         Parameter newValueParameter = Parameter
@@ -165,7 +160,7 @@ public class ChangeTwitchStreamer extends AbstractConditionableCommand {
         return TwitchFeatureDefinition.TWITCH;
     }
 
-    public enum StreamerProperty {
+    public enum StreamerProperty implements CommandParameterKey {
         TARGET_CHANNEL, STREAMER_MEMBER, DISABLE_NOTIFICATIONS, TEMPLATE_KEY
     }
 }

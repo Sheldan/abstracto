@@ -5,5 +5,5 @@ import lombok.Getter;
 
 @Getter
 public enum AssignableRolePlaceParameterKey implements CommandParameterKey {
-    UNIQUE
+    UNIQUE, TEXT
 }

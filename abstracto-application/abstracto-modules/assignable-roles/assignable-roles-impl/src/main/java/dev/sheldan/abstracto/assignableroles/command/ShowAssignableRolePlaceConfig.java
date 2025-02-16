@@ -1,18 +1,20 @@
 package dev.sheldan.abstracto.assignableroles.command;
 
 import dev.sheldan.abstracto.assignableroles.config.AssignableRoleFeatureDefinition;
+import dev.sheldan.abstracto.assignableroles.config.AssignableRolePlaceSlashCommandName;
 import dev.sheldan.abstracto.assignableroles.model.template.AssignableRolePlaceConfig;
 import dev.sheldan.abstracto.assignableroles.service.AssignableRolePlaceService;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,27 +32,27 @@ public class ShowAssignableRolePlaceConfig extends AbstractConditionableCommand 
     private AssignableRolePlaceService service;
 
     @Autowired
-    private ServerManagementService serverManagementService;
+    private InteractionService interactionService;
 
     @Autowired
-    private ChannelService channelService;
+    private SlashCommandParameterService slashCommandParameterService;
 
-    public static final String ASSIGNABLE_ROLES_CONFIG_POST_TEMPLATE_KEY = "assignable_roles_config_post";
+    private static final String ASSIGNABLE_ROLE_PLACE_NAME_PARAMETER = "name";
+    private static final String ASSIGNABLE_ROLES_CONFIG_POST_TEMPLATE_KEY = "assignable_roles_config_post";
 
     @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        String name = (String) parameters.get(0);
-        AssignableRolePlaceConfig config = service.getAssignableRolePlaceConfig(commandContext.getGuild(), name);
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(ASSIGNABLE_ROLES_CONFIG_POST_TEMPLATE_KEY, config, commandContext.getChannel()))
-                .thenApply(unused -> CommandResult.fromSuccess());
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        String assignableRolePlaceName = slashCommandParameterService.getCommandOption(ASSIGNABLE_ROLE_PLACE_NAME_PARAMETER, event, String.class);
+        AssignableRolePlaceConfig config = service.getAssignableRolePlaceConfig(event.getGuild(), assignableRolePlaceName);
+        return interactionService.replyEmbed(ASSIGNABLE_ROLES_CONFIG_POST_TEMPLATE_KEY, config, event)
+            .thenApply(interactionHook -> CommandResult.fromSuccess());
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         Parameter rolePostName = Parameter
                 .builder()
-                .name("name")
+                .name(ASSIGNABLE_ROLE_PLACE_NAME_PARAMETER)
                 .type(String.class)
                 .templated(true)
                 .build();
@@ -59,13 +61,24 @@ public class ShowAssignableRolePlaceConfig extends AbstractConditionableCommand 
                 .builder()
                 .templated(true)
                 .build();
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+            .builder()
+            .enabled(true)
+            .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
+            .rootCommandName(AssignableRolePlaceSlashCommandName.ASSIGNABLE_ROLE_PLACE)
+            .groupName("place")
+            .commandName("showconfig")
+            .build();
+
         return CommandConfiguration.builder()
                 .name("showAssignableRolePlaceConfig")
                 .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
                 .async(true)
                 .causesReaction(false)
-                .messageCommandOnly(true)
+                .slashCommandOnly(true)
+                .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)

@@ -5,20 +5,20 @@ import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
 import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlaceType;
 import dev.sheldan.abstracto.assignableroles.model.template.AssignablePlaceOverview;
 import dev.sheldan.abstracto.assignableroles.model.template.AssignableRolePlaceConfig;
-import dev.sheldan.abstracto.core.models.FullEmote;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import java.util.concurrent.CompletableFuture;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 
 public interface AssignableRolePlaceService {
     void createAssignableRolePlace(String name, AChannel channel, String text, AssignableRolePlaceType type);
 
-    CompletableFuture<Void> addRoleToAssignableRolePlace(AServer server, String placeName, Role role, FullEmote emote, String description);
+    CompletableFuture<Void> addRoleToAssignableRolePlace(AServer server, String placeName, Role role, Emoji emoji, String description);
 
     CompletableFuture<Void> removeRoleFromAssignableRolePlace(AServer server, String placeName, ARole role);
 
@@ -48,7 +48,7 @@ public interface AssignableRolePlaceService {
 
     AssignableRolePlaceConfig getAssignableRolePlaceConfig(Guild guild, String name);
 
-    CompletableFuture<Void> moveAssignableRolePlace(AServer server, String name, TextChannel newChannel);
+    CompletableFuture<Void> moveAssignableRolePlace(AServer server, String name, GuildMessageChannel newChannel);
 
     CompletableFuture<Void> deleteAssignableRolePlace(AServer server, String name);
 

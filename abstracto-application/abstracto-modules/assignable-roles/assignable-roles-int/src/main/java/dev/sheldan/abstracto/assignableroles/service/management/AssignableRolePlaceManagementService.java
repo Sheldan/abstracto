@@ -28,4 +28,6 @@ public interface AssignableRolePlaceManagementService {
 
     List<AssignableRolePlace> findAllByServer(AServer server);
 
+    List<AssignableRolePlace> getAssignableRolePlacesWithNamesContaining(String name, AServer server);
+
 }

@@ -17,6 +17,7 @@ public interface InteractionService {
     List<CompletableFuture<Message>> sendEmbed(String templateKey, InteractionHook interactionHook);
     CompletableFuture<Message> replaceOriginal(MessageToSend messageToSend, InteractionHook interactionHook);
     CompletableFuture<Message> replaceOriginal(String template, Object model, InteractionHook interactionHook);
+    CompletableFuture<Void> deleteMessage(InteractionHook interactionHook);
     CompletableFuture<InteractionHook> replyMessageToSend(MessageToSend messageToSend, IReplyCallback callback);
     CompletableFuture<InteractionHook> replyMessage(String templateKey, Object model, IReplyCallback callback);
     CompletableFuture<Message> replyString(String content, InteractionHook interactionHook);

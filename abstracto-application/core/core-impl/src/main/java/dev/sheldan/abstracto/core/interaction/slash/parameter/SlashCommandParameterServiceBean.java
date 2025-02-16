@@ -171,7 +171,8 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
     public List<OptionType> getTypesFromParameter(Parameter parameter) {
         return parameterProviders
                 .stream()
-                .filter(slashCommandParameterProvider -> slashCommandParameterProvider.getOptionMapping().getType().equals(parameter.getType()))
+                .filter(slashCommandParameterProvider -> slashCommandParameterProvider.getOptionMapping().getType().equals(parameter.getType())
+                    || slashCommandParameterProvider.getOptionMapping().getType().isAssignableFrom(parameter.getType()))
                 .findAny()
                 .map(slashCommandParameterProvider -> {
                     List<OptionType> optionTypes;
@@ -194,7 +195,8 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
     public List<OptionType> getTypesFromParameter(Class clazz, boolean strict) {
         return parameterProviders
                 .stream()
-                .filter(slashCommandParameterProvider -> slashCommandParameterProvider.getOptionMapping().getType().equals(clazz))
+            .filter(slashCommandParameterProvider -> slashCommandParameterProvider.getOptionMapping().getType().equals(clazz)
+                || slashCommandParameterProvider.getOptionMapping().getType().isAssignableFrom(clazz))
                 .findAny()
                 .map(slashCommandParameterProvider -> {
                     List<OptionType> optionTypes;

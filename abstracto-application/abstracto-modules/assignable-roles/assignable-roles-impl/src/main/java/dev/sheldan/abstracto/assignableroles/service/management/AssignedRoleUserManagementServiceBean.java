@@ -47,7 +47,6 @@ public class AssignedRoleUserManagementServiceBean implements AssignedRoleUserMa
     @Override
     public void removeAssignedRoleFromUsers(AssignableRole assignableRole, List<AssignedRoleUser> users) {
         log.info("Clearing all assignable role {} for {} users.", assignableRole.getId(), users.size());
-        assignableRole.getAssignedUsers().removeAll(users);
         users.forEach(roleUser -> roleUser.getRoles().remove(assignableRole));
     }
 

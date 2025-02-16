@@ -26,7 +26,7 @@ public class SlashCommandConfirmationGivenButtonListener implements ButtonClicke
     public ButtonClickedListenerResult execute(ButtonClickedListenerModel model) {
         SlashCommandConfirmationPayload payload = (SlashCommandConfirmationPayload) model.getDeserializedPayload();
         if(payload.getAction().equals(SlashCommandConfirmationPayload.CommandConfirmationAction.CONFIRM)) {
-            slashCommandListenerBean.continueSlashCommand(payload.getInteractionId(), model.getEvent());
+            slashCommandListenerBean.continueSlashCommand(payload.getInteractionId(), model.getEvent(), payload);
             return ButtonClickedListenerResult.ACKNOWLEDGED;
         } else {
             return ButtonClickedListenerResult.IGNORED;

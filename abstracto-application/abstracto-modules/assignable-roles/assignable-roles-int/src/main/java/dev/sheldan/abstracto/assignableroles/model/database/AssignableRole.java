@@ -74,7 +74,7 @@ public class AssignableRole implements Serializable {
     private String description;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "component_id", nullable = false)
+    @JoinColumn(name = "component_id")
     private ComponentPayload componentPayload;
 
     /**

@@ -85,7 +85,12 @@ public class ConfirmationButtonClickedListener implements ButtonClickedListener 
         } catch (Exception e) {
             commandReceivedHandler.reportException(context.getContext(), context.getCommand(), e, "Confirmation execution of command failed.");
         } finally {
-            cleanup(model, payload);
+            cleanup(model, payload).thenAccept(unused -> {
+                log.info("Cleanup successful.");
+            }).exceptionally(throwable -> {
+                log.error("Failed to cleanup confirmation button.", throwable);
+                return null;
+            });
         }
     }
 

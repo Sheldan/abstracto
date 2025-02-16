@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.interaction.slash;
 
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.CommandParameterKey;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.command.model.database.ACommand;
@@ -235,6 +236,9 @@ public class SlashCommandServiceBean implements SlashCommandService {
     }
 
     private void addChoices(OptionData optionData, Parameter parameter, String commandName, boolean isTemplated, Long serverId) {
+        if(CommandParameterKey.class.isAssignableFrom(parameter.getType())) {
+            parameter.setChoices(CommandParameterKey.getKeys(parameter.getType()));
+        }
         parameter.getChoices().forEach(choiceKey -> {
             String value = isTemplated ? templateService.renderSimpleTemplate(commandName + "_parameter_" + parameter.getName() + "_choice_" + choiceKey, serverId) : choiceKey;
             optionData.addChoice(value, choiceKey);

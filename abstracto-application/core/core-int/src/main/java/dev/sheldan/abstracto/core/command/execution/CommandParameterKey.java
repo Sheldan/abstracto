@@ -19,4 +19,10 @@ public interface CommandParameterKey {
         }
         throw new IllegalArgumentException("Clazz and key must not be null");
     }
+
+    static <T extends Enum<T>> List<String> getKeys(Class<T> clazz) {
+        return Arrays.stream(clazz.getEnumConstants())
+            .map(Enum::name)
+            .toList();
+    }
 }

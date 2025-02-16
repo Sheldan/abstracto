@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlaceT
 import dev.sheldan.abstracto.assignableroles.model.database.AssignedRoleUser;
 import dev.sheldan.abstracto.assignableroles.repository.AssignableRoleRepository;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.models.FullEmote;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.ComponentPayload;
 import dev.sheldan.abstracto.core.service.EmoteService;
@@ -14,6 +13,7 @@ import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -39,12 +39,12 @@ public class AssignableRoleManagementServiceBean implements AssignableRoleManage
     private EmoteService emoteService;
 
     @Override
-    public AssignableRole addRoleToPlace(FullEmote emote, Role role, String description, AssignableRolePlace place, ComponentPayload componentPayload) {
+    public AssignableRole addRoleToPlace(Emoji emoji, Role role, String description, AssignableRolePlace place, ComponentPayload componentPayload) {
         ARole arole = roleManagementService.findRole(role.getIdLong());
         AssignableRole roleToAdd = AssignableRole
                 .builder()
                 .assignablePlace(place)
-                .emoteMarkdown(emote != null ? emote.getEmoteRepr() : null)
+                .emoteMarkdown(emoji != null ? emoji.getFormatted() : null)
                 .role(arole)
                 .componentPayload(componentPayload)
                 .server(place.getServer())

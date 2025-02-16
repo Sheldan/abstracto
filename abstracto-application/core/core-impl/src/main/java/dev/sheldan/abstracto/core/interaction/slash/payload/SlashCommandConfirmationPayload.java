@@ -10,6 +10,8 @@ public class SlashCommandConfirmationPayload implements ButtonPayload {
 
     private CommandConfirmationAction action;
     private Long interactionId;
+    private String confirmationPayloadId;
+    private String abortPayloadId;
 
     public enum CommandConfirmationAction {
         CONFIRM, ABORT

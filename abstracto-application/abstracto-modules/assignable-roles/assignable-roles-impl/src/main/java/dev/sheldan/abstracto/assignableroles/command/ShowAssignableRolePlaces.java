@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.assignableroles.command;
 
 import dev.sheldan.abstracto.assignableroles.config.AssignableRoleFeatureDefinition;
+import dev.sheldan.abstracto.assignableroles.config.AssignableRolePlaceSlashCommandName;
 import dev.sheldan.abstracto.assignableroles.model.template.AssignablePlaceOverview;
 import dev.sheldan.abstracto.assignableroles.service.AssignableRolePlaceService;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
@@ -9,10 +10,13 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,12 +33,12 @@ public class ShowAssignableRolePlaces extends AbstractConditionableCommand {
     private AssignableRolePlaceService service;
 
     @Autowired
-    private ServerManagementService serverManagementService;
-
-    @Autowired
     private ChannelService channelService;
 
-    public static final String ASSIGNABLE_ROLE_PLACES_OVERVIEW_TEMPLATE_KEY = "assignable_role_places_overview";
+    @Autowired
+    private InteractionService interactionService;
+
+    private static final String ASSIGNABLE_ROLE_PLACES_OVERVIEW_TEMPLATE_KEY = "assignable_role_places_overview";
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
@@ -44,16 +48,34 @@ public class ShowAssignableRolePlaces extends AbstractConditionableCommand {
     }
 
     @Override
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        AssignablePlaceOverview model = service.getAssignableRolePlaceOverview(event.getGuild());
+        return interactionService.replyEmbed(ASSIGNABLE_ROLE_PLACES_OVERVIEW_TEMPLATE_KEY, model, event)
+            .thenApply(interactionHook -> CommandResult.fromSuccess());
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
         HelpInfo helpInfo = HelpInfo
                 .builder()
                 .templated(true)
                 .build();
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+            .builder()
+            .enabled(true)
+            .defaultPrivilege(SlashCommandPrivilegeLevels.INVITER)
+            .rootCommandName(AssignableRolePlaceSlashCommandName.ASSIGNABLE_ROLE_PLACE)
+            .groupName("place")
+            .commandName("show")
+            .build();
+
         return CommandConfiguration.builder()
                 .name("showAssignableRolePlaces")
                 .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
-                .messageCommandOnly(true)
+                .slashCommandOnly(true)
+                .slashCommandConfig(slashCommandConfig)
                 .async(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)

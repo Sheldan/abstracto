@@ -14,7 +14,6 @@ import dev.sheldan.abstracto.core.exception.EmoteNotUsableException;
 import dev.sheldan.abstracto.core.interaction.ComponentPayloadManagementService;
 import dev.sheldan.abstracto.core.interaction.ComponentPayloadService;
 import dev.sheldan.abstracto.core.interaction.ComponentService;
-import dev.sheldan.abstracto.core.models.FullEmote;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -28,7 +27,10 @@ import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,7 +106,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
 
     @Override
     @Transactional
-    public CompletableFuture<Void> addRoleToAssignableRolePlace(AServer server, String placeName, Role role, FullEmote fakeEmote, String description) {
+    public CompletableFuture<Void> addRoleToAssignableRolePlace(AServer server, String placeName, Role role, Emoji emoji, String description) {
         AssignableRolePlace assignableRolePlace = rolePlaceManagementService.findByServerAndKey(server, placeName);
         if (assignableRolePlace.getAssignableRoles().size() > MAX_ASSIGNABLE_ROLES_PER_POST) {
             log.info("Assignable role place {} has already {} roles. Not possible to add more.", assignableRolePlace.getId(), assignableRolePlace.getAssignableRoles().size());
@@ -115,26 +117,26 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         }
         Long placeId = assignableRolePlace.getId();
         Long serverId = server.getId();
-        if (fakeEmote != null && fakeEmote.getEmote() != null) {
+        if (emoji instanceof CustomEmoji customEmoji) {
             // it only may be unusable if its a custom emote
             log.debug("Using custom emote {} to create assignable role {} for  assignable role place {} in server {}.",
-                    fakeEmote.getEmote().getId(), role.getId(), placeId, serverId);
-            if (!emoteService.isEmoteUsableByBot(fakeEmote.getEmote())) {
-                throw new EmoteNotUsableException(fakeEmote.getEmote());
+                customEmoji.getId(), role.getId(), placeId, serverId);
+            if (!emoteService.isEmoteUsableByBot(customEmoji)) {
+                throw new EmoteNotUsableException(customEmoji);
             }
         }
         Optional<GuildMessageChannel> channelOptional = channelService.getMessageChannelFromServerOptional(server.getId(), assignableRolePlace.getChannel().getId());
         if (channelOptional.isPresent()) {
             GuildMessageChannel textChannel = channelOptional.get();
             String buttonId = componentService.generateComponentId();
-            String emoteMarkdown = fakeEmote != null ? fakeEmote.getEmoteRepr() : null;
+            String emoteMarkdown = emoji != null ? emoji.getFormatted() : null;
             if (assignableRolePlace.getMessageId() != null) {
                 log.debug("Assignable role place {} has already message post with ID {} - updating.", assignableRolePlace.getId(), assignableRolePlace.getMessageId());
                 return componentService.addButtonToMessage(assignableRolePlace.getMessageId(), textChannel, buttonId, description, emoteMarkdown, ButtonStyle.SECONDARY)
-                        .thenAccept(message -> self.persistAssignableRoleAddition(placeId, role, description, fakeEmote, buttonId));
+                        .thenAccept(message -> self.persistAssignableRoleAddition(placeId, role, description, emoji, buttonId));
             } else {
                 log.info("Assignable role place {} is not yet setup - only adding role to the database.", assignableRolePlace.getId());
-                self.persistAssignableRoleAddition(placeId, role, description, fakeEmote, buttonId);
+                self.persistAssignableRoleAddition(placeId, role, description, emoji, buttonId);
                 return CompletableFuture.completedFuture(null);
             }
         } else {
@@ -143,11 +145,11 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     }
 
     @Transactional
-    public void persistAssignableRoleAddition(Long placeId, Role role, String description, FullEmote fakeEmote, String componentId) {
+    public void persistAssignableRoleAddition(Long placeId, Role role, String description, Emoji emoji, String componentId) {
         AssignableRolePlace place = assignableRolePlaceManagementServiceBean.findByPlaceId(placeId);
         log.info("Adding role {} to assignable role place {} with component ID {}.", role.getId(), place.getId(), componentId);
         ComponentPayload payload = persistButtonCallback(place, componentId, role.getIdLong());
-        assignableRoleManagementServiceBean.addRoleToPlace(fakeEmote, role, description, place, payload);
+        assignableRoleManagementServiceBean.addRoleToPlace(emoji, role, description, place, payload);
     }
 
     @Override
@@ -353,7 +355,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     }
 
     @Override
-    public CompletableFuture<Void> moveAssignableRolePlace(AServer server, String name, TextChannel newChannel) {
+    public CompletableFuture<Void> moveAssignableRolePlace(AServer server, String name, GuildMessageChannel newChannel) {
         AssignableRolePlace place = rolePlaceManagementService.findByServerAndKey(server, name);
         log.info("Moving assignable role place {} from channel {} to channel {} in guild {}.",
                 place.getId(), place.getChannel().getId(), newChannel.getId(), newChannel.getGuild().getIdLong());
@@ -381,7 +383,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     }
 
     @Transactional
-    public void updateAssignableRolePlaceChannel(String name, TextChannel textChannel) {
+    public void updateAssignableRolePlaceChannel(String name, GuildChannel textChannel) {
         AChannel channel = channelManagementService.loadChannel(textChannel.getIdLong());
         log.info("Setting assignable role place to channel {}.", textChannel.getIdLong());
         rolePlaceManagementService.moveAssignableRolePlace(name, channel);
@@ -400,7 +402,10 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     public void deleteAssignableRolePlaceInDatabase(Long placeId) {
         AssignableRolePlace place = rolePlaceManagementService.findByPlaceId(placeId);
         place.getAssignableRoles()
-                .forEach(assignableRole -> componentPayloadManagementService.deletePayload(assignableRole.getComponentPayload()));
+                .forEach(assignableRole -> {
+                    assignedRoleUserManagementServiceBean.removeAssignedRoleFromUsers(assignableRole);
+                    componentPayloadManagementService.deletePayload(assignableRole.getComponentPayload());
+                });
         rolePlaceManagementService.deleteAssignablePlace(place);
     }
 
@@ -414,13 +419,15 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
 
     @Override
     public CompletableFuture<Void> changeConfiguration(AServer server, String name, AssignableRolePlaceParameterKey keyToChange, String newValue) {
-        Boolean booleanValue = BooleanUtils.toBooleanObject(newValue);
-        if (booleanValue == null) {
-            throw new CommandParameterKeyValueWrongTypeException(Arrays.asList("yes", "no", "true", "false", "on", "off"));
-        }
         if (keyToChange == AssignableRolePlaceParameterKey.UNIQUE) {
+            Boolean booleanValue = BooleanUtils.toBooleanObject(newValue);
+            if (booleanValue == null) {
+                throw new CommandParameterKeyValueWrongTypeException(Arrays.asList("yes", "no", "true", "false", "on", "off"));
+            }
             setAssignablePlaceUniqueTo(server, name, booleanValue);
             return CompletableFuture.completedFuture(null);
+        } else if(keyToChange == AssignableRolePlaceParameterKey.TEXT) {
+            return changeTextAsync(server, name, newValue);
         }
         throw new AssignableRolePlaceIllegalConfigurationException();
     }
@@ -518,7 +525,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
 
 
     @Transactional
-    public CompletableFuture<Void> setupAssignableRolePlaceInChannel(Long serverId, Long assignablePlaceId, TextChannel textChannel) {
+    public CompletableFuture<Void> setupAssignableRolePlaceInChannel(Long serverId, Long assignablePlaceId, GuildMessageChannel textChannel) {
         AssignableRolePlace assignableRolePlace = rolePlaceManagementService.findByPlaceId(assignablePlaceId);
         log.info("Sending assignable role place posts for place {} in channel {} in server {}.", assignableRolePlace.getId(), textChannel.getId(), serverId);
         return sendAssignablePostMessage(assignableRolePlace, textChannel);

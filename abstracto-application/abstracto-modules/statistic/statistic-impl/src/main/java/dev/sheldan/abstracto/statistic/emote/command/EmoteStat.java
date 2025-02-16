@@ -124,19 +124,13 @@ public class EmoteStat extends AbstractConditionableCommand {
                 .build();
         parameters.add(periodParameter);
 
-        List<String> emoteTypes = Arrays
-            .stream(UsedEmoteTypeParameter.values())
-            .map(Enum::name)
-            .collect(Collectors.toList());
-
         Parameter typeParameter = Parameter
             .builder()
             .name(EMOTE_STAT_USED_EMOTE_TYPE)
             .templated(true)
             .slashCommandOnly(true)
             .optional(true)
-            .choices(emoteTypes)
-            .type(String.class)
+            .type(UsedEmoteTypeParameter.class)
             .build();
 
         parameters.add(typeParameter);

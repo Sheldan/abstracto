@@ -86,4 +86,8 @@ public class AssignableRolePlaceManagementServiceBean implements AssignableRoleP
     }
 
 
+    @Override
+    public List<AssignableRolePlace> getAssignableRolePlacesWithNamesContaining(String name, AServer server) {
+        return repository.findByKeyContainingIgnoreCaseAndServer(name, server);
+    }
 }

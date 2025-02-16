@@ -3,18 +3,14 @@ package dev.sheldan.abstracto.linkembed.listener;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.button.listener.ButtonClickedListenerResult;
 import dev.sheldan.abstracto.core.interaction.button.listener.ButtonClickedListener;
-import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.interaction.button.listener.ButtonClickedListenerModel;
-import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.interaction.ComponentPayloadManagementService;
-import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.linkembed.config.LinkEmbedFeatureDefinition;
 import dev.sheldan.abstracto.linkembed.exception.LinkEmbedRemovalNotAllowedException;
 import dev.sheldan.abstracto.linkembed.model.template.MessageEmbedDeleteButtonPayload;
 import dev.sheldan.abstracto.linkembed.service.MessageEmbedMetricService;
 import dev.sheldan.abstracto.linkembed.service.MessageEmbedServiceBean;
-import dev.sheldan.abstracto.linkembed.service.management.MessageEmbedPostManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,19 +25,7 @@ public class MessageEmbedDeleteButtonClickedListener implements ButtonClickedLis
     private MessageService messageService;
 
     @Autowired
-    private MetricService metricService;
-
-    @Autowired
-    private MessageEmbedPostManagementService messageEmbedPostManagementService;
-
-    @Autowired
     private MessageEmbedMetricService messageEmbedMetricService;
-
-    @Autowired
-    private InteractionService interactionService;
-
-    @Autowired
-    private TemplateService templateService;
 
     @Autowired
     private ComponentPayloadManagementService componentPayloadManagementService;

@@ -1,0 +1,30 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd" >
+    <property name="editAssignableRolePlaceTextCommandId" value="(SELECT id FROM command WHERE name = 'editAssignableRolePlaceText')"/>
+    <changeSet author="Sheldan" id="delete-editAssignableRolePlaceText_command">
+        <sql >
+            delete from ${database.defaultSchemaName}.command_in_server_allowed_role
+            where command_in_server_id
+                      in
+                  (select
+                          command_in_server_id
+                  from ${database.defaultSchemaName}.command_in_server
+                  where command_id = (SELECT id FROM ${database.defaultSchemaName}.command WHERE name = 'editAssignableRolePlaceText'));
+            delete from ${database.defaultSchemaName}.command_in_server_alias
+            where command_in_server_id
+                      in
+                  (select command_in_server_id
+                  from ${database.defaultSchemaName}.command_in_server
+                  where command_id =
+                        (SELECT id FROM ${database.defaultSchemaName}.command WHERE name = 'editAssignableRolePlaceText'))
+        </sql>
+        <delete tableName="command_in_server">
+            <where>command_id=${editAssignableRolePlaceTextCommandId}</where>
+        </delete>
+        <delete tableName="command">
+            <where>id=${editAssignableRolePlaceTextCommandId}</where>
+        </delete>
+    </changeSet>
+</databaseChangeLog>

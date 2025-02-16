@@ -253,6 +253,11 @@ public class InteractionServiceBean implements InteractionService {
         return replaceOriginal(messageToSend, interactionHook);
     }
 
+    @Override
+    public CompletableFuture<Void> deleteMessage(InteractionHook interactionHook) {
+        return interactionHook.deleteOriginal().submit();
+    }
+
     public CompletableFuture<InteractionHook> replyMessageToSend(MessageToSend messageToSend, IReplyCallback callback) {
         ReplyCallbackAction action = null;
         if(messageToSend.getMessages() != null && !messageToSend.getMessages().isEmpty()) {

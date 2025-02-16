@@ -106,7 +106,10 @@ public class Echo extends AbstractConditionableCommand {
                 .defaultPrivilege(SlashCommandPrivilegeLevels.ADMIN)
                 .rootCommandName(ECHO_COMMAND)
                 .build();
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+            .builder()
+            .templated(true)
+            .build();
         return CommandConfiguration.builder()
                 .name(ECHO_COMMAND)
                 .slashCommandOnly(true)
