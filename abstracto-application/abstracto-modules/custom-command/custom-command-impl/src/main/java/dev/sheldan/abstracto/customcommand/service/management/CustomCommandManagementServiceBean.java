@@ -84,13 +84,13 @@ public class CustomCommandManagementServiceBean implements CustomCommandManageme
     }
 
     @Override
-    public List<CustomCommand> getCustomCommandsStartingWith(String prefix, AServer server) {
-        return repository.findByNameStartsWithIgnoreCaseAndServer(prefix, server);
+    public List<CustomCommand> getCustomCommandsContaining(String name, AServer server) {
+        return repository.findByNameContainingIgnoreCaseAndServer(name, server);
     }
 
     @Override
-    public List<CustomCommand> getUserCustomCommandsStartingWith(String prefix, AUser aUser) {
-        return repository.findByNameStartsWithIgnoreCaseAndCreatorUserAndUserSpecific(prefix, aUser, true);
+    public List<CustomCommand> getUserCustomCommandsContaining(String prefix, AUser aUser) {
+        return repository.findByNameContainingIgnoreCaseAndCreatorUserAndUserSpecific(prefix, aUser, true);
     }
 
 }

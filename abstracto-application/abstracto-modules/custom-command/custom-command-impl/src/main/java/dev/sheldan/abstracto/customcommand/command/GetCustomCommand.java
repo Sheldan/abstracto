@@ -69,12 +69,12 @@ public class GetCustomCommand extends AbstractConditionableCommand {
         if(slashCommandAutoCompleteService.matchesParameter(event.getFocusedOption(), CUSTOM_COMMAND_NAME_PARAMETER)) {
             String input = event.getFocusedOption().getValue();
             if(ContextUtils.isNotUserCommand(event)) {
-                return customCommandService.getCustomCommandsStartingWith(input, event.getGuild())
+                return customCommandService.getCustomCommandsContaining(input, event.getGuild())
                         .stream()
                         .map(CustomCommand::getName)
                         .toList();
             } else {
-                return customCommandService.getUserCustomCommandsStartingWith(input, event.getUser())
+                return customCommandService.getUserCustomCommandsContaining(input, event.getUser())
                         .stream()
                         .map(CustomCommand::getName)
                         .toList();

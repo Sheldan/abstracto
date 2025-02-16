@@ -20,4 +20,6 @@ public interface CustomCommandRepository extends JpaRepository<CustomCommand, Lo
     List<CustomCommand> findByCreatorUserAndUserSpecific(AUser user, Boolean userSpecific);
     List<CustomCommand> findByNameStartsWithIgnoreCaseAndServer(String prefix, AServer server);
     List<CustomCommand> findByNameStartsWithIgnoreCaseAndCreatorUserAndUserSpecific(String prefix, AUser aUser, Boolean userSpecific);
+    List<CustomCommand> findByNameContainingIgnoreCaseAndServer(String name, AServer server);
+    List<CustomCommand> findByNameContainingIgnoreCaseAndCreatorUserAndUserSpecific(String name, AUser user, Boolean userSpecific);
 }

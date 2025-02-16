@@ -16,6 +16,6 @@ public interface CustomCommandService {
     List<CustomCommand> getUserCustomCommands(User user);
     CustomCommand getCustomCommand(String name, Guild guild);
     CustomCommand getUserCustomCommand(String name, User user);
-    List<CustomCommand> getCustomCommandsStartingWith(String prefix, Guild guild);
-    List<CustomCommand> getUserCustomCommandsStartingWith(String prefix, User user);
+    List<CustomCommand> getCustomCommandsContaining(String name, Guild guild);
+    List<CustomCommand> getUserCustomCommandsContaining(String name, User user);
 }

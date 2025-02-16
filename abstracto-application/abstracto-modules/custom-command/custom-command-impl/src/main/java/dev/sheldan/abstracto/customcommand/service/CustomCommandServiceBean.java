@@ -95,14 +95,14 @@ public class CustomCommandServiceBean implements CustomCommandService {
     }
 
     @Override
-    public List<CustomCommand> getCustomCommandsStartingWith(String prefix, Guild guild) {
+    public List<CustomCommand> getCustomCommandsContaining(String name, Guild guild) {
         AServer server = serverManagementService.loadServer(guild);
-        return customCommandManagementService.getCustomCommandsStartingWith(prefix, server);
+        return customCommandManagementService.getCustomCommandsContaining(name, server);
     }
 
     @Override
-    public List<CustomCommand> getUserCustomCommandsStartingWith(String prefix, User user) {
+    public List<CustomCommand> getUserCustomCommandsContaining(String name, User user) {
         AUser aUser = userManagementService.loadOrCreateUser(user.getIdLong());
-        return customCommandManagementService.getUserCustomCommandsStartingWith(prefix, aUser);
+        return customCommandManagementService.getUserCustomCommandsContaining(name, aUser);
     }
 }

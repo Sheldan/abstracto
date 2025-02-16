@@ -18,6 +18,6 @@ public interface CustomCommandManagementService {
     void deleteCustomCommand(String name, AUser user);
     List<CustomCommand> getCustomCommands(AServer server);
     List<CustomCommand> getUserCustomCommands(AUser aUser);
-    List<CustomCommand> getCustomCommandsStartingWith(String prefix, AServer server);
-    List<CustomCommand> getUserCustomCommandsStartingWith(String prefix, AUser aUser);
+    List<CustomCommand> getCustomCommandsContaining(String prefix, AServer server);
+    List<CustomCommand> getUserCustomCommandsContaining(String prefix, AUser aUser);
 }

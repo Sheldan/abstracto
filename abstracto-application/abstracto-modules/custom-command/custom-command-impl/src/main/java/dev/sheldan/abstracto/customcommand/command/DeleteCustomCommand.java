@@ -11,12 +11,20 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandAutoCompleteService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.customcommand.config.CustomCommandFeatureDefinition;
 import dev.sheldan.abstracto.customcommand.config.CustomCommandSlashCommandNames;
+import dev.sheldan.abstracto.customcommand.service.management.CustomCommandManagementService;
 import dev.sheldan.abstracto.customcommand.service.management.CustomCommandService;
+import java.util.ArrayList;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,7 +48,19 @@ public class DeleteCustomCommand extends AbstractConditionableCommand {
     private CustomCommandService customCommandService;
 
     @Autowired
+    private CustomCommandManagementService customCommandManagementService;
+
+    @Autowired
     private InteractionService interactionService;
+
+    @Autowired
+    private SlashCommandAutoCompleteService slashCommandAutoCompleteService;
+
+    @Autowired
+    private ServerManagementService serverManagementService;
+
+    @Autowired
+    private UserManagementService userManagementService;
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
@@ -55,11 +75,31 @@ public class DeleteCustomCommand extends AbstractConditionableCommand {
     }
 
     @Override
+    public List<String> performAutoComplete(CommandAutoCompleteInteractionEvent event) {
+        if(slashCommandAutoCompleteService.matchesParameter(event.getFocusedOption(), CUSTOM_COMMAND_NAME_PARAMETER)) {
+            String input = event.getFocusedOption().getValue();
+            if(ContextUtils.isUserCommand(event)) {
+                AUser user = userManagementService.loadUser(event.getUser().getIdLong());
+                return customCommandManagementService.getUserCustomCommandsContaining(input, user)
+                    .stream().map(customCommand -> customCommand.getName().toLowerCase())
+                    .toList();
+            } else {
+                AServer server = serverManagementService.loadServer(event.getGuild());
+                return customCommandManagementService.getCustomCommandsContaining(input, server)
+                    .stream().map(customCommand -> customCommand.getName().toLowerCase())
+                    .toList();
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
         Parameter commandNameParameter = Parameter
                 .builder()
                 .name(CUSTOM_COMMAND_NAME_PARAMETER)
                 .templated(true)
+                .supportsAutoComplete(true)
                 .type(String.class)
                 .build();
 
