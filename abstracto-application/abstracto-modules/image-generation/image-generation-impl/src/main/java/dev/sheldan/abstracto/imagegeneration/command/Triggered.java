@@ -70,7 +70,11 @@ public class Triggered extends AbstractConditionableCommand {
         if(parameters.isEmpty()) {
             member = commandContext.getAuthor();
         } else {
-            member = (Member) parameters.get(0);
+            if(parameters.get(0) instanceof Message) {
+                member = ((Message) parameters.get(0)).getMember();
+            } else {
+                member = (Member) parameters.get(0);
+            }
         }
         File triggeredGifFile = imageGenerationService.getTriggeredGif(member.getEffectiveAvatar().getUrl(imageSize));
         MessageToSend messageToSend = templateService.renderEmbedTemplate(TRIGGERED_EMBED_TEMPLATE_KEY, new Object(), commandContext.getGuild().getIdLong());
