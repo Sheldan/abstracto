@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.utils.SnowflakeUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
@@ -85,9 +86,10 @@ public class Warn extends AbstractConditionableCommand {
                 .channelId(event.getChannel().getIdLong())
                 .messageId(SnowflakeUtils.createSnowFlake())
                 .build();
-        return warnService.warnUserWithLog(event.getGuild(), ServerUser.fromMember(member), ServerUser.fromMember(event.getMember()), reason, commandMessage)
-                .thenCompose(unused -> interactionService.replyEmbed(WARN_RESPONSE, event))
-                .thenApply(warning -> CommandResult.fromSuccess());
+        return event.deferReply().submit()
+            .thenCompose((hook) -> warnService.warnUserWithLog(event.getGuild(), ServerUser.fromMember(member), ServerUser.fromMember(event.getMember()), reason, commandMessage)
+                    .thenCompose((unused) -> FutureUtils.toSingleFutureGeneric(interactionService.sendEmbed(WARN_RESPONSE, hook))))
+                .thenApply(unused -> CommandResult.fromSuccess());
     }
 
     @Override

@@ -42,9 +42,6 @@ public class CommandConfiguration {
     private List<EffectConfig> effects = new ArrayList<>();
 
     @Builder.Default
-    private boolean supportsMessageCommand = true;
-
-    @Builder.Default
     private boolean slashCommandOnly = false;
 
     @Builder.Default

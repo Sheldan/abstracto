@@ -35,13 +35,10 @@ public abstract class AbstractConditionableCommand implements ConditionalCommand
     @Autowired
     private CommandCoolDownCondition coolDownCondition;
 
-    @Autowired
-    private MessageCommandCondition messageCommandCondition;
-
     @Override
     public List<CommandCondition> getConditions() {
         return new ArrayList<>(Arrays.asList(adminModeCondition, featureEnabledCondition, commandDisabledCondition,
-                commandDisallowedCondition, featureModeCondition, coolDownCondition, messageCommandCondition));
+                commandDisallowedCondition, featureModeCondition, coolDownCondition));
     }
 
     protected void checkParameters(CommandContext context) {

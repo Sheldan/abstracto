@@ -15,8 +15,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.PaginatorService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.templating.model.MessageToSend;
-import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
@@ -26,6 +25,7 @@ import dev.sheldan.abstracto.moderation.model.template.command.MutesModel;
 import dev.sheldan.abstracto.moderation.service.management.MuteManagementService;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,9 +51,6 @@ public class Mutes extends AbstractConditionableCommand {
     private UserInServerManagementService userInServerManagementService;
 
     @Autowired
-    private TemplateService templateService;
-
-    @Autowired
     private MuteEntryConverter muteEntryConverter;
 
     @Autowired
@@ -69,16 +66,23 @@ public class Mutes extends AbstractConditionableCommand {
     private InteractionService interactionService;
 
     @Transactional
-    public CompletableFuture<Void> renderMutes(SlashCommandInteractionEvent event, List<MuteEntry> mutes) {
+    public CompletableFuture<Void> renderMutes(InteractionHook event, List<MuteEntry> mutes) {
         MutesModel model = MutesModel
                 .builder()
                 .mutes(mutes)
                 .build();
-        return paginatorService.createPaginatorFromTemplate(MUTES_DISPLAY_TEMPLATE_KEY, model, event);
+        return paginatorService.sendPaginatorToInteraction(MUTES_DISPLAY_TEMPLATE_KEY, model, event);
     }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        return event.deferReply().submit()
+            .thenCompose((hook) -> self.loadAndRenderMutes(event, hook))
+            .thenApply(u -> CommandResult.fromSuccess());
+    }
+
+    @Transactional
+    public CompletableFuture<Void> loadAndRenderMutes(SlashCommandInteractionEvent event, InteractionHook hook) {
         List<dev.sheldan.abstracto.moderation.model.database.Mute> mutesToDisplay;
         if(!slashCommandParameterService.hasCommandOption(MEMBER_PARAMETER, event)) {
             AServer server = serverManagementService.loadServer(event.getGuild().getIdLong());
@@ -91,13 +95,10 @@ public class Mutes extends AbstractConditionableCommand {
             mutesToDisplay = muteManagementService.getAllMutesOf(userInServerManagementService.loadOrCreateUser(memberParameter));
         }
         if(mutesToDisplay.isEmpty()) {
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(NO_MUTES_TEMPLATE_KEY, new Object(), event.getGuild().getIdLong());
-            return interactionService.replyMessageToSend(messageToSend, event)
-                    .thenApply(unused -> CommandResult.fromSuccess());
+            return FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(NO_MUTES_TEMPLATE_KEY, new Object(), hook));
         } else {
             return muteEntryConverter.fromMutes(mutesToDisplay)
-                    .thenCompose(muteEntries -> self.renderMutes(event, muteEntries)
-                            .thenApply(unused -> CommandResult.fromIgnored()));
+                    .thenCompose(muteEntries -> self.renderMutes(hook, muteEntries));
         }
     }
 

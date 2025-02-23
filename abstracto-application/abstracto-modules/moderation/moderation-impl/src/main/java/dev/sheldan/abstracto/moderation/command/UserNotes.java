@@ -16,6 +16,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
@@ -26,12 +27,14 @@ import dev.sheldan.abstracto.moderation.model.template.command.NoteEntryModel;
 import dev.sheldan.abstracto.moderation.service.management.UserNoteManagementService;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class UserNotes extends AbstractConditionableCommand {
@@ -56,8 +59,18 @@ public class UserNotes extends AbstractConditionableCommand {
     @Autowired
     private InteractionService interactionService;
 
+    @Autowired
+    private UserNotes self;
+
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        return event.deferReply().submit()
+            .thenCompose((hook) -> self.loadAndRenderUserNotes(event, hook))
+            .thenApply(u -> CommandResult.fromSuccess());
+    }
+
+    @Transactional
+    public CompletableFuture<Void> loadAndRenderUserNotes(SlashCommandInteractionEvent event, InteractionHook hook) {
         List<UserNote> userNotes;
 
         ListNotesModel model = ListNotesModel
@@ -84,8 +97,7 @@ public class UserNotes extends AbstractConditionableCommand {
         CompletableFuture<List<NoteEntryModel>> listCompletableFuture = userNotesConverter.fromNotes(userNotes);
         return listCompletableFuture.thenCompose(noteEntryModels -> {
             model.setUserNotes(noteEntryModels);
-            return interactionService.replyEmbed(USER_NOTES_RESPONSE_TEMPLATE, model, event)
-                    .thenApply(interactionHook -> CommandResult.fromSuccess());
+            return FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(USER_NOTES_RESPONSE_TEMPLATE, model, hook));
         });
     }
 

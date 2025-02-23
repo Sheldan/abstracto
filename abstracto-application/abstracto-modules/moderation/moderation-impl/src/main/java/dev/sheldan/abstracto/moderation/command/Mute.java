@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
 import dev.sheldan.abstracto.core.utils.SnowflakeUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
@@ -76,15 +77,16 @@ public class Mute extends AbstractConditionableCommand {
                 .build();
         ServerUser userToMute = ServerUser.fromMember(targetMember);
         ServerUser mutingUser = ServerUser.fromMember(event.getMember());
-        return muteService.muteMemberWithLog(userToMute, mutingUser, reason, duration, event.getGuild(), commandMessage)
+        return event.deferReply().submit()
+            .thenCompose(hook -> muteService.muteMemberWithLog(userToMute, mutingUser, reason, duration, event.getGuild(), commandMessage)
                 .thenCompose(muteResult -> {
                     if(muteResult == NOTIFICATION_FAILED) {
-                        return interactionService.replyEmbed(MUTE_NOTIFICATION_NOT_POSSIBLE_TEMPLATE_KEY, new Object(), event);
+                        return FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(MUTE_NOTIFICATION_NOT_POSSIBLE_TEMPLATE_KEY, new Object(), hook));
                     } else {
-                        return interactionService.replyEmbed(MUTE_RESPONSE, event);
+                        return FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(MUTE_RESPONSE, event, hook));
                     }
                 })
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+            .thenApply(aVoid -> CommandResult.fromSuccess()));
     }
 
     @Override

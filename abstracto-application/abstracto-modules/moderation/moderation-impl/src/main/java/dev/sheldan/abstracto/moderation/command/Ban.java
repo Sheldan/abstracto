@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.service.UserService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
@@ -21,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,6 +31,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import org.springframework.transaction.annotation.Transactional;
 
 import static dev.sheldan.abstracto.moderation.model.BanResult.NOTIFICATION_FAILED;
 import static dev.sheldan.abstracto.moderation.service.BanService.BAN_EFFECT_KEY;
@@ -59,6 +62,9 @@ public class Ban extends AbstractConditionableCommand {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private Ban self;
+
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String reason = slashCommandParameterService.getCommandOption(REASON_PARAMETER, event, String.class, String.class);
@@ -69,33 +75,55 @@ public class Ban extends AbstractConditionableCommand {
         } else {
             duration = null;
         }
+
         if(slashCommandParameterService.hasCommandOptionWithFullType(USER_PARAMETER, event, OptionType.USER)) {
             Member member = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, Member.class);
-            return banService.banUserWithNotification(ServerUser.fromMember(member), reason, ServerUser.fromMember(event.getMember()), event.getGuild(), duration)
-                    .thenCompose(banResult -> {
-                        if(banResult == NOTIFICATION_FAILED) {
-                            String errorNotification = templateService.renderSimpleTemplate(BAN_NOTIFICATION_NOT_POSSIBLE, event.getGuild().getIdLong());
-                            return interactionService.replyString(errorNotification, event);
-                        } else {
-                            return interactionService.replyEmbed(BAN_RESPONSE, event);
-                        }
-                    })
-                    .thenApply(aVoid -> CommandResult.fromSuccess());
+            return event.deferReply().submit()
+                .thenCompose((hook) -> self.banMember(event, member, reason, duration, hook))
+                .thenApply(commandResult -> CommandResult.fromSuccess());
         } else {
             String userIdStr = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, String.class);
             Long userId = Long.parseLong(userIdStr);
-            return userService.retrieveUserForId(userId)
-                    .thenCompose(user -> banService.banUserWithNotification(ServerUser.fromId(event.getGuild().getIdLong(), userId), reason, ServerUser.fromMember(event.getMember()), event.getGuild(), duration))
-                    .thenCompose(banResult -> {
-                        if(banResult == NOTIFICATION_FAILED) {
-                            String errorNotification = templateService.renderSimpleTemplate(BAN_NOTIFICATION_NOT_POSSIBLE, event.getGuild().getIdLong());
-                            return interactionService.replyString(errorNotification, event);
-                        } else {
-                            return interactionService.replyEmbed(BAN_RESPONSE, event);
-                        }
-                    })
-                    .thenApply(banResult -> CommandResult.fromSuccess());
+            return event.deferReply().submit()
+                .thenCompose((hook) -> self.banViaUserId(event, userId, reason, duration, hook))
+                .thenApply(commandResult -> CommandResult.fromSuccess());
         }
+    }
+
+    @Transactional
+    public CompletableFuture<Void> banViaUserId(SlashCommandInteractionEvent event, Long userId, String reason,
+                                                                               Duration duration, InteractionHook hook) {
+        return userService.retrieveUserForId(userId)
+            .thenCompose(user -> banService.banUserWithNotification(ServerUser.fromId(event.getGuild().getIdLong(), userId), reason,
+                ServerUser.fromId(event.getGuild().getIdLong(), event.getUser().getIdLong()), event.getGuild(), duration))
+            .thenCompose(banResult -> {
+                if (banResult == NOTIFICATION_FAILED) {
+                    String errorNotification = templateService.renderSimpleTemplate(BAN_NOTIFICATION_NOT_POSSIBLE, event.getGuild().getIdLong());
+                    return interactionService.replyString(errorNotification, hook)
+                        .thenAccept(message -> {
+                        });
+                } else {
+                    return FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(BAN_RESPONSE, new Object(), hook));
+                }
+            });
+    }
+
+    @Transactional
+    public CompletableFuture<Void> banMember(SlashCommandInteractionEvent event, Member member, String reason,
+                                                                               Duration duration, InteractionHook hook) {
+        return banService.banUserWithNotification(ServerUser.fromMember(member), reason,
+                ServerUser.fromId(event.getGuild().getIdLong(), event.getUser().getIdLong()), event.getGuild(),
+                duration)
+            .thenCompose(banResult -> {
+                if (banResult == NOTIFICATION_FAILED) {
+                    String errorNotification = templateService.renderSimpleTemplate(BAN_NOTIFICATION_NOT_POSSIBLE, event.getGuild().getIdLong());
+                    return interactionService.replyString(errorNotification, hook)
+                        .thenAccept(message -> {
+                        });
+                } else {
+                    return FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(BAN_RESPONSE, new Object(), hook));
+                }
+            });
     }
 
     @Override

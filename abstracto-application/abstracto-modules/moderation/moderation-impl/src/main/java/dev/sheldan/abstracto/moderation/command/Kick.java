@@ -14,6 +14,7 @@ import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
@@ -61,10 +62,10 @@ public class Kick extends AbstractConditionableCommand {
         } else {
             reason = templateService.renderSimpleTemplate(KICK_DEFAULT_REASON_TEMPLATE, event.getGuild().getIdLong());
         }
-
-        return kickService.kickMember(member, event.getMember(), reason)
-                .thenCompose(unused -> interactionService.replyEmbed(KICK_RESPONSE, event))
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+        return event.deferReply().submit()
+            .thenCompose(interactionHook -> kickService.kickMember(member, event.getMember(), reason)
+            .thenCompose(unused -> FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(KICK_RESPONSE, event, interactionHook))))
+            .thenApply(o -> CommandResult.fromSuccess());
     }
 
     @Override

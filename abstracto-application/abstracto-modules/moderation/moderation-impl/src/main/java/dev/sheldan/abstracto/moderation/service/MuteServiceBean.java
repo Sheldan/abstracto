@@ -166,6 +166,7 @@ public class MuteServiceBean implements MuteService {
     }
 
     @Override
+    @Transactional
     public CompletableFuture<MuteResult> muteMemberWithLog(ServerUser userToMute, ServerUser mutingUser, String reason, Duration duration, Guild guild, ServerChannelMessage origin) {
         return muteMemberWithLog(userToMute, mutingUser, reason, duration, guild, origin, null);
     }

@@ -15,8 +15,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.PaginatorService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.templating.model.MessageToSend;
-import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
@@ -27,6 +26,7 @@ import dev.sheldan.abstracto.moderation.model.template.command.WarningsModel;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,26 +61,30 @@ public class Warnings extends AbstractConditionableCommand {
     private Warnings self;
 
     @Autowired
-    private TemplateService templateService;
-
-    @Autowired
     private SlashCommandParameterService slashCommandParameterService;
 
     @Autowired
     private InteractionService interactionService;
 
     @Transactional
-    public CompletableFuture<Void> renderWarnings(SlashCommandInteractionEvent event, List<WarnEntry> warnEntries) {
+    public CompletableFuture<Void> renderWarnings(InteractionHook event, List<WarnEntry> warnEntries) {
         WarningsModel model = WarningsModel
                 .builder()
                 .warnings(warnEntries)
                 .build();
 
-        return paginatorService.createPaginatorFromTemplate(WARNINGS_RESPONSE_TEMPLATE, model, event);
+        return paginatorService.sendPaginatorToInteraction(WARNINGS_RESPONSE_TEMPLATE, model, event);
     }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        return event.deferReply().submit()
+            .thenCompose((hook) -> self.loadAndRenderWarnings(event, hook))
+            .thenApply(u -> CommandResult.fromSuccess());
+    }
+
+    @Transactional
+    public CompletableFuture<Void> loadAndRenderWarnings(SlashCommandInteractionEvent event, InteractionHook hook) {
         List<Warning> warnsToDisplay;
         if(slashCommandParameterService.hasCommandOption(USER_PARAMETER, event)) {
             Member member = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, Member.class);
@@ -93,14 +97,10 @@ public class Warnings extends AbstractConditionableCommand {
             warnsToDisplay = warnManagementService.getAllWarningsOfServer(server);
         }
         if(warnsToDisplay.isEmpty()) {
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(NO_WARNINGS_TEMPLATE_KEY, new Object(), event.getGuild().getIdLong());
-            return interactionService.replyMessageToSend(messageToSend, event)
-                    .thenApply(interactionHook -> CommandResult.fromSuccess());
-
+            return FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(NO_WARNINGS_TEMPLATE_KEY, new Object(), hook));
         } else {
             return warnEntryConverter.fromWarnings(warnsToDisplay)
-                    .thenCompose(warnEntries -> self.renderWarnings(event, warnEntries))
-                    .thenApply(unused -> CommandResult.fromIgnored());
+                .thenCompose(warnEntries -> self.renderWarnings(hook, warnEntries));
         }
     }
 
