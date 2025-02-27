@@ -48,6 +48,7 @@ public class RoleServiceBean implements RoleService {
     @Autowired
     private MetricService metricService;
 
+    // this locking is needed, as there is an issue with concurrent role updates in discord
     @Autowired
     private LockByKeyService<ServerUser> roleLockService;
 

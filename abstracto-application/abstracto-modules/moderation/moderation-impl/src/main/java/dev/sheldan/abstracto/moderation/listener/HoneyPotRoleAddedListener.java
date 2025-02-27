@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
 import dev.sheldan.abstracto.core.models.template.display.RoleDisplay;
 import dev.sheldan.abstracto.core.service.ConditionService;
 import dev.sheldan.abstracto.core.service.ConfigService;
+import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.service.SystemCondition;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
@@ -19,7 +20,11 @@ import dev.sheldan.abstracto.moderation.config.feature.HoneyPotFeatureConfig;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
 import dev.sheldan.abstracto.moderation.model.listener.HoneyPotReasonModel;
 import dev.sheldan.abstracto.moderation.service.BanService;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -49,6 +54,9 @@ public class HoneyPotRoleAddedListener implements RoleAddedListener {
     @Autowired
     private UserInServerManagementService userInServerManagementService;
 
+    @Autowired
+    private RoleService roleService;
+
     private static final String HONEYPOT_BAN_REASON_TEMPLATE = "honeypot_ban_reason";
 
     private static final String LEVEL_CONDITION_USER_ID_PARAMETER = "userId";
@@ -59,18 +67,19 @@ public class HoneyPotRoleAddedListener implements RoleAddedListener {
 
     @Override
     public DefaultListenerResult execute(RoleAddedModel model) {
-        Long roleId = configService.getLongValueOrConfigDefault(HoneyPotFeatureConfig.HONEYPOT_ROLE_ID, model.getServerId());
-        if(roleId == 0) {
+        Long honeyPotRoleId = configService.getLongValueOrConfigDefault(HoneyPotFeatureConfig.HONEYPOT_ROLE_ID, model.getServerId());
+        if(honeyPotRoleId == 0) {
             log.info("Server {} has honeypot feature enabled, but still default honeypot role config - Ignoring.", model.getServerId());
             return DefaultListenerResult.IGNORED;
         }
-        if(roleId.equals(model.getRoleId())) {
+        if(honeyPotRoleId.equals(model.getRoleId())) {
             Integer levelToSkipBan = configService.getLongValueOrConfigDefault(HoneyPotFeatureConfig.HONEYPOT_IGNORED_LEVEL, model.getServerId()).intValue();
             Long amountOfSecondsToIgnore = configService.getLongValueOrConfigDefault(HoneyPotFeatureConfig.HONEYPOT_IGNORED_JOIN_DURATION_SECONDS, model.getServerId());
             boolean allowed = userHasLevel(model.getTargetMember(), levelToSkipBan) || userJoinedLongerThanSeconds(model.getTargetMember(), amountOfSecondsToIgnore);
             if(allowed) {
-                log.info("User {} in server {} has at least level {} or joined more than {} seconds ago and will not get banned by honeypot.",
-                        model.getTargetUser().getUserId(), model.getTargetUser().getServerId(), levelToSkipBan, amountOfSecondsToIgnore);
+                log.info("User {} in server {} has at least level {} or joined more than {} seconds ago and will not get banned by honeypot. All existing roles besides {} will be removed.",
+                        model.getTargetUser().getUserId(), model.getTargetUser().getServerId(), levelToSkipBan, amountOfSecondsToIgnore, honeyPotRoleId);
+                cleanupRolesBesidesHoneyPot(model, honeyPotRoleId);
             } else  {
                 log.info("Banning user {} in guild {} due to role {}.", model.getTargetUser().getUserId(), model.getTargetUser().getServerId(), model.getRoleId());
                 HoneyPotReasonModel reasonModel = HoneyPotReasonModel
@@ -88,8 +97,33 @@ public class HoneyPotRoleAddedListener implements RoleAddedListener {
                 });
             }
             return DefaultListenerResult.PROCESSED;
+        } else {
+            boolean targetMemberHasHoneypotRole = model.getTargetMember().getRoles().stream().anyMatch(role -> role.getIdLong() == honeyPotRoleId);
+            log.info("User {} in server {} received another role, which was not honeypot role -> remove all other roles.", model.getTargetUser().getUserId(), model.getTargetUser().getServerId());
+            if(targetMemberHasHoneypotRole) {
+                cleanupRolesBesidesHoneyPot(model, honeyPotRoleId);
+            }
         }
         return DefaultListenerResult.IGNORED;
+    }
+
+    private void cleanupRolesBesidesHoneyPot(RoleAddedModel model, Long roleId) {
+        List<Long> rolesToRemove = model
+            .getTargetMember()
+            .getRoles()
+            .stream().map(ISnowflake::getIdLong)
+            .filter(idLong -> !idLong.equals(roleId))
+            .collect(Collectors.toList());
+        if(!rolesToRemove.isEmpty()) {
+            roleService.updateRolesIds(model.getTargetMember(), rolesToRemove, new ArrayList<>()).thenAccept(unused -> {
+                log.info("Removed {} roles from user {} in server {}.", rolesToRemove.size(), model.getTargetUser().getUserId(), model.getTargetUser().getServerId());
+            }).exceptionally(throwable -> {
+                log.warn("Failed to cleanup roles {} from user {} in server {}.", rolesToRemove.size(), model.getTargetUser().getUserId(), model.getTargetUser().getServerId(), throwable);
+                return null;
+            });
+        } else {
+            log.info("No other roles found.");
+        }
     }
 
     private boolean userHasLevel(Member member, Integer level) {
