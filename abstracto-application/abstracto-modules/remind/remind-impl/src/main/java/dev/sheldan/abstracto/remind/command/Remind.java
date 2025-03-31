@@ -126,7 +126,6 @@ public class Remind extends AbstractConditionableCommand {
         String durationString = slashCommandParameterService.getCommandOption(DURATION_PARAMETER, event, Duration.class, String.class);
         Duration duration = ParseUtils.parseDuration(durationString);
         String reminderText = null;
-        Long serverId = event.getGuild().getIdLong();
         if(slashCommandParameterService.hasCommandOption(REMIND_TEXT_PARAMETER, event)) {
             reminderText = slashCommandParameterService.getCommandOption(REMIND_TEXT_PARAMETER, event, String.class, String.class);
         }
@@ -151,6 +150,7 @@ public class Remind extends AbstractConditionableCommand {
                 .build();
 
         if(ContextUtils.isNotUserCommand(event)) {
+            Long serverId = event.getGuild().getIdLong();
             AServer server = serverManagementService.loadServer(serverId);
             JoinReminderPayload payload = JoinReminderPayload
                     .builder()
@@ -160,8 +160,6 @@ public class Remind extends AbstractConditionableCommand {
                     .build();
             componentPayloadService.createButtonPayload(joinButtonId, payload, REMINDER_JOIN_BUTTON_ORIGIN, server);
         }
-
-
 
         log.info("Notifying user {} about reminder being scheduled.", event.getUser().getId());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(REMINDER_EMBED_KEY, remindModel, ContextUtils.serverIdOrNull(event));

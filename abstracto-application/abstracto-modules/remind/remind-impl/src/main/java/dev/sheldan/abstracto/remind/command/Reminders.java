@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
@@ -25,7 +26,9 @@ import dev.sheldan.abstracto.remind.model.template.commands.ReminderDisplay;
 import dev.sheldan.abstracto.remind.model.template.commands.RemindersModel;
 import dev.sheldan.abstracto.remind.service.management.ReminderManagementService;
 import dev.sheldan.abstracto.remind.service.management.ReminderParticipantManagementService;
+import java.util.ArrayList;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -61,11 +64,22 @@ public class Reminders extends AbstractConditionableCommand {
 
     private MessageToSend getServerReminders(Long serverId, Member member) {
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(member);
+        List<ReminderDisplay> reminders = getRemindersForUserInServer(aUserInAServer);
+        RemindersModel model = RemindersModel
+                .builder()
+                .reminders(reminders)
+                .userDisplay(UserDisplay.fromUser(member.getUser()))
+                .build();
+        return templateService.renderEmbedTemplate(REMINDERS_RESPONSE_TEMPLATE, model, serverId);
+    }
+
+    private List<ReminderDisplay> getRemindersForUserInServer(AUserInAServer aUserInAServer) {
         List<Reminder> activeReminders = reminderManagementService.getActiveRemindersForUser(aUserInAServer);
+        log.info("Showing {} reminders for user {} in server {}.", activeReminders.size(), aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId());
         List<Reminder> joinedReminders = reminderParticipantManagementService.getActiveReminders(aUserInAServer)
                 .stream()
                 .map(ReminderParticipant::getReminder)
-                .collect(Collectors.toList());
+                .toList();
         List<ReminderDisplay> reminders = activeReminders
                 .stream()
                 .map(ReminderDisplay::fromReminder)
@@ -74,23 +88,25 @@ public class Reminders extends AbstractConditionableCommand {
                 .stream()
                 .map(ReminderDisplay::fromReminder)
                 .peek(reminderDisplay -> reminderDisplay.setJoined(true))
-                .collect(Collectors.toList()));
-        RemindersModel model = RemindersModel
-                .builder()
-                .reminders(reminders)
-                .userDisplay(UserDisplay.fromUser(member.getUser()))
-                .build();
-        log.info("Showing {} reminders for user {} in server {}.", activeReminders.size(), aUserInAServer.getUserReference().getId(), serverId);
-        return templateService.renderEmbedTemplate(REMINDERS_RESPONSE_TEMPLATE, model, serverId);
+                .toList());
+        return reminders;
     }
 
-    private MessageToSend getUserReminders(User user) {
+    private MessageToSend getUserReminders(User user, Guild guild) {
         AUser aUser = userManagementService.loadOrCreateUser(user.getIdLong());
+        List<ReminderDisplay> remindersFromServer;
+        if(guild != null) {
+            AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(ServerUser.fromId(guild.getIdLong(), user.getIdLong()));
+            remindersFromServer = getRemindersForUserInServer(aUserInAServer);
+        } else {
+            remindersFromServer = new ArrayList<>();
+        }
         List<Reminder> activeReminders = reminderManagementService.getActiveUserRemindersForUser(aUser);
         List<ReminderDisplay> reminders = activeReminders
                 .stream()
                 .map(ReminderDisplay::fromReminder)
                 .collect(Collectors.toList());
+        reminders.addAll(remindersFromServer);
         RemindersModel model = RemindersModel
                 .builder()
                 .reminders(reminders)
@@ -103,7 +119,7 @@ public class Reminders extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         MessageToSend messageToSend;
         if(ContextUtils.isUserCommand(event)) {
-            messageToSend = getUserReminders(event.getUser());
+            messageToSend = getUserReminders(event.getUser(), event.getGuild());
         } else {
             Member member = event.getMember();
             Long serverId = event.getGuild().getIdLong();

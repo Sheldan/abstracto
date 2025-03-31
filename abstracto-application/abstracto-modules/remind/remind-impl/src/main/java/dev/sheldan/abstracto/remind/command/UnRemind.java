@@ -8,12 +8,15 @@ import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.remind.config.RemindFeatureDefinition;
 import dev.sheldan.abstracto.remind.config.RemindSlashCommandNames;
+import dev.sheldan.abstracto.remind.model.database.Reminder;
 import dev.sheldan.abstracto.remind.service.ReminderService;
+import dev.sheldan.abstracto.remind.service.management.ReminderManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,11 +49,19 @@ public class UnRemind extends AbstractConditionableCommand {
     @Autowired
     private InteractionService interactionService;
 
+    @Autowired
+    private ReminderManagementService reminderManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         Long reminderId = slashCommandParameterService.getCommandOption(REMINDER_ID_PARAMETER, event, Long.class, Integer.class).longValue();
         if(ContextUtils.isUserCommand(event)) {
-            reminderService.unRemind(reminderId, userManagementService.loadOrCreateUser(event.getUser().getIdLong()));
+            Reminder reminderToCancel = reminderManagementService.loadReminder(reminderId);
+            if(reminderToCancel.getUserCommand()) {
+                reminderService.unRemind(reminderId, userManagementService.loadOrCreateUser(event.getUser().getIdLong()));
+            } else {
+                reminderService.unRemind(reminderId, userInServerManagementService.loadOrCreateUser(ServerUser.fromId(event.getGuild().getIdLong(), event.getUser().getIdLong())));
+            }
         } else {
             reminderService.unRemind(reminderId, userInServerManagementService.loadOrCreateUser(event.getMember()));
         }
