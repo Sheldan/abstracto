@@ -11,7 +11,7 @@ This repository does not provide the full functionality in order to start a disc
 
 
 ## Technologies
-* [JDA](https://github.com/DV8FromTheWorld/JDA/) The Discord API Wrapper in the version 5.0.0-beta.21
+* [JDA](https://github.com/DV8FromTheWorld/JDA/) The Discord API Wrapper in the version 5.3.1
 * [Spring boot](https://github.com/spring-projects/spring-boot) is used as a framework to create standalone application in Java with Java EE methods. (including dependency injection and more)
 * [Hibernate](https://github.com/hibernate/hibernate-orm) is used as a reference implementation of JPA.
 * [Freemarker](https://github.com/apache/freemarker) is used as a templating engine. This is used to provide internationalization for user facing text and enable dynamic embed configuration.
