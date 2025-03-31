@@ -55,7 +55,7 @@
 
     <properties>
         <maven.build.timestamp.format>yyyy/MM/dd HH:mm</maven.build.timestamp.format>
-        <jda.version>5.3.0</jda.version>
+        <jda.version>5.3.1</jda.version>
         <asciidoctor.maven.plugin.version>2.2.6</asciidoctor.maven.plugin.version>
         <asciidoctorj.pdf.version>1.5.3</asciidoctorj.pdf.version>
         <asciidoctorj.version>2.3.0</asciidoctorj.version>
