@@ -56,6 +56,7 @@ public class EightBall extends AbstractConditionableCommand {
         String chosenKey = entertainmentService.getEightBallValue(text);
         EightBallResponseModel responseModel = EightBallResponseModel
                 .builder()
+                .input(text)
                 .chosenKey(chosenKey)
                 .build();
         return templateService.renderEmbedTemplate(EIGHT_BALL_RESPONSE_TEMPLATE_KEY, responseModel, serverId);

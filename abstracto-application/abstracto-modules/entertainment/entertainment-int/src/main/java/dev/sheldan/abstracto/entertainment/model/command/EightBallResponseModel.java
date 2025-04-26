@@ -9,4 +9,5 @@ import lombok.Setter;
 @Builder
 public class EightBallResponseModel {
     private String chosenKey;
+    private String input;
 }

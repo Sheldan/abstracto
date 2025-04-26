@@ -52,6 +52,7 @@ public class Choose extends AbstractConditionableCommand {
         String choice = entertainmentService.takeChoice(choices, commandContext.getAuthor());
         ChooseResponseModel responseModel = ChooseResponseModel
                 .builder()
+                .choices(choices)
                 .chosenValue(choice)
                 .build();
         return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannel(CHOOSE_RESPONSE_TEMPLATE_KEY, responseModel, commandContext.getChannel()))
@@ -70,6 +71,7 @@ public class Choose extends AbstractConditionableCommand {
         String choice = entertainmentService.takeChoice(choices, event.getMember());
         ChooseResponseModel responseModel = ChooseResponseModel
                 .builder()
+                .choices(choices)
                 .chosenValue(choice)
                 .build();
         return interactionService.replyEmbed(CHOOSE_RESPONSE_TEMPLATE_KEY, responseModel, event)
