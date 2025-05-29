@@ -26,13 +26,16 @@ public class YoutubeSearchServiceBean implements YoutubeSearchService {
     @Override
     public YoutubeVideo searchOneVideoForQuery(String query) {
         try {
-            YouTube.Search.List search = youTube.search().list("id,snippet");
+            YouTube.Search.List search = youTube.search().list("id");
             search.setQ(query);
             search.setType("video");
             search.setMaxResults(1L);
             SearchListResponse execute = search.execute();
             List<SearchResult> items = execute.getItems();
             if(items.isEmpty()) {
+                throw new YoutubeVideoNotFoundException();
+            }
+            if(items.stream().noneMatch(searchResult -> searchResult.getId().get("kind").equals("youtube#video"))) {
                 throw new YoutubeVideoNotFoundException();
             }
             return youtubeVideoService.getVideoInfo(items.get(0).getId().getVideoId());
