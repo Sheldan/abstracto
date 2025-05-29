@@ -153,9 +153,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>net.dv8tion</groupId>
+                <groupId>io.github.freya022</groupId>
                 <artifactId>JDA</artifactId>
-                <version>${jda.version}</version>
+                <version>4a9d724a21</version>
                 <exclusions>
                     <exclusion>
                         <groupId>club.minnced</groupId>

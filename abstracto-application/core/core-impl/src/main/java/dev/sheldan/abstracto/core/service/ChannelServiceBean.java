@@ -17,6 +17,7 @@ import dev.sheldan.abstracto.core.utils.FileService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.components.actionrow.ActionRowChildComponent;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.attribute.IThreadContainer;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
@@ -25,8 +26,8 @@ import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
-import net.dv8tion.jda.api.interactions.components.ActionComponent;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.components.ActionComponent;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.interactions.components.ItemComponent;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.requests.restaction.MessageEditAction;
@@ -274,8 +275,8 @@ public class ChannelServiceBean implements ChannelService {
                 GuildChannel channel = (GuildChannel) textChannel;
                 server = serverManagementService.loadServer(channel.getGuild());
             }
-            for (ActionRow components : actionRows) {
-                for (ItemComponent component : components) {
+            for (ActionRow row : actionRows) {
+                for (ActionRowChildComponent component : row) {
                     if (component instanceof ActionComponent) {
                         String id = ((ActionComponent) component).getId();
                         MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
