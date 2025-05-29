@@ -14,6 +14,7 @@ public class CachedAttachment implements Serializable {
     private Long id;
     private String proxyUrl;
     private String fileName;
+    private String contentType;
     private Boolean spoiler;
     private Integer size;
     private Integer height;

@@ -6,10 +6,10 @@ import dev.sheldan.abstracto.core.service.MessageService;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
-import net.dv8tion.jda.api.interactions.components.ActionComponent;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
+import net.dv8tion.jda.api.components.ActionComponent;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
+import net.dv8tion.jda.api.components.buttons.ButtonStyle;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -50,7 +50,7 @@ public class ComponentServiceBean implements ComponentService {
             } else {
                 ActionRow lastRow = message.getActionRows().get(message.getActionRows().size() - 1);
                 if(lastRow.getComponents().size() < MAX_BUTTONS_PER_ROW) {
-                    lastRow.getComponents().add(button);
+                    lastRow.getButtons().add(button);
                     actionRows = message.getActionRows();
                 } else {
                     List<ActionRow> currentActionRows = new ArrayList<>(message.getActionRows());
@@ -86,7 +86,7 @@ public class ComponentServiceBean implements ComponentService {
     public CompletableFuture<Void> removeComponentWithId(Message message, String componentId, Boolean rearrange) {
         List<ActionRow> actionRows = new ArrayList<>();
         if(Boolean.TRUE.equals(rearrange)) {
-            List<net.dv8tion.jda.api.interactions.components.ActionComponent> components = new ArrayList<>();
+            List<net.dv8tion.jda.api.components.ActionComponent> components = new ArrayList<>();
             message.getActionRows().forEach(row ->
                             row
                                 .getComponents()
@@ -112,8 +112,8 @@ public class ComponentServiceBean implements ComponentService {
     }
 
     @Override
-    public List<ActionRow> splitIntoActionRowsMax(List<net.dv8tion.jda.api.interactions.components.ActionComponent> allComponents) {
-        List<List<net.dv8tion.jda.api.interactions.components.ActionComponent>> actionRows = ListUtils.partition(allComponents, MAX_BUTTONS_PER_ROW);
+    public List<ActionRow> splitIntoActionRowsMax(List<net.dv8tion.jda.api.components.ActionComponent> allComponents) {
+        List<List<net.dv8tion.jda.api.components.ActionComponent>> actionRows = ListUtils.partition(allComponents, MAX_BUTTONS_PER_ROW);
         return actionRows.stream().map(ActionRow::of).collect(Collectors.toList());
     }
 

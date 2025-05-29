@@ -125,14 +125,26 @@ public class AllowedMentionServiceBean implements AllowedMentionService {
         }
         if(messageToSend != null && messageToSend.getMessageConfig() != null) {
             MessageConfig messageConfig = messageToSend.getMessageConfig();
-            if(messageConfig.isAllowsEveryoneMention()) {
-                allowedMentions.add(Message.MentionType.EVERYONE);
+            if(messageConfig.getAllowsEveryoneMention() != null) {
+                if(messageConfig.getAllowsEveryoneMention()) {
+                    allowedMentions.add(Message.MentionType.EVERYONE);
+                } else {
+                    allowedMentions.remove(Message.MentionType.EVERYONE);
+                }
             }
-            if(messageConfig.isAllowsUserMention()) {
-                allowedMentions.add(Message.MentionType.USER);
+            if(messageConfig.getAllowsUserMention() != null) {
+                if(messageConfig.getAllowsUserMention()) {
+                    allowedMentions.add(Message.MentionType.USER);
+                } else {
+                    allowedMentions.remove(Message.MentionType.USER);
+                }
             }
-            if(messageConfig.isAllowsRoleMention()) {
-                allowedMentions.add(Message.MentionType.ROLE);
+            if(messageConfig.getAllowsRoleMention() != null) {
+                if(messageConfig.getAllowsRoleMention()) {
+                    allowedMentions.add(Message.MentionType.ROLE);
+                } else {
+                    allowedMentions.remove(Message.MentionType.ROLE);
+                }
             }
         }
         return allowedMentions;

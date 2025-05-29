@@ -17,6 +17,8 @@ public class MetaMessageConfiguration {
     @Builder.Default
     private boolean allowsUserMention = true;
     @Builder.Default
+    private boolean useComponentsV2 = false;
+    @Builder.Default
     private boolean mentionsReferencedMessage = true;
 
     private Integer messageLimit;

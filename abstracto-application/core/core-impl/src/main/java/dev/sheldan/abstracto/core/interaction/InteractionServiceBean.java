@@ -17,8 +17,8 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
-import net.dv8tion.jda.api.interactions.components.ActionComponent;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.components.ActionComponent;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction;
 import net.dv8tion.jda.api.requests.restaction.WebhookMessageEditAction;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
@@ -260,56 +260,57 @@ public class InteractionServiceBean implements InteractionService {
 
     public CompletableFuture<InteractionHook> replyMessageToSend(MessageToSend messageToSend, IReplyCallback callback) {
         ReplyCallbackAction action = null;
-        if(messageToSend.getMessages() != null && !messageToSend.getMessages().isEmpty()) {
-            metricService.incrementCounter(MESSAGE_SEND_METRIC);
-            action = callback.reply(messageToSend.getMessages().get(0));
-        }
-
-        if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
-            if(action != null) {
-                action = action.addEmbeds(messageToSend.getEmbeds().subList(0, Math.min(10, messageToSend.getEmbeds().size())));
-            } else {
-                action = callback.replyEmbeds(messageToSend.getEmbeds());
+        if(messageToSend.getUseComponentsV2()) {
+            action = callback.replyComponents(messageToSend.getComponents()).useComponentsV2();
+        } else {
+            if(messageToSend.getMessages() != null && !messageToSend.getMessages().isEmpty()) {
+                metricService.incrementCounter(MESSAGE_SEND_METRIC);
+                action = callback.reply(messageToSend.getMessages().get(0));
             }
-        }
-
-        if(messageToSend.hasFilesToSend()) {
-            List<FileUpload> attachedFiles = messageToSend
+            if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
+                if(action != null) {
+                    action = action.addEmbeds(messageToSend.getEmbeds().subList(0, Math.min(10, messageToSend.getEmbeds().size())));
+                } else {
+                    action = callback.replyEmbeds(messageToSend.getEmbeds());
+                }
+            }
+            if(messageToSend.hasFilesToSend()) {
+                List<FileUpload> attachedFiles = messageToSend
                     .getAttachedFiles()
                     .stream()
                     .map(AttachedFile::convertToFileUpload)
                     .collect(Collectors.toList());
-            if(action != null) {
-                action.setFiles(attachedFiles);
-            } else {
-                metricService.incrementCounter(MESSAGE_SEND_METRIC);
-                action = callback.replyFiles(attachedFiles);
-            }
-        }
-
-        // this should be last, because we are "faking" a message, by inserting a ., in case there has not been a reply yet
-        // we could also throw an exception, but we are allowing this to go through
-        List<ActionRow> actionRows = messageToSend.getActionRows();
-        if(actionRows != null && !actionRows.isEmpty()) {
-            if(action == null) {
-                action = callback.reply(".");
-            }
-            action = action.setComponents(actionRows);
-            AServer server;
-            if(ContextUtils.isGuildKnown(callback)) {
-                server = serverManagementService.loadServer(callback.getGuild().getIdLong());
-            } else {
-               server = null;
-            }
-            actionRows.forEach(components -> components.forEach(component -> {
-                if(component instanceof ActionComponent) {
-                    String id = ((ActionComponent)component).getId();
-                    MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
-                    if(payload != null && payload.getPersistCallback()) {
-                        componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
-                    }
+                if(action != null) {
+                    action.setFiles(attachedFiles);
+                } else {
+                    metricService.incrementCounter(MESSAGE_SEND_METRIC);
+                    action = callback.replyFiles(attachedFiles);
                 }
-            }));
+            }
+            // this should be last, because we are "faking" a message, by inserting a ., in case there has not been a reply yet
+            // we could also throw an exception, but we are allowing this to go through
+            List<ActionRow> actionRows = messageToSend.getActionRows();
+            if(actionRows != null && !actionRows.isEmpty()) {
+                if(action == null) {
+                    action = callback.reply(".");
+                }
+                action = action.setComponents(actionRows);
+                AServer server;
+                if(ContextUtils.isGuildKnown(callback)) {
+                    server = serverManagementService.loadServer(callback.getGuild().getIdLong());
+                } else {
+                    server = null;
+                }
+                actionRows.forEach(components -> components.forEach(component -> {
+                    if(component instanceof ActionComponent) {
+                        String id = ((ActionComponent)component).getId();
+                        MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
+                        if(payload != null && payload.getPersistCallback()) {
+                            componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
+                        }
+                    }
+                }));
+            }
         }
 
         if(messageToSend.getEphemeral()) {
@@ -328,7 +329,7 @@ public class InteractionServiceBean implements InteractionService {
         if(ContextUtils.isGuildKnown(callback)) {
             Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(callback.getMessageChannel(), messageToSend);
             if (action != null) {
-                action.setAllowedMentions(allowedMentions);
+                action = action.setAllowedMentions(allowedMentions);
             }
         }
 

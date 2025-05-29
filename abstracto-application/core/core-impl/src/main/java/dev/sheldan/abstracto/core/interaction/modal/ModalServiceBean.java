@@ -8,9 +8,9 @@ import dev.sheldan.abstracto.core.interaction.modal.config.TextInputComponentSty
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.interactions.components.ItemComponent;
-import net.dv8tion.jda.api.interactions.components.text.TextInput;
+import net.dv8tion.jda.api.components.textinput.TextInput;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

@@ -3,10 +3,10 @@ package dev.sheldan.abstracto.core.interaction;
 import dev.sheldan.abstracto.core.interaction.button.ButtonConfigModel;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
-import net.dv8tion.jda.api.interactions.components.ActionComponent;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.Component;
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
+import net.dv8tion.jda.api.components.ActionComponent;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.Component;
+import net.dv8tion.jda.api.components.buttons.ButtonStyle;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

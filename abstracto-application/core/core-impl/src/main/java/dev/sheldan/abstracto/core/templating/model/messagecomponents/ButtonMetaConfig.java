@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.core.templating.model;
+package dev.sheldan.abstracto.core.templating.model.messagecomponents;
 
 import lombok.Builder;
 import lombok.Getter;

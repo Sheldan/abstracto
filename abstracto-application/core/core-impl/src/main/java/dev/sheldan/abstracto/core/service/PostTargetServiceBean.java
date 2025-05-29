@@ -2,8 +2,6 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
-import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
-import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotUsableException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -11,6 +9,7 @@ import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.service.management.DefaultPostTargetManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
@@ -181,40 +180,65 @@ public class PostTargetServiceBean implements PostTargetService {
             return getMessageChannelForPostTarget(target).map(messageChannel -> {
                 CompletableFuture<Message> messageEditFuture = new CompletableFuture<>();
                 futures.add(messageEditFuture);
-                if (StringUtils.isBlank(messageToSend.getMessages().get(0).trim())) {
+                if(messageToSend.getUseComponentsV2()) {
                     channelService.retrieveMessageInChannel(messageChannel, messageId).thenAccept(message -> {
                         log.debug("Editing existing message {} when upserting message embeds in channel {} in server {}.",
-                                messageId, messageChannel.getIdLong(), messageChannel.getGuild().getId());
-                        messageService.editMessage(message, messageToSend.getEmbeds().get(0))
-                                .queue(messageEditFuture::complete, messageEditFuture::completeExceptionally);
+                            messageId, messageChannel.getIdLong(), messageChannel.getGuild().getId());
+                        channelService.editMessageInAChannelFuture(messageToSend, messageChannel, messageId)
+                            .thenAccept(messageEditFuture::complete)
+                            .exceptionally(throwable -> {
+                                messageEditFuture.completeExceptionally(throwable);
+                                return null;
+                            });
                     }).exceptionally(throwable -> {
                         log.debug("Creating new message when upserting message embeds for message {} in channel {} in server {}.",
-                                messageId, messageChannel.getIdLong(), messageChannel.getGuild().getId());
-                        sendEmbedInPostTarget(messageToSend, target).get(0)
-                                .thenAccept(messageEditFuture::complete).exceptionally(innerThrowable -> {
-                                    log.error("Failed to send message to create a message.", innerThrowable);
-                                    messageEditFuture.completeExceptionally(innerThrowable);
-                                    return null;
-                                });
+                            messageId, messageChannel.getIdLong(), messageChannel.getGuild().getId());
+                        List<CompletableFuture<Message>> messageFutures = channelService.sendMessageToSendToChannel(messageToSend, messageChannel);
+                        FutureUtils.toSingleFutureGeneric(messageFutures)
+                                .thenAccept(unused -> messageEditFuture.complete(futures.get(0).join()))
+                                    .exceptionally(innerThrowable -> {
+                                        log.error("Failed to send message to create a message.", innerThrowable);
+                                        messageEditFuture.completeExceptionally(innerThrowable);
+                                        return null;
+                                    });
                         return null;
                     });
                 } else {
-                    channelService.retrieveMessageInChannel(messageChannel, messageId).thenAccept(message -> {
-                        log.debug("Editing existing message {} when upserting message in channel {} in server {}.",
+                    if (StringUtils.isBlank(messageToSend.getMessages().get(0).trim())) {
+                        channelService.retrieveMessageInChannel(messageChannel, messageId).thenAccept(message -> {
+                            log.debug("Editing existing message {} when upserting message embeds in channel {} in server {}.",
                                 messageId, messageChannel.getIdLong(), messageChannel.getGuild().getId());
-                        messageService.editMessage(message, messageToSend.getMessages().get(0), messageToSend.getEmbeds().get(0))
+                            messageService.editMessage(message, messageToSend.getEmbeds().get(0))
                                 .queue(messageEditFuture::complete, messageEditFuture::completeExceptionally);
-                    }).exceptionally(throwable -> {
-                        log.debug("Creating new message when trying to upsert a message {} in channel {} in server {}.",
+                        }).exceptionally(throwable -> {
+                            log.debug("Creating new message when upserting message embeds for message {} in channel {} in server {}.",
                                 messageId, messageChannel.getIdLong(), messageChannel.getGuild().getId());
-                        sendEmbedInPostTarget(messageToSend, target).get(0)
+                            sendEmbedInPostTarget(messageToSend, target).get(0)
                                 .thenAccept(messageEditFuture::complete).exceptionally(innerThrowable -> {
                                     log.error("Failed to send message to create a message.", innerThrowable);
                                     messageEditFuture.completeExceptionally(innerThrowable);
                                     return null;
                                 });
-                        return null;
-                    });
+                            return null;
+                        });
+                    } else {
+                        channelService.retrieveMessageInChannel(messageChannel, messageId).thenAccept(message -> {
+                            log.debug("Editing existing message {} when upserting message in channel {} in server {}.",
+                                messageId, messageChannel.getIdLong(), messageChannel.getGuild().getId());
+                            messageService.editMessage(message, messageToSend.getMessages().get(0), messageToSend.getEmbeds().get(0))
+                                .queue(messageEditFuture::complete, messageEditFuture::completeExceptionally);
+                        }).exceptionally(throwable -> {
+                            log.debug("Creating new message when trying to upsert a message {} in channel {} in server {}.",
+                                messageId, messageChannel.getIdLong(), messageChannel.getGuild().getId());
+                            sendEmbedInPostTarget(messageToSend, target).get(0)
+                                .thenAccept(messageEditFuture::complete).exceptionally(innerThrowable -> {
+                                    log.error("Failed to send message to create a message.", innerThrowable);
+                                    messageEditFuture.completeExceptionally(innerThrowable);
+                                    return null;
+                                });
+                            return null;
+                        });
+                    }
                 }
                 return futures;
             }).orElse(Arrays.asList(CompletableFuture.completedFuture(null)));

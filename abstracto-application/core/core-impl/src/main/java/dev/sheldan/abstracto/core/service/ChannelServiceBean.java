@@ -17,6 +17,7 @@ import dev.sheldan.abstracto.core.utils.FileService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.components.actionrow.ActionRowChildComponent;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.attribute.IThreadContainer;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
@@ -25,9 +26,8 @@ import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
-import net.dv8tion.jda.api.interactions.components.ActionComponent;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.ItemComponent;
+import net.dv8tion.jda.api.components.ActionComponent;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.requests.restaction.MessageEditAction;
 import net.dv8tion.jda.api.utils.FileUpload;
@@ -221,91 +221,96 @@ public class ChannelServiceBean implements ChannelService {
         }
         List<CompletableFuture<Message>> futures = new ArrayList<>();
         List<MessageCreateAction> allMessageActions = new ArrayList<>();
-        Iterator<MessageEmbed> embedIterator = messageToSend.getEmbeds().iterator();
-        for (int i = 0; i < messageToSend.getMessages().size(); i++) {
+        if(messageToSend.getUseComponentsV2() && messageToSend.getComponents() != null && !messageToSend.getComponents().isEmpty()) {
             metricService.incrementCounter(MESSAGE_SEND_METRIC);
-            String text = messageToSend.getMessages().get(i);
+            allMessageActions.add(textChannel.sendMessageComponents(messageToSend.getComponents()).useComponentsV2());
+        } else {
+            Iterator<MessageEmbed> embedIterator = messageToSend.getEmbeds().iterator();
+            for (int i = 0; i < messageToSend.getMessages().size(); i++) {
+                metricService.incrementCounter(MESSAGE_SEND_METRIC);
+                String text = messageToSend.getMessages().get(i);
+                List<MessageEmbed> messageEmbeds = new ArrayList<>();
+                while(embedIterator.hasNext()) {
+                    MessageEmbed embedToAdd = embedIterator.next();
+                    if((currentEmbedLength(messageEmbeds) + embedToAdd.getLength()) >= MessageEmbed.EMBED_MAX_LENGTH_BOT) {
+                        break;
+                    }
+                    messageEmbeds.add(embedToAdd);
+                    embedIterator.remove();
+                }
+                MessageCreateAction messageAction = textChannel.sendMessage(text);
+                if(!messageEmbeds.isEmpty()) {
+                    messageAction.setEmbeds(messageEmbeds);
+                }
+                allMessageActions.add(messageAction);
+            }
             List<MessageEmbed> messageEmbeds = new ArrayList<>();
+            // reset the iterator, because if the if in the above while iterator loop applied, we already took it out from the iterator
+            // but we didnt add it yet, so it would be lost
+            embedIterator = messageToSend.getEmbeds().iterator();
             while(embedIterator.hasNext()) {
                 MessageEmbed embedToAdd = embedIterator.next();
-                if((currentEmbedLength(messageEmbeds) + embedToAdd.getLength()) >= MessageEmbed.EMBED_MAX_LENGTH_BOT) {
-                    break;
+                if((currentEmbedLength(messageEmbeds) + embedToAdd.getLength()) >= MessageEmbed.EMBED_MAX_LENGTH_BOT && !messageEmbeds.isEmpty()) {
+                    allMessageActions.add(textChannel.sendMessageEmbeds(messageEmbeds));
+                    metricService.incrementCounter(MESSAGE_SEND_METRIC);
+                    messageEmbeds = new ArrayList<>();
                 }
                 messageEmbeds.add(embedToAdd);
-                embedIterator.remove();
             }
-            MessageCreateAction messageAction = textChannel.sendMessage(text);
+
             if(!messageEmbeds.isEmpty()) {
-                messageAction.setEmbeds(messageEmbeds);
-            }
-            allMessageActions.add(messageAction);
-        }
-        List<MessageEmbed> messageEmbeds = new ArrayList<>();
-        // reset the iterator, because if the if in the above while iterator loop applied, we already took it out from the iterator
-        // but we didnt add it yet, so it would be lost
-        embedIterator = messageToSend.getEmbeds().iterator();
-        while(embedIterator.hasNext()) {
-            MessageEmbed embedToAdd = embedIterator.next();
-            if((currentEmbedLength(messageEmbeds) + embedToAdd.getLength()) >= MessageEmbed.EMBED_MAX_LENGTH_BOT && !messageEmbeds.isEmpty()) {
                 allMessageActions.add(textChannel.sendMessageEmbeds(messageEmbeds));
                 metricService.incrementCounter(MESSAGE_SEND_METRIC);
-                messageEmbeds = new ArrayList<>();
             }
-            messageEmbeds.add(embedToAdd);
-        }
 
-        if(!messageEmbeds.isEmpty()) {
-            allMessageActions.add(textChannel.sendMessageEmbeds(messageEmbeds));
-            metricService.incrementCounter(MESSAGE_SEND_METRIC);
-        }
-
-        List<ActionRow> actionRows = messageToSend.getActionRows();
-        if(!actionRows.isEmpty()) {
-            List<List<ActionRow>> groupedActionRows = ListUtils.partition(actionRows, ComponentService.MAX_BUTTONS_PER_ROW);
-            for (int i = 0; i < allMessageActions.size(); i++) {
-                allMessageActions.set(i, allMessageActions.get(i).setComponents(groupedActionRows.get(i)));
-            }
-            for (int i = allMessageActions.size(); i < groupedActionRows.size(); i++) {
-                // TODO maybe possible nicer
-                allMessageActions.add(textChannel.sendMessage(".").setComponents(groupedActionRows.get(i)));
-            }
-            AServer server = null;
-            if(textChannel instanceof GuildChannel) {
-                GuildChannel channel = (GuildChannel) textChannel;
-                server = serverManagementService.loadServer(channel.getGuild());
-            }
-            for (ActionRow components : actionRows) {
-                for (ItemComponent component : components) {
-                    if (component instanceof ActionComponent) {
-                        String id = ((ActionComponent) component).getId();
-                        MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
-                        if (payload != null && payload.getPersistCallback()) {
-                            componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
+            List<ActionRow> actionRows = messageToSend.getActionRows();
+            if(!actionRows.isEmpty()) {
+                List<List<ActionRow>> groupedActionRows = ListUtils.partition(actionRows, ComponentService.MAX_BUTTONS_PER_ROW);
+                for (int i = 0; i < allMessageActions.size(); i++) {
+                    allMessageActions.set(i, allMessageActions.get(i).setComponents(groupedActionRows.get(i)));
+                }
+                for (int i = allMessageActions.size(); i < groupedActionRows.size(); i++) {
+                    // TODO maybe possible nicer
+                    allMessageActions.add(textChannel.sendMessage(".").setComponents(groupedActionRows.get(i)));
+                }
+                AServer server = null;
+                if(textChannel instanceof GuildChannel) {
+                    GuildChannel channel = (GuildChannel) textChannel;
+                    server = serverManagementService.loadServer(channel.getGuild());
+                }
+                for (ActionRow row : actionRows) {
+                    for (ActionRowChildComponent component : row) {
+                        if (component instanceof ActionComponent) {
+                            String id = ((ActionComponent) component).getId();
+                            MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
+                            if (payload != null && payload.getPersistCallback()) {
+                                componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
+                            }
                         }
                     }
                 }
             }
-        }
 
-        if(messageToSend.hasFilesToSend()) {
-            List<FileUpload> attachedFiles = messageToSend
+            if(messageToSend.hasFilesToSend()) {
+                List<FileUpload> attachedFiles = messageToSend
                     .getAttachedFiles()
                     .stream()
                     .map(AttachedFile::convertToFileUpload)
                     .collect(Collectors.toList());
-            if(!allMessageActions.isEmpty()) {
-                // in case there has not been a message, we need to increment it
-                allMessageActions.set(0, allMessageActions.get(0).addFiles(attachedFiles));
-            } else {
-                metricService.incrementCounter(MESSAGE_SEND_METRIC);
-                allMessageActions.add(textChannel.sendFiles(attachedFiles));
+                if(!allMessageActions.isEmpty()) {
+                    // in case there has not been a message, we need to increment it
+                    allMessageActions.set(0, allMessageActions.get(0).addFiles(attachedFiles));
+                } else {
+                    metricService.incrementCounter(MESSAGE_SEND_METRIC);
+                    allMessageActions.add(textChannel.sendFiles(attachedFiles));
+                }
             }
         }
         Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(textChannel, messageToSend);
         allMessageActions.forEach(messageAction -> {
             if(messageToSend.getReferencedMessageId() != null) {
                 messageAction = messageAction.setMessageReference(messageToSend.getReferencedMessageId());
-                if(messageToSend.getMessageConfig() != null && !messageToSend.getMessageConfig().isMentionsReferencedMessage()) {
+                if(messageToSend.getMessageConfig() != null && !messageToSend.getMessageConfig().getMentionsReferencedMessage()) {
                     messageAction = messageAction.mentionRepliedUser(false);
                 }
             }
@@ -337,6 +342,15 @@ public class ChannelServiceBean implements ChannelService {
     @Override
     public CompletableFuture<Message> editMessageInAChannelFuture(MessageToSend messageToSend, MessageChannel channel, Long messageId) {
         MessageEditAction messageAction;
+        if(messageToSend.getUseComponentsV2()) {
+            Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(channel, messageToSend);
+            return channel
+                .editMessageComponentsById(messageId, messageToSend.getComponents())
+                .useComponentsV2()
+                .setReplace(true)
+                .setAllowedMentions(allowedMentions)
+                .submit();
+        }
         if(!messageToSend.getMessages().isEmpty() && !StringUtils.isBlank(messageToSend.getMessages().get(0))) {
             log.debug("Editing message {} with new text content.", messageId);
             messageAction = channel.editMessageById(messageId, messageToSend.getMessages().get(0));

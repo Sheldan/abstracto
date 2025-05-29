@@ -84,7 +84,7 @@
         </dependency>
 
         <dependency>
-            <groupId>net.dv8tion</groupId>
+            <groupId>io.github.freya022</groupId>
             <artifactId>JDA</artifactId>
             <exclusions>
                 <exclusion>
@@ -129,6 +129,11 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.danilopianini</groupId>
+            <artifactId>gson-extras</artifactId>
         </dependency>
 
         <dependency>
