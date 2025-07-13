@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.interaction.button.ButtonConfigModel;
 import dev.sheldan.abstracto.core.interaction.ComponentPayloadManagementService;
 import dev.sheldan.abstracto.linkembed.config.LinkEmbedFeatureDefinition;
 import dev.sheldan.abstracto.linkembed.config.LinkEmbedFeatureMode;
+import dev.sheldan.abstracto.linkembed.model.template.MessageEmbedCleanupReplacementModel;
 import dev.sheldan.abstracto.linkembed.model.template.MessageEmbedDeleteButtonPayload;
 import dev.sheldan.abstracto.linkembed.model.template.MessageEmbeddedModel;
 import dev.sheldan.abstracto.core.service.*;
@@ -18,7 +19,6 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.linkembed.model.MessageEmbedLink;
 import dev.sheldan.abstracto.linkembed.model.database.EmbeddedMessage;
@@ -28,6 +28,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -49,6 +50,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     private final Pattern messageRegex = Pattern.compile("(?<whole>(?:https?://)?(?:\\w+\\.)?discord(?:app)?\\.com/channels/(?<server>\\d+)/(?<channel>\\d+)/(?<message>\\d+)(?:.*?))+", Pattern.CASE_INSENSITIVE);
 
     public static final String MESSAGE_EMBED_TEMPLATE = "message_embed";
+    private static final String MESSAGE_EMBED_CLEANUP_REPLACEMENT_TEMPLATE = "message_embed_cleanup_replacement";
     public static final String REMOVAL_EMOTE = "removeEmbed";
 
     @Autowired
@@ -77,9 +79,6 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
 
     @Autowired
     private ReactionService reactionService;
-
-    @Autowired
-    private MessageService messageService;
 
     @Autowired
     private ComponentService componentServiceBean;
@@ -160,15 +159,21 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
             return CompletableFuture.completedFuture(null);
         }
         log.info("Cleaning up {} embedded embeddedMessages", embeddedMessages.size());
-        List<ServerChannelMessage> reactionChannelMessages = embeddedMessages.stream()
-                .filter(embeddedMessage -> embeddedMessage.getDeletionComponentId() == null)
-                .map(this::convertEmbedMessageToServerChannelMessage)
-        .collect(Collectors.toList());
+        List<Pair<ServerChannelMessage, ServerChannelMessage>> embeddingMessages = embeddedMessages.stream()
+                .map(embeddedMessage -> Pair.of(ServerChannelMessage
+                    .builder()
+                    .serverId(embeddedMessage.getEmbeddingServer().getId())
+                    .channelId(embeddedMessage.getEmbeddingChannel().getId())
+                    .messageId(embeddedMessage.getEmbeddingMessageId())
+                    .build(),
+                    ServerChannelMessage
+                        .builder().
+                        serverId(embeddedMessage.getEmbeddedServer().getId())
+                        .channelId(embeddedMessage.getEmbeddedChannel().getId())
+                        .messageId(embeddedMessage.getEmbeddedMessageId())
+                        .build()))
+        .toList();
 
-        List<ServerChannelMessage> buttonChannelMessages = embeddedMessages.stream()
-                .filter(embeddedMessage -> embeddedMessage.getDeletionComponentId() != null)
-                .map(this::convertEmbedMessageToServerChannelMessage)
-                .collect(Collectors.toList());
         List<Long> embeddedMessagesHandled = embeddedMessages
                 .stream()
                 .map(EmbeddedMessage::getEmbeddingMessageId)
@@ -179,67 +184,26 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
                 .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
-        List<CompletableFuture<Message>> reactionMessageFutures = messageService.retrieveMessages(reactionChannelMessages);
-        List<CompletableFuture<Message>> buttonMessageFutures = messageService.retrieveMessages(buttonChannelMessages);
-        CompletableFutureList<Message> reactionFutureList = new CompletableFutureList<>(reactionMessageFutures);
-        CompletableFutureList<Message> buttonFutureList = new CompletableFutureList<>(buttonMessageFutures);
-        return reactionFutureList.getMainFuture()
-                .handle((unused, throwable) -> {
-                    if(throwable != null) {
-                        log.warn("Embedded messages reaction message loading failed.", throwable);
-                    }
-                    return self.removeReactions(reactionFutureList.getObjects());
-                })
-                .thenCompose(Function.identity())
-                .thenCompose(unused -> buttonFutureList.getMainFuture())
-                .handle((unused, throwable) -> {
-                    if(throwable != null) {
-                        log.warn("Embedded messages button message loading failed.", throwable);
-                    }
-                    return self.removeButtons(buttonFutureList.getObjects());
-                })
-                // deleting the messages from db regardless of exceptions, at most the reaction remains
-                .thenCompose(Function.identity())
-                .whenComplete((unused, throwable) -> {
-                    if(throwable != null) {
-                        log.warn("Embedded message button clearing failed.", throwable);
-                    }
-                    self.deleteEmbeddedMessages(embeddedMessagesHandled, componentPayloadsToDelete);
-                })
-                .exceptionally(throwable -> {
-                    log.error("Failed to clean up embedded messages.", throwable);
-                    return null;
-                });
-    }
-
-    public CompletableFuture<Void> removeButtons(List<Message> messages) {
-        List<CompletableFuture<Void>> removalFutures = new ArrayList<>();
-        messages.forEach(message -> removalFutures.add(componentServiceBean.clearButtons(message)));
-        return FutureUtils.toSingleFutureGeneric(removalFutures);
-    }
-
-    private ServerChannelMessage convertEmbedMessageToServerChannelMessage(EmbeddedMessage embeddedMessage) {
-        return ServerChannelMessage
+        List<CompletableFuture<Message>> editList = embeddingMessages.stream().map(messagePair -> {
+            ServerChannelMessage embeddingMessage = messagePair.getLeft();
+            ServerChannelMessage embeddedMessage = messagePair.getRight();
+            MessageEmbedCleanupReplacementModel model = MessageEmbedCleanupReplacementModel
                 .builder()
-                .serverId(embeddedMessage.getEmbeddingServer().getId())
-                .channelId(embeddedMessage.getEmbeddingChannel().getId())
-                .messageId(embeddedMessage.getEmbeddingMessageId())
+                .message(embeddedMessage)
                 .build();
+            MessageToSend messageToSend =
+                templateService.renderEmbedTemplate(MESSAGE_EMBED_CLEANUP_REPLACEMENT_TEMPLATE, model, embeddingMessage.getServerId());
+            return channelService.editMessageInAChannelFuture(messageToSend, embeddingMessage.getServerId(), embeddingMessage.getChannelId(),
+                embeddingMessage.getMessageId());
+        }).toList();
+        return FutureUtils.toSingleFutureGeneric(editList).whenComplete((unused, throwable) -> {
+            if(throwable != null) {
+                log.warn("Failed to cleanup embedded messages..", throwable);
+            }
+            self.deleteEmbeddedMessages(embeddedMessagesHandled, componentPayloadsToDelete);
+        });
     }
 
-    @Transactional
-    public CompletableFuture<Void> removeReactions(List<Message> allMessages) {
-        List<CompletableFuture<Void>> removalFutures = new ArrayList<>();
-        Map<Long, List<Message>> groupedPerServer = allMessages
-                .stream()
-                .collect(Collectors.groupingBy(message -> message.getGuild().getIdLong()));
-        groupedPerServer.forEach((serverId, serverMessages) -> {
-            // we assume the emote remained the same
-            CompletableFutureList<Void> removalFuture = reactionService.removeReactionFromMessagesWithFutureWithFutureList(serverMessages, REMOVAL_EMOTE);
-            removalFutures.add(removalFuture.getMainFuture());
-        });
-        return FutureUtils.toSingleFutureGeneric(removalFutures);
-    }
 
     @Transactional
     public void deleteEmbeddedMessages(List<Long> embeddedMessagesToDelete, List<String> componentPayloadsToDelete) {
