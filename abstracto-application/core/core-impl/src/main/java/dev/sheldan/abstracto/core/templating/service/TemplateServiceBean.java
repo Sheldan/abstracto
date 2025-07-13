@@ -10,6 +10,24 @@ import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.templating.Templatable;
 import dev.sheldan.abstracto.core.templating.exception.TemplatingException;
 import dev.sheldan.abstracto.core.templating.model.*;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.ButtonConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.ActionRowItemConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.ButtonMetaConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.ButtonStyleConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.ComponentConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.SectionAccessoryConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.SectionButton;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.SectionComponentConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.SectionThumbnail;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.Spacing;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.TextDisplayConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.TopLevelActionRowConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.TopLevelContainerConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.TopLevelFileConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.TopLevelMediaGalleryConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.TopLevelSectionConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.TopLevelSeperatorConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.TopLevelTextDisplay;
 import dev.sheldan.abstracto.core.utils.FileService;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -19,11 +37,22 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.components.MessageTopLevelComponent;
 import net.dv8tion.jda.api.components.actionrow.ActionRowChildComponent;
+import net.dv8tion.jda.api.components.container.Container;
+import net.dv8tion.jda.api.components.container.ContainerChildComponent;
+import net.dv8tion.jda.api.components.filedisplay.FileDisplay;
+import net.dv8tion.jda.api.components.mediagallery.MediaGallery;
+import net.dv8tion.jda.api.components.mediagallery.MediaGalleryItem;
+import net.dv8tion.jda.api.components.section.Section;
+import net.dv8tion.jda.api.components.section.SectionAccessoryComponent;
+import net.dv8tion.jda.api.components.section.SectionContentComponent;
+import net.dv8tion.jda.api.components.separator.Separator;
+import net.dv8tion.jda.api.components.textdisplay.TextDisplay;
+import net.dv8tion.jda.api.components.thumbnail.Thumbnail;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.interactions.components.ItemComponent;
 import net.dv8tion.jda.api.components.buttons.Button;
@@ -69,7 +98,7 @@ public class TemplateServiceBean implements TemplateService {
     private FileService fileService;
 
     /**
-     * Formats the passed passed count with the embed used for formatting pages.
+     * Formats the passed count with the embed used for formatting pages.
      *
      * @param count The index of the page you want formatted.
      * @return The rendered template as a string object
@@ -101,90 +130,103 @@ public class TemplateServiceBean implements TemplateService {
     }
 
     public MessageToSend convertEmbedConfigurationToMessageToSend(MessageConfiguration messageConfiguration) {
-        List<EmbedBuilder> embedBuilders = new ArrayList<>();
-        if(messageConfiguration.getEmbeds() != null && !messageConfiguration.getEmbeds().isEmpty())  {
-            convertEmbeds(messageConfiguration, embedBuilders);
-        }
-
+        List<MessageEmbed> embeds = new ArrayList<>();
         List<ActionRow> actionRows = new ArrayList<>();
         Map<String, MessageToSend.ComponentConfig> componentPayloads = new HashMap<>();
-        if(messageConfiguration.getButtons() != null || messageConfiguration.getSelectionMenus() != null) {
-            // this basically preprocesses the buttons and select menus
-            // by getting the positions of the items first
-            // we only need this, because the current message config does not have them in the same item
-            // they are two distinct lists, but map to the same concept in discord: components
-            Set<Integer> positions = new HashSet<>();
-            HashMap<Integer, ButtonConfig> buttonPositions = new HashMap<>();
-            List<ButtonConfig> buttonsWithoutPosition = new ArrayList<>();
-            HashMap<Integer, SelectionMenuConfig> selectionMenuPositions = new HashMap<>();
-            List<SelectionMenuConfig> selectionMenusWithoutPosition = new ArrayList<>();
-            // we do this by getting all positions which are part of the config
-            // we also track which positions are buttons and which are select menus
-            if(messageConfiguration.getButtons() != null) {
-                messageConfiguration.getButtons().forEach(buttonConfig -> {
-                    if(buttonConfig.getPosition() != null) {
-                        positions.add(buttonConfig.getPosition());
-                        buttonPositions.put(buttonConfig.getPosition(), buttonConfig);
-                    } else {
-                        buttonsWithoutPosition.add(buttonConfig);
+        List<MessageTopLevelComponent> discordComponents = new ArrayList<>();
+        boolean useComponentsV2;
+        if(messageConfiguration.getMessageConfig() != null && messageConfiguration.getMessageConfig().isUseComponentsV2()) {
+            useComponentsV2 = true;
+            if(messageConfiguration.getComponents() != null) {
+                for (ComponentConfig componentConfig : messageConfiguration.getComponents()) {
+                    net.dv8tion.jda.api.components.Component createdComponent = getComponent(componentConfig, componentPayloads);
+                    if(createdComponent != null) {
+                        discordComponents.add((MessageTopLevelComponent) createdComponent);
                     }
-                });
-            }
-
-            if(messageConfiguration.getSelectionMenus() != null) {
-                messageConfiguration.getSelectionMenus().forEach(selectionMenuConfig -> {
-                    if(selectionMenuConfig.getPosition() != null) {
-                        positions.add(selectionMenuConfig.getPosition());
-                        selectionMenuPositions.put(selectionMenuConfig.getPosition(), selectionMenuConfig);
-                    } else {
-                        selectionMenusWithoutPosition.add(selectionMenuConfig);
-                    }
-                });
-            }
-            List<Integer> positionsSorted = new ArrayList<>(positions);
-            Collections.sort(positionsSorted);
-            List<ButtonConfig> currentButtons = new ArrayList<>();
-            // we go over all positions, and if its part of the buttons, we only add it to a list of buttons
-            // this will then mean, that all buttons are processed as a group
-            // this is necessary, because we can only add buttons as part of an action row
-            // and in order to make it easier, we process the whole chunk of buttons at once, producing
-            // at least one or more action rows
-            for (Integer position : positionsSorted) {
-                if (buttonPositions.containsKey(position)) {
-                    currentButtons.add(buttonPositions.get(position));
-                } else {
-                    // if we get interrupted by a selection menu, we process the buttons we have so far
-                    // because those should be handled as a group
-                    // and then process the selection menu, the selection menu will always represent one full action row
-                    // it is not possible to have a button and a menu in the same row
-                    if(!currentButtons.isEmpty()) {
-                        addButtons(actionRows, componentPayloads, currentButtons);
-                        currentButtons.clear();
-                    }
-                    addSelectionMenu(actionRows, selectionMenuPositions.get(position));
                 }
             }
-            if(!currentButtons.isEmpty()) {
-                addButtons(actionRows, componentPayloads, currentButtons);
-                currentButtons.clear();
+        } else {
+            useComponentsV2 = false;
+            List<EmbedBuilder> embedBuilders = new ArrayList<>();
+            if(messageConfiguration.getEmbeds() != null && !messageConfiguration.getEmbeds().isEmpty())  {
+                convertEmbeds(messageConfiguration, embedBuilders);
             }
-            // all the rest without positions will be processed at the end (probably default case for most cases)
-            addButtons(actionRows, componentPayloads, buttonsWithoutPosition);
-            // selection menus are handled afterwards, that is just implied logic
-            // to have a select menu before a button, one would need to set accordingly, or only
-            // set the position for the selection menu, and not for the button
-            selectionMenusWithoutPosition.forEach(selectionMenuConfig -> addSelectionMenu(actionRows, selectionMenuConfig));
-        }
 
-        setPagingFooters(embedBuilders);
+            if(messageConfiguration.getButtons() != null || messageConfiguration.getSelectionMenus() != null) {
+                // this basically preprocesses the buttons and select menus
+                // by getting the positions of the items first
+                // we only need this, because the current message config does not have them in the same item
+                // they are two distinct lists, but map to the same concept in discord: components
+                Set<Integer> positions = new HashSet<>();
+                HashMap<Integer, ButtonConfig> buttonPositions = new HashMap<>();
+                List<ButtonConfig> buttonsWithoutPosition = new ArrayList<>();
+                HashMap<Integer, SelectionMenuConfig> selectionMenuPositions = new HashMap<>();
+                List<SelectionMenuConfig> selectionMenusWithoutPosition = new ArrayList<>();
+                // we do this by getting all positions which are part of the config
+                // we also track which positions are buttons and which are select menus
+                if(messageConfiguration.getButtons() != null) {
+                    messageConfiguration.getButtons().forEach(buttonConfig -> {
+                        if(buttonConfig.getPosition() != null) {
+                            positions.add(buttonConfig.getPosition());
+                            buttonPositions.put(buttonConfig.getPosition(), buttonConfig);
+                        } else {
+                            buttonsWithoutPosition.add(buttonConfig);
+                        }
+                    });
+                }
 
-        List<MessageEmbed> embeds = new ArrayList<>();
-        if (!embedBuilders.isEmpty()) {
-            embeds = embedBuilders
+                if(messageConfiguration.getSelectionMenus() != null) {
+                    messageConfiguration.getSelectionMenus().forEach(selectionMenuConfig -> {
+                        if(selectionMenuConfig.getPosition() != null) {
+                            positions.add(selectionMenuConfig.getPosition());
+                            selectionMenuPositions.put(selectionMenuConfig.getPosition(), selectionMenuConfig);
+                        } else {
+                            selectionMenusWithoutPosition.add(selectionMenuConfig);
+                        }
+                    });
+                }
+                List<Integer> positionsSorted = new ArrayList<>(positions);
+                Collections.sort(positionsSorted);
+                List<ButtonConfig> currentButtons = new ArrayList<>();
+                // we go over all positions, and if its part of the buttons, we only add it to a list of buttons
+                // this will then mean, that all buttons are processed as a group
+                // this is necessary, because we can only add buttons as part of an action row
+                // and in order to make it easier, we process the whole chunk of buttons at once, producing
+                // at least one or more action rows
+                for (Integer position : positionsSorted) {
+                    if (buttonPositions.containsKey(position)) {
+                        currentButtons.add(buttonPositions.get(position));
+                    } else {
+                        // if we get interrupted by a selection menu, we process the buttons we have so far
+                        // because those should be handled as a group
+                        // and then process the selection menu, the selection menu will always represent one full action row
+                        // it is not possible to have a button and a menu in the same row
+                        if(!currentButtons.isEmpty()) {
+                            addButtons(actionRows, componentPayloads, currentButtons);
+                            currentButtons.clear();
+                        }
+                        addSelectionMenu(actionRows, selectionMenuPositions.get(position));
+                    }
+                }
+                if(!currentButtons.isEmpty()) {
+                    addButtons(actionRows, componentPayloads, currentButtons);
+                    currentButtons.clear();
+                }
+                // all the rest without positions will be processed at the end (probably default case for most cases)
+                addButtons(actionRows, componentPayloads, buttonsWithoutPosition);
+                // selection menus are handled afterwards, that is just implied logic
+                // to have a select menu before a button, one would need to set accordingly, or only
+                // set the position for the selection menu, and not for the button
+                selectionMenusWithoutPosition.forEach(selectionMenuConfig -> addSelectionMenu(actionRows, selectionMenuConfig));
+            }
+            setPagingFooters(embedBuilders);
+            if (!embedBuilders.isEmpty()) {
+                embeds = embedBuilders
                     .stream()
                     .filter(embedBuilder -> !embedBuilder.isEmpty())
                     .map(EmbedBuilder::build)
                     .collect(Collectors.toList());
+            }
         }
 
         List<String> messages = new ArrayList<>();
@@ -270,11 +312,112 @@ public class TemplateServiceBean implements TemplateService {
                 .messageConfig(createMessageConfig(messageConfiguration.getMessageConfig()))
                 .messages(messages)
                 .ephemeral(isEphemeral)
+                .useComponentsV2(useComponentsV2)
+                .components(discordComponents)
                 .attachedFiles(files)
                 .actionRows(actionRows)
                 .componentPayloads(componentPayloads)
                 .referencedMessageId(referencedMessageId)
                 .build();
+    }
+
+    private net.dv8tion.jda.api.components.Component getComponent(ComponentConfig componentConfig, Map<String, MessageToSend.ComponentConfig> componentPayloads) {
+        if(componentConfig instanceof TopLevelActionRowConfig actionRowConfig) {
+            List<ActionRowChildComponent> actionRowChildComponents = new ArrayList<>();
+            for (ActionRowItemConfig actionRowItemConfig : actionRowConfig.getActionRowItems()) {
+                if(actionRowItemConfig instanceof ButtonConfig actionRowButtonConfig) {
+                    Button createdButton = createButtonFromConfig(componentPayloads, actionRowButtonConfig);
+                    actionRowChildComponents.add(createdButton);
+                }
+            }
+            return ActionRow.of(actionRowChildComponents);
+        } else if(componentConfig instanceof TopLevelTextDisplay textDisplayConfig) {
+            return createTextDisplay(textDisplayConfig);
+        } else if (componentConfig instanceof TopLevelSectionConfig sectionConfig) {
+            SectionAccessoryComponent accessory = null;
+            if(sectionConfig.getAccessory() != null) {
+                SectionAccessoryConfig sectionAccessoryConfig = sectionConfig.getAccessory();
+                if(sectionAccessoryConfig instanceof SectionButton buttonConfig) {
+                    accessory = createButtonFromConfig(componentPayloads, buttonConfig);
+                } else if (sectionAccessoryConfig instanceof SectionThumbnail sectionThumbnailConfig) {
+                    accessory = createThumbnail(sectionThumbnailConfig);;
+                }
+            }
+            if(sectionConfig.getComponents() != null && !sectionConfig.getComponents().isEmpty()) {
+                List<SectionContentComponent> sectionComponents = new ArrayList<>();
+                for (SectionComponentConfig sectionComponentConfig : sectionConfig.getComponents()) {
+                    if (sectionComponentConfig instanceof TextDisplayConfig textDisplayConfig) {
+                        sectionComponents.add(createTextDisplay(textDisplayConfig));
+                    }
+                }
+                if(accessory != null) {
+                    return Section.of(accessory, sectionComponents);
+                }
+            }
+        } else if(componentConfig instanceof TopLevelFileConfig fileConfig) {
+            if(fileConfig.getFileContent() != null) {
+                File file = fileService.createTempFile(fileConfig.getFileName());
+                try {
+                    fileService.writeContentToFile(file, fileConfig.getFileContent());
+                } catch (IOException e) {
+                    log.error("Failed to write local temporary file.", e);
+                    throw new AbstractoRunTimeException(e);
+                }
+                return FileDisplay.fromFile(fileConfig.convertToFileUpload(file));
+            } else {
+                // NOT SUPPORTED ( right now)
+            }
+        } else if(componentConfig instanceof TopLevelMediaGalleryConfig mediaGalleryConfig) {
+            if(mediaGalleryConfig.getImages() != null) {
+                List<MediaGalleryItem> galleryItems = new ArrayList<>();
+                mediaGalleryConfig.getImages().forEach(imageConfig -> {
+                    MediaGalleryItem item = MediaGalleryItem.fromUrl(imageConfig.getUrl());
+                    if(imageConfig.getSpoiler() != null) {
+                        item = item.withSpoiler(imageConfig.getSpoiler());
+                    }
+                    if(imageConfig.getDescription() != null) {
+                        item = item.withDescription(imageConfig.getDescription());
+                    }
+                    galleryItems.add(item);
+                });
+                return MediaGallery.of(galleryItems);
+            }
+        } else if(componentConfig instanceof TopLevelSeperatorConfig seperatorConfig) {
+            return Separator.create(seperatorConfig.getDivider(),
+                Spacing.toSpacing(seperatorConfig.getSpacing()));
+        } else if(componentConfig instanceof TopLevelContainerConfig topLevelContainerConfig) {
+            List<ContainerChildComponent> childComponents = new ArrayList<>();
+            for (ComponentConfig containerComponent : topLevelContainerConfig.getComponents()) {
+                net.dv8tion.jda.api.components.Component createdComponent = getComponent(containerComponent, componentPayloads);
+                if(createdComponent != null) {
+                    childComponents.add((ContainerChildComponent) createdComponent);
+                }
+            }
+            return Container.of(childComponents);
+        }
+        return null;
+    }
+
+    private static Thumbnail createThumbnail(SectionThumbnail sectionThumbnailConfig) {
+        Thumbnail thumbnail = Thumbnail.fromUrl(sectionThumbnailConfig.getUrl());
+        if(sectionThumbnailConfig.getSpoiler() != null) {
+            thumbnail.withSpoiler(sectionThumbnailConfig.getSpoiler());
+        }
+        if(sectionThumbnailConfig.getDescription() != null) {
+            thumbnail.withDescription(sectionThumbnailConfig.getDescription());
+        }
+        if(sectionThumbnailConfig.getUniqueId() != null) {
+            thumbnail.withUniqueId(sectionThumbnailConfig.getUniqueId());
+        }
+        return thumbnail;
+    }
+
+    private TextDisplay createTextDisplay(TextDisplayConfig textDisplayConfig) {
+        TextDisplay textDisplay = TextDisplay.of(textDisplayConfig.getContent());
+        if(textDisplayConfig.getUniqueId() != null) {
+            textDisplay.withUniqueId(textDisplayConfig.getUniqueId());
+        }
+        return textDisplay;
     }
 
     private void addSelectionMenu(List<ActionRow> actionRows, SelectionMenuConfig selectionMenuConfig) {
@@ -347,51 +490,62 @@ public class TemplateServiceBean implements TemplateService {
     }
 
     private void addButtons(List<ActionRow> actionRows, Map<String, MessageToSend.ComponentConfig> componentPayloads, List<ButtonConfig> buttonConfigs) {
-        ActionRow currentRow = null;
+        List<Button> currentButtons = null;
         for (ButtonConfig buttonConfig : buttonConfigs) {
             ButtonMetaConfig metaConfig = buttonConfig.getMetaConfig() != null ? buttonConfig.getMetaConfig() : null;
-            String id = metaConfig != null && Boolean.TRUE.equals(metaConfig.getGenerateRandomUUID()) ?
-                    UUID.randomUUID().toString() : buttonConfig.getId();
-            String componentOrigin = metaConfig != null ? metaConfig.getButtonOrigin() : null;
-            MessageToSend.ComponentConfig componentConfig = null;
-            try {
-                componentConfig = MessageToSend.ComponentConfig
-                        .builder()
-                        .componentOrigin(componentOrigin)
-                        .componentType(ComponentType.BUTTON)
-                        .persistCallback(metaConfig != null && Boolean.TRUE.equals(metaConfig.getPersistCallback()))
-                        .payload(buttonConfig.getButtonPayload())
-                        .payloadType(buttonConfig.getPayloadType() != null ? Class.forName(buttonConfig.getPayloadType()) : null)
-                        .build();
-            } catch (ClassNotFoundException e) {
-                throw new AbstractoRunTimeException("Referenced class in button config could not be found: " + buttonConfig.getPayloadType(), e);
-            }
-            componentPayloads.put(id, componentConfig);
-            String idOrUl = buttonConfig.getUrl() == null ? buttonConfig.getId() : buttonConfig.getUrl();
-            Button createdButton = Button.of(ButtonStyleConfig.getStyle(buttonConfig.getButtonStyle()), idOrUl, buttonConfig.getLabel());
-            if (buttonConfig.getDisabled() != null) {
-                createdButton = createdButton.withDisabled(buttonConfig.getDisabled());
-            }
-            if (buttonConfig.getEmoteMarkdown() != null) {
-                createdButton = createdButton.withEmoji(Emoji.fromFormatted(buttonConfig.getEmoteMarkdown()));
-            }
-            if(currentRow == null) {
-                currentRow = ActionRow.of(createdButton);
-            } else if (
-                    (
-                            metaConfig != null &&
-                                    Boolean.TRUE.equals(metaConfig.getForceNewRow())
-                    )
-                            || currentRow.getComponents().size() == ComponentServiceBean.MAX_BUTTONS_PER_ROW) {
-                actionRows.add(currentRow);
-                currentRow = ActionRow.of(createdButton);
+            boolean forceNewRowFromConfig = metaConfig != null &&
+                Boolean.TRUE.equals(metaConfig.getForceNewRow());
+            Button createdButton = createButtonFromConfig(componentPayloads, buttonConfig);
+            if(currentButtons == null) {
+                currentButtons = new ArrayList<>();
+                currentButtons.add(createdButton);
             } else {
-                currentRow.getButtons().add(createdButton);
+                if (
+                        forceNewRowFromConfig
+                                || currentButtons.size() == ComponentServiceBean.MAX_BUTTONS_PER_ROW) {
+                    actionRows.add(ActionRow.of(currentButtons));
+                    currentButtons = new ArrayList<>();
+                    currentButtons.add(createdButton);
+                } else {
+                    currentButtons.add(createdButton);
+                }
             }
         }
-        if(currentRow != null) {
-            actionRows.add(currentRow);
+        if(currentButtons != null) {
+            actionRows.add(ActionRow.of(currentButtons));
         }
+    }
+
+    private Button createButtonFromConfig(Map<String, MessageToSend.ComponentConfig> componentPayloads, ButtonConfig buttonConfig) {
+        ButtonMetaConfig metaConfig = buttonConfig.getMetaConfig() != null ? buttonConfig.getMetaConfig() : null;
+        String id = metaConfig != null && Boolean.TRUE.equals(metaConfig.getGenerateRandomUUID()) ?
+                UUID.randomUUID().toString() : buttonConfig.getId();
+        String componentOrigin = metaConfig != null ? metaConfig.getButtonOrigin() : null;
+        MessageToSend.ComponentConfig componentConfig = null;
+        try {
+            componentConfig = MessageToSend.ComponentConfig
+                    .builder()
+                    .componentOrigin(componentOrigin)
+                    .componentType(ComponentType.BUTTON)
+                    .persistCallback(metaConfig != null && Boolean.TRUE.equals(metaConfig.getPersistCallback()))
+                    .payload(buttonConfig.getButtonPayload())
+                    .payloadType(buttonConfig.getPayloadType() != null ? Class.forName(buttonConfig.getPayloadType()) : null)
+                    .build();
+        } catch (ClassNotFoundException e) {
+            throw new AbstractoRunTimeException("Referenced class in button config could not be found: " + buttonConfig.getPayloadType(), e);
+        }
+        componentPayloads.put(id, componentConfig);
+        String idOrUl = buttonConfig.getUrl() == null ? buttonConfig.getId() : buttonConfig.getUrl();
+        Button createdButton;
+        if(StringUtils.isBlank(buttonConfig.getLabel())) {
+            createdButton = Button.of(ButtonStyleConfig.getStyle(buttonConfig.getButtonStyle()), idOrUl, buttonConfig.getEmoteMarkdown());
+        } else {
+            createdButton = Button.of(ButtonStyleConfig.getStyle(buttonConfig.getButtonStyle()), idOrUl, buttonConfig.getLabel());
+        }
+        if (buttonConfig.getDisabled() != null) {
+            createdButton = createdButton.withDisabled(buttonConfig.getDisabled());
+        }
+        return createdButton;
     }
 
     private void convertEmbeds(MessageConfiguration messageConfiguration, List<EmbedBuilder> embedBuilders) {

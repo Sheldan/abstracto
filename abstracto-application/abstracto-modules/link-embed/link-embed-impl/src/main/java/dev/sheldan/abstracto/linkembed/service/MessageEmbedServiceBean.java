@@ -357,7 +357,9 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
 
     private Boolean shouldMentionReferencedAuthor(Message message) {
         if(message.getReferencedMessage() != null) {
-            return message.getMentions().getMentions(Message.MentionType.USER).contains(message.getReferencedMessage().getAuthor());
+            return message.getMentions().getMentions(Message.MentionType.USER)
+                .stream()
+                .anyMatch(user -> message.getReferencedMessage().getAuthor().getIdLong() == user.getIdLong());
         }
         return false;
     }

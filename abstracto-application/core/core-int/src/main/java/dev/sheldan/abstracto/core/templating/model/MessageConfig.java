@@ -8,10 +8,10 @@ import lombok.Setter;
 @Setter
 @Builder
 public class MessageConfig {
-    private boolean allowsRoleMention;
-    private boolean allowsEveryoneMention;
+    private Boolean allowsRoleMention;
+    private Boolean allowsEveryoneMention;
     @Builder.Default
-    private boolean allowsUserMention = true;
+    private Boolean allowsUserMention = true;
     @Builder.Default
-    private boolean mentionsReferencedMessage = true;
+    private Boolean mentionsReferencedMessage = true;
 }

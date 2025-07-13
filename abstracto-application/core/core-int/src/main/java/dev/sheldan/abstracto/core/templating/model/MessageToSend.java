@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.models.database.ComponentType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.dv8tion.jda.api.components.MessageTopLevelComponent;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.components.actionrow.ActionRow;
 
@@ -20,10 +21,16 @@ import java.util.Map;
 @Builder
 public class MessageToSend {
     /**
-     * The collections of embeds to be send. The first embed is in the same message as the string message.
+     * The collections of embeds to send. The first embed is in the same message as the string message.
      */
     @Builder.Default
     private List<MessageEmbed> embeds = new ArrayList<>();
+
+    @Builder.Default
+    private List<MessageTopLevelComponent> components = new ArrayList<>();
+
+    @Builder.Default
+    private Boolean useComponentsV2 = false;
     /**
      * The string content to be used in the first message.
      */

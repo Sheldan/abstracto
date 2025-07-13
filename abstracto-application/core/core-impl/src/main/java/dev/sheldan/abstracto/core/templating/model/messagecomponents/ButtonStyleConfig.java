@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.core.templating.model;
+package dev.sheldan.abstracto.core.templating.model.messagecomponents;
 
 import com.google.gson.annotations.SerializedName;
 import net.dv8tion.jda.api.components.buttons.ButtonStyle;

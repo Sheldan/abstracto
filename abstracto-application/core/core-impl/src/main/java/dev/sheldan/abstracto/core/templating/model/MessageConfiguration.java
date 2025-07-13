@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.core.templating.model;
 
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.ButtonConfig;
+import dev.sheldan.abstracto.core.templating.model.messagecomponents.ComponentConfig;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +17,7 @@ import java.util.List;
 @Builder
 public class MessageConfiguration {
     private List<EmbedConfiguration> embeds;
+    private List<ComponentConfig> components;
     private Long referencedMessageId;
     /**
      * The message which is posted along the {@link net.dv8tion.jda.api.entities.MessageEmbed} as a normal message.

@@ -1,12 +1,13 @@
-package dev.sheldan.abstracto.core.templating.model;
+package dev.sheldan.abstracto.core.templating.model.messagecomponents;
 
-import lombok.Builder;
+
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 public class ButtonConfig {
     private String label;
     private String id;

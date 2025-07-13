@@ -138,8 +138,12 @@ public abstract class StarboardListener {
 
     protected void updateStarboardPost(CachedMessage message, AUserInAServer userReacting, boolean adding, StarboardPost starboardPost, List<AUserInAServer> userExceptAuthor) {
         starboardPost.setIgnored(false);
-        // TODO handle futures correctly
-        starboardService.updateStarboardPost(starboardPost, message, userExceptAuthor);
+        starboardService.updateStarboardPost(starboardPost, message, userExceptAuthor)
+            .thenAccept(unused -> log.info("Updated starboard post."))
+            .exceptionally(throwable -> {
+            log.error("Failed to update starboard post.", throwable);
+            return null;
+        });
         if(adding) {
             log.debug("Adding reactor {} from message {}", userReacting.getUserReference().getId(), message.getMessageId());
             starboardPostReactorManagementService.addReactor(starboardPost, userReacting);
