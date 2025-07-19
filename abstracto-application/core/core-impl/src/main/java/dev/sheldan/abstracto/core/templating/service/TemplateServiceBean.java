@@ -351,7 +351,14 @@ public class TemplateServiceBean implements TemplateService {
                     }
                 }
                 if(accessory != null) {
-                    return Section.of(accessory, sectionComponents);
+                    Section section = Section.of(accessory, sectionComponents);
+                    if(sectionConfig.getDisabled() != null) {
+                        section = section.withDisabled(sectionConfig.getDisabled());
+                    }
+                    if(sectionConfig.getUniqueId() != null) {
+                        section = section.withUniqueId(sectionConfig.getUniqueId());
+                    }
+                    return section;
                 }
             }
         } else if(componentConfig instanceof TopLevelFileConfig fileConfig) {
@@ -380,11 +387,19 @@ public class TemplateServiceBean implements TemplateService {
                     }
                     galleryItems.add(item);
                 });
-                return MediaGallery.of(galleryItems);
+                MediaGallery gallery = MediaGallery.of(galleryItems);
+                if(mediaGalleryConfig.getUniqueId() != null) {
+                    gallery = gallery.withUniqueId(mediaGalleryConfig.getUniqueId());
+                }
+                return gallery;
             }
         } else if(componentConfig instanceof TopLevelSeperatorConfig seperatorConfig) {
-            return Separator.create(seperatorConfig.getDivider(),
+            Separator separator = Separator.create(seperatorConfig.getDivider(),
                 Spacing.toSpacing(seperatorConfig.getSpacing()));
+            if(seperatorConfig.getUniqueId() != null) {
+                separator = separator.withUniqueId(seperatorConfig.getUniqueId());
+            }
+            return separator;
         } else if(componentConfig instanceof TopLevelContainerConfig topLevelContainerConfig) {
             List<ContainerChildComponent> childComponents = new ArrayList<>();
             for (ComponentConfig containerComponent : topLevelContainerConfig.getComponents()) {
@@ -393,7 +408,20 @@ public class TemplateServiceBean implements TemplateService {
                     childComponents.add((ContainerChildComponent) createdComponent);
                 }
             }
-            return Container.of(childComponents);
+            Container container = Container.of(childComponents);
+            if(topLevelContainerConfig.getColor() != null) {
+                container = container.withAccentColor(topLevelContainerConfig.getColor().toColor());
+            }
+            if(topLevelContainerConfig.getUniqueId() != null) {
+                container = container.withUniqueId(topLevelContainerConfig.getUniqueId());
+            }
+            if(topLevelContainerConfig.getDisabled() != null) {
+                container = container.withDisabled(topLevelContainerConfig.getDisabled());
+            }
+            if(topLevelContainerConfig.getSpoiler() != null) {
+                container = container.withSpoiler(topLevelContainerConfig.getSpoiler());
+            }
+            return container;
         }
         return null;
     }
@@ -544,6 +572,9 @@ public class TemplateServiceBean implements TemplateService {
         }
         if (buttonConfig.getDisabled() != null) {
             createdButton = createdButton.withDisabled(buttonConfig.getDisabled());
+        }
+        if(buttonConfig.getUniqueId() != null) {
+            createdButton = createdButton.withUniqueId(buttonConfig.getUniqueId());
         }
         return createdButton;
     }

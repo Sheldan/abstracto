@@ -9,5 +9,7 @@ import lombok.experimental.SuperBuilder;
 public class SectionConfig {
     protected SectionAccessoryConfig accessory;
     protected List<SectionComponentConfig> components;
+    private Boolean disabled;
+    private Integer uniqueId;
 
 }

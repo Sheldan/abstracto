@@ -223,6 +223,9 @@ public class RemindServiceBean implements ReminderService {
                 .builder()
                 .reminderParticipants(participantsDisplays)
                 .reminderDisplay(reminderDisplay)
+                .serverId(reminder.getServer().getId())
+                .channelId(reminder.getChannel().getId())
+                .messageId(reminder.getMessageId())
                 .userDisplay(UserDisplay.fromUser(member.getUser()))
                 .duration(Duration.between(reminder.getReminderDate(), reminder.getTargetDate()))
                 .build();

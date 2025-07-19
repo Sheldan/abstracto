@@ -8,6 +8,7 @@ import lombok.experimental.SuperBuilder;
 public class SeparatorConfig implements ComponentConfig {
     private Boolean divider;
     private Spacing spacing;
+    private Integer uniqueId;
     @Override
     public ComponentTypeConfig getType() {
         return ComponentTypeConfig.SEPARATOR;

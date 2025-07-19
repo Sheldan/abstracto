@@ -8,6 +8,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 public class MediaGalleryConfig implements ComponentConfig {
     private List<ImageConfig> images;
+    private Integer uniqueId;
     @Override
     public ComponentTypeConfig getType() {
         return ComponentTypeConfig.MEDIA_GALLERY;

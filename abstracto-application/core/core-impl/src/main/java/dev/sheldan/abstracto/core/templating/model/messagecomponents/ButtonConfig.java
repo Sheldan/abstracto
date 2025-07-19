@@ -13,6 +13,7 @@ public class ButtonConfig {
     private String id;
     private String url;
     private Boolean disabled;
+    private Integer uniqueId;
     private String emoteMarkdown;
     private ButtonStyleConfig buttonStyle;
     private String buttonPayload;

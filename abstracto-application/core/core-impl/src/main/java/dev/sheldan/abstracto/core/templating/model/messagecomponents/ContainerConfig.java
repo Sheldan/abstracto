@@ -8,6 +8,10 @@ import lombok.experimental.SuperBuilder;
 @Getter
 public class ContainerConfig implements ComponentConfig {
     private List<ComponentConfig> components;
+    private ContainerColor color;
+    private Integer uniqueId;
+    private Boolean spoiler;
+    private Boolean disabled;
     @Override
     public ComponentTypeConfig getType() {
         return ComponentTypeConfig.CONTAINER;
