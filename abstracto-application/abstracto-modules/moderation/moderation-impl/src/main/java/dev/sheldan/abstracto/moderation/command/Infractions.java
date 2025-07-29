@@ -33,7 +33,6 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -86,16 +85,15 @@ public class Infractions extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> showInfractions(InteractionHook hook, SlashCommandInteractionEvent event) {
         List<Infraction> infractions;
         Guild guild = hook.getInteraction().getGuild();
-        if(slashCommandParameterService.hasCommandOptionWithFullType(USER_PARAMETER, event, OptionType.USER)) {
-            Member member = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, Member.class);
+        Member member = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, Member.class);
+        User user = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, User.class);
+        if(member != null) {
             if(!member.getGuild().equals(guild)) {
                 throw new EntityGuildMismatchException();
             }
             infractions = infractionManagementService.getInfractionsForUser(userInServerManagementService.loadOrCreateUser(member));
-        } else if(slashCommandParameterService.hasCommandOptionWithFullType(USER_PARAMETER, event, OptionType.STRING)){
-            String userIdStr = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, String.class);
-            Long userId = Long.parseLong(userIdStr);
-            AUserInAServer userInServer = userInServerManagementService.loadOrCreateUser(guild.getIdLong(), userId);
+        } else if(user != null){
+            AUserInAServer userInServer = userInServerManagementService.loadOrCreateUser(guild.getIdLong(), user.getIdLong());
             infractions = infractionManagementService.getInfractionsForUser(userInServer);
 
         } else {

@@ -11,7 +11,6 @@ import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
-import dev.sheldan.abstracto.core.service.UserService;
 import dev.sheldan.abstracto.stickyroles.config.StickyRolesFeatureDefinition;
 import dev.sheldan.abstracto.stickyroles.config.StickyRolesSlashCommandNames;
 import dev.sheldan.abstracto.stickyroles.service.StickyRoleService;
@@ -19,10 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
@@ -47,34 +44,18 @@ public class ToggleStickinessManagement extends AbstractConditionableCommand {
     @Autowired
     private StickyRoleService stickyRoleService;
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private ToggleStickinessManagement self;
-
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         Boolean newState = slashCommandParameterService.getCommandOption(STICKY_PARAMETER_NAME, event, Boolean.class);
-        if(slashCommandParameterService.hasCommandOptionWithFullType(MEMBER_PARAMETER_NAME, event, OptionType.USER)) {
-            Member targetMember = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER_NAME, event, User.class, Member.class);
+        Member targetMember = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER_NAME, event, User.class, Member.class);
+        User targetUser = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER_NAME, event, User.class, User.class);
+        if(targetMember != null) {
             stickyRoleService.setStickiness(targetMember, newState);
-            return interactionService.replyEmbed(RESPONSE_TEMPLATE, event)
-                    .thenApply(interactionHook -> CommandResult.fromSuccess());
         } else {
-            String userIdStr = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER_NAME, event, User.class, String.class);
-            Long userId = Long.parseLong(userIdStr);
-            return userService.retrieveUserForId(userId).thenCompose(user -> {
-                self.callService(event, user, newState);
-                return interactionService.replyEmbed(RESPONSE_TEMPLATE, event);
-            }).thenApply(interactionHook -> CommandResult.fromSuccess());
+            stickyRoleService.setStickiness(targetUser, event.getGuild(), newState);
         }
-    }
-
-
-    @Transactional
-    public void callService(SlashCommandInteractionEvent event, User user, Boolean newState) {
-        stickyRoleService.setStickiness(user, event.getGuild(), newState);
+        return interactionService.replyEmbed(RESPONSE_TEMPLATE, event)
+                .thenApply(interactionHook -> CommandResult.fromSuccess());
     }
 
     @Override

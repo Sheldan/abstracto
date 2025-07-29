@@ -16,7 +16,7 @@ public class UserSlashCommandParameterProvider implements SlashCommandParameterP
         return SlashCommandOptionTypeMapping
                 .builder()
                 .type(User.class)
-                .optionTypes(Arrays.asList(OptionType.USER, OptionType.STRING))
+                .optionTypes(Arrays.asList(OptionType.USER))
                 .strictTypes(List.of(OptionType.USER))
                 .build();
     }

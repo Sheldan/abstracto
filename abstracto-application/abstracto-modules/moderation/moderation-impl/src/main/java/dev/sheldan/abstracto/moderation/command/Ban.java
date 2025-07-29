@@ -23,7 +23,6 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -76,16 +75,15 @@ public class Ban extends AbstractConditionableCommand {
             duration = null;
         }
 
-        if(slashCommandParameterService.hasCommandOptionWithFullType(USER_PARAMETER, event, OptionType.USER)) {
-            Member member = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, Member.class);
+        Member member = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, Member.class);
+        if(member != null) {
             return event.deferReply().submit()
                 .thenCompose((hook) -> self.banMember(event, member, reason, duration, hook))
                 .thenApply(commandResult -> CommandResult.fromSuccess());
         } else {
-            String userIdStr = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, String.class);
-            Long userId = Long.parseLong(userIdStr);
+            User user = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, User.class);
             return event.deferReply().submit()
-                .thenCompose((hook) -> self.banViaUserId(event, userId, reason, duration, hook))
+                .thenCompose((hook) -> self.banViaUserId(event, user.getIdLong(), reason, duration, hook))
                 .thenApply(commandResult -> CommandResult.fromSuccess());
         }
     }
