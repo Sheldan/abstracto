@@ -155,7 +155,7 @@ public class GiveawayServiceBean implements GiveawayService {
         Long giveawayId = giveaway.getGiveawayId().getId();
         log.info("Adding giveaway participating of user {} to giveaway {} in server {}.", member.getIdLong(), giveawayId, member.getGuild().getIdLong());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(GIVEAWAY_MESSAGE_TEMPLATE_KEY, giveawayMessageModel, member.getGuild().getIdLong());
-        return channelService.editEmbedMessageInAChannel(messageToSend.getEmbeds().get(0), messageChannel, giveaway.getMessageId())
+        return channelService.editMessageInAChannelFuture(messageToSend, messageChannel, giveaway.getMessageId())
                 .thenAccept(message -> {
             self.persistAddedParticipant(member, giveawayId);
         });
