@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.commands.config.features;
 
+import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.interaction.slash.CoreSlashCommandNames;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
@@ -13,11 +14,19 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandAutoCompleteService;
+import dev.sheldan.abstracto.core.models.database.AFeature;
+import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
+import dev.sheldan.abstracto.core.models.database.AFeatureMode;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
+import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
+import dev.sheldan.abstracto.core.service.management.FeatureModeManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import java.util.ArrayList;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -44,6 +53,18 @@ public class DisableMode extends AbstractConditionableCommand {
     @Autowired
     private InteractionService interactionService;
 
+    @Autowired
+    private SlashCommandAutoCompleteService slashCommandAutoCompleteService;
+
+    @Autowired
+    private FeatureFlagManagementService featureFlagManagementService;
+
+    @Autowired
+    private FeatureModeManagementService featureModeManagementService;
+
+    @Autowired
+    private FeatureManagementService featureManagementService;
+
     private static final String DISABLE_MODE_RESPONSE_KEY = "disableMode_response";
     private static final String FEATURE_PARAMETER = "feature";
     private static final String MODE_PARAMETER = "mode";
@@ -62,11 +83,40 @@ public class DisableMode extends AbstractConditionableCommand {
     }
 
     @Override
+    public List<String> performAutoComplete(CommandAutoCompleteInteractionEvent event) {
+        String input = event.getFocusedOption().getValue().toLowerCase();
+        AServer server = serverManagementService.loadServer(event.getGuild());
+        if(slashCommandAutoCompleteService.matchesParameter(event.getFocusedOption(), FEATURE_PARAMETER)) {
+            return featureFlagManagementService.getFeatureFlagsOfServer(server)
+                .stream()
+                .filter(AFeatureFlag::isEnabled)
+                .map(aFeatureFlag -> aFeatureFlag.getFeature().getKey().toLowerCase())
+                .filter(featureName ->  featureName.toLowerCase().startsWith(input))
+                .toList();
+        } else if(slashCommandAutoCompleteService.matchesParameter(event.getFocusedOption(), MODE_PARAMETER)) {
+            String featureName = slashCommandParameterService.getCommandOption(FEATURE_PARAMETER, event, String.class);
+            if(featureName.isBlank()) {
+                return new ArrayList<>();
+            }
+            FeatureDefinition featureDefinition = featureConfigService.getFeatureEnum(featureName);
+            AFeature feature = featureManagementService.getFeature(featureDefinition.getKey());
+            List<AFeatureMode> modes = featureModeManagementService.getFeatureModesOfFeatureInServer(server, feature);
+            return modes
+                .stream()
+                .map(mode -> mode.getFeatureMode().toLowerCase())
+                .filter(string -> string.startsWith(input))
+                .toList();
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
         Parameter featureName = Parameter
                 .builder()
                 .name(FEATURE_PARAMETER)
                 .type(String.class)
+                .supportsAutoComplete(true)
                 .templated(true)
                 .build();
 
@@ -74,6 +124,7 @@ public class DisableMode extends AbstractConditionableCommand {
                 .builder()
                 .name(MODE_PARAMETER)
                 .type(String.class)
+                .supportsAutoComplete(true)
                 .templated(true)
                 .build();
         List<Parameter> parameters = Arrays.asList(featureName, mode);

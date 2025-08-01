@@ -14,6 +14,7 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandAutoCompleteService;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureSwitchModel;
@@ -24,6 +25,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -55,6 +57,9 @@ public class EnableFeature extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
+
+    @Autowired
+    private SlashCommandAutoCompleteService slashCommandAutoCompleteService;
 
     private static final String ENABLE_FEATURE_DEPENDENCIES_RESPONSE_TEMPLATE_KEY = "enableFeature_feature_dependencies_response";
     private static final String ENABLE_FEATURE_RESPONSE_TEMPLATE_KEY = "enableFeature_response";
@@ -115,11 +120,25 @@ public class EnableFeature extends AbstractConditionableCommand {
     }
 
     @Override
+    public List<String> performAutoComplete(CommandAutoCompleteInteractionEvent event) {
+        if(slashCommandAutoCompleteService.matchesParameter(event.getFocusedOption(), FEATURE_NAME_PARAMETER)) {
+            String input = event.getFocusedOption().getValue().toLowerCase();
+            return featureConfigService.getAllFeatures()
+                .stream()
+                .map(String::toLowerCase)
+                .filter(lowerCase -> lowerCase.startsWith(input))
+                .toList();
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
         Parameter featureName = Parameter
                 .builder()
                 .name(FEATURE_NAME_PARAMETER)
                 .type(String.class)
+                .supportsAutoComplete(true)
                 .templated(true)
                 .build();
         List<Parameter> parameters = Arrays.asList(featureName);

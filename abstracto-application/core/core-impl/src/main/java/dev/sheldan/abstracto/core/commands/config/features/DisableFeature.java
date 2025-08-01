@@ -14,14 +14,18 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandAutoCompleteService;
+import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureSwitchModel;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
+import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -53,6 +57,12 @@ public class DisableFeature extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
+
+    @Autowired
+    private SlashCommandAutoCompleteService slashCommandAutoCompleteService;
+
+    @Autowired
+    private FeatureFlagManagementService featureFlagManagementService;
 
     private static final String DISABLE_FEATURE_DEPENDENCIES_RESPONSE_TEMPLATE_KEY = "disableFeature_feature_dependencies_response";
     private static final String DISABLE_FEATURE_RESPONSE_TEMPLATE_KEY = "disableFeature_response";
@@ -100,12 +110,28 @@ public class DisableFeature extends AbstractConditionableCommand {
     }
 
     @Override
+    public List<String> performAutoComplete(CommandAutoCompleteInteractionEvent event) {
+        if(slashCommandAutoCompleteService.matchesParameter(event.getFocusedOption(), FEATURE_NAME_PARAMETER)) {
+            String input = event.getFocusedOption().getValue().toLowerCase();
+            AServer server = serverManagementService.loadServer(event.getGuild());
+            return featureFlagManagementService.getFeatureFlagsOfServer(server)
+                .stream()
+                .filter(AFeatureFlag::isEnabled)
+                .map(aFeatureFlag -> aFeatureFlag.getFeature().getKey().toLowerCase())
+                .filter(featureName ->  featureName.toLowerCase().startsWith(input))
+                .toList();
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
         Parameter featureName = Parameter
                 .builder()
                 .name(FEATURE_NAME_PARAMETER)
                 .templated(true)
                 .type(String.class)
+                .supportsAutoComplete(true)
                 .build();
         List<Parameter> parameters = Arrays.asList(featureName);
 
