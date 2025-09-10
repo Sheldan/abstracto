@@ -39,7 +39,7 @@ public class WikipediaServiceBean implements WikipediaService {
         Response response = okHttpClient.newCall(request).execute();
         if(!response.isSuccessful()) {
             if(log.isDebugEnabled()) {
-                log.error("Failed to retrieve wikipedia summary. Response had code {} with body {}.",
+                log.debug("Failed to retrieve wikipedia summary. Response had code {} with body {}.",
                         response.code(), response.body());
             }
             throw new WikipediaRequestException(response.code());

@@ -6,7 +6,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 import dev.sheldan.abstracto.core.logging.OkHttpLogger;
 import dev.sheldan.abstracto.core.metric.OkHttpMetrics;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.templating.model.messagecomponents.ActionRowButtonConfig;
 import dev.sheldan.abstracto.core.templating.model.messagecomponents.ActionRowItemConfig;
 import dev.sheldan.abstracto.core.templating.model.messagecomponents.ComponentConfig;
@@ -38,13 +37,13 @@ import java.util.List;
 public class CoreConfig {
 
     @Autowired
-    private BotService botService;
-
-    @Autowired
     private OkHttpMetrics okHttpMetrics;
 
     @Autowired
     private OkHttpLogger okHttpLogger;
+
+    @Autowired
+    private OkHttpUserAgentSetter okHttpUserAgentSetter;
 
     @Autowired
     private List<CustomJsonSerializer> customJsonSerializers;
@@ -95,6 +94,7 @@ public class CoreConfig {
         return new OkHttpClient.Builder()
                 .addInterceptor(okHttpMetrics)
                 .addInterceptor(okHttpLogger)
+                .addInterceptor(okHttpUserAgentSetter)
                 .build();
     }
 
