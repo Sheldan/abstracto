@@ -50,7 +50,7 @@ public class SetEmote extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        List<ParameterValidator> emoteKeyValidators = Arrays.asList(MaxStringLengthValidator.max(255L));
+        List<ParameterValidator> emoteKeyValidators = Arrays.asList(MaxStringLengthValidator.max(255));
         Parameter emoteKey = Parameter
                 .builder()
                 .name(EMOTE_KEY_PARAMETER)

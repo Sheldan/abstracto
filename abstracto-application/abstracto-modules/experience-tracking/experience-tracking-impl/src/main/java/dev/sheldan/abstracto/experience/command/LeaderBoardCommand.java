@@ -158,7 +158,6 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
         Parameter focusMe = Parameter
             .builder()
             .name(FOCUS_PARAMETER)
-            .validators(leaderBoardPageValidators)
             .optional(true)
             .slashCommandOnly(true)
             .templated(true)

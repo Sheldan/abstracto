@@ -2,6 +2,10 @@ package dev.sheldan.abstracto.core.interaction.slash;
 
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.validator.MaxIntegerValueValidator;
+import dev.sheldan.abstracto.core.command.config.validator.MaxStringLengthValidator;
+import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValidator;
+import dev.sheldan.abstracto.core.command.config.validator.MinStringLengthValidator;
 import dev.sheldan.abstracto.core.command.execution.CommandParameterKey;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
@@ -184,6 +188,39 @@ public class SlashCommandServiceBean implements SlashCommandService {
         convertCommandConfigToCommandData(commandConfiguration, existingCommands, null, false);
     }
 
+    // TODO at some point replace this with more "native" solutions than using a validator instance
+    private Optional<Integer> getMaxLengthOfParameter(Parameter parameter) {
+        return parameter
+            .getValidators()
+            .stream().filter(parameterValidator -> parameterValidator instanceof MaxStringLengthValidator)
+            .findFirst().map(MaxStringLengthValidator.class::cast)
+            .map(MaxStringLengthValidator::getMaxLength);
+    }
+
+    private Optional<Long> getMaxValueOfParameter(Parameter parameter) {
+        return parameter
+            .getValidators()
+            .stream().filter(parameterValidator -> parameterValidator instanceof MaxIntegerValueValidator)
+            .findFirst().map(MaxIntegerValueValidator.class::cast)
+            .map(MaxIntegerValueValidator::getMaxValue);
+    }
+
+    private Optional<Long> getMinValueOfParameter(Parameter parameter) {
+        return parameter
+            .getValidators()
+            .stream().filter(parameterValidator -> parameterValidator instanceof MinIntegerValueValidator)
+            .findFirst().map(MinIntegerValueValidator.class::cast)
+            .map(MinIntegerValueValidator::getMinValue);
+    }
+
+    private Optional<Integer> getMinLengthOfParameter(Parameter parameter) {
+        return parameter
+            .getValidators()
+            .stream().filter(parameterValidator -> parameterValidator instanceof MinStringLengthValidator)
+            .findFirst().map(MinStringLengthValidator.class::cast)
+            .map(MinStringLengthValidator::getMinLength);
+    }
+
     private List<OptionData> getParameters(CommandConfiguration commandConfiguration, boolean isTemplated, String internalCommandName, Long serverId, boolean userCommandsOnly) {
         List<OptionData> requiredParameters = new ArrayList<>();
         List<OptionData> optionalParameters = new ArrayList<>();
@@ -195,6 +232,10 @@ public class SlashCommandServiceBean implements SlashCommandService {
                 return;
             }
             List<OptionType> types = slashCommandParameterService.getTypesFromParameter(parameter);
+            Optional<Integer> maxLengthOptional = getMaxLengthOfParameter(parameter);
+            Optional<Long> maxValueOptional = getMaxValueOfParameter(parameter);
+            Optional<Long> minValueOptional = getMinValueOfParameter(parameter);
+            Optional<Integer> minLengthOptional = getMinLengthOfParameter(parameter);
             if(types.size() > 1) {
                 if(parameter.isListParam()) {
                     for (int i = 0; i < parameter.getListSize(); i++) {
@@ -203,6 +244,10 @@ public class SlashCommandServiceBean implements SlashCommandService {
                             String parameterDescription = isTemplated ? templateService.renderSimpleTemplate(internalCommandName + "_parameter_" + parameter.getName(), serverId) : parameter.getDescription();
                             OptionData optionData = new OptionData(type, parameterName, parameterDescription, false);
                             addChoices(optionData, parameter, internalCommandName, isTemplated, serverId);
+                            setMaxLength(maxLengthOptional, optionData);
+                            setMinLength(minLengthOptional, optionData);
+                            setMaxValue(maxValueOptional, optionData);
+                            setMinValue(minValueOptional, optionData);
                             optionalParameters.add(optionData);
                         }
                     }
@@ -212,6 +257,10 @@ public class SlashCommandServiceBean implements SlashCommandService {
                         String parameterDescription = isTemplated ? templateService.renderSimpleTemplate(internalCommandName + "_parameter_" + parameter.getName(), serverId) : parameter.getDescription();
                         OptionData optionData = new OptionData(type, parameterName, parameterDescription, false);
                         addChoices(optionData, parameter, internalCommandName, isTemplated, serverId);
+                        setMaxLength(maxLengthOptional, optionData);
+                        setMinLength(minLengthOptional, optionData);
+                        setMaxValue(maxValueOptional, optionData);
+                        setMinValue(minValueOptional, optionData);
                         optionalParameters.add(optionData);
                     });
                 }
@@ -222,17 +271,41 @@ public class SlashCommandServiceBean implements SlashCommandService {
                     for (int i = 0; i < parameter.getListSize(); i++) {
                         OptionData optionData = new OptionData(type, parameter.getSlashCompatibleName() + "_" + i, parameterDescription, false);
                         addChoices(optionData, parameter, internalCommandName, isTemplated, serverId);
+                        setMaxLength(maxLengthOptional, optionData);
+                        setMinLength(minLengthOptional, optionData);
+                        setMaxValue(maxValueOptional, optionData);
+                        setMinValue(minValueOptional, optionData);
                         optionalParameters.add(optionData);
                     }
                 } else {
                     OptionData optionData = new OptionData(type, parameter.getSlashCompatibleName(), parameterDescription, !parameter.isOptional(), parameter.getSupportsAutoComplete());
                     addChoices(optionData, parameter, internalCommandName, isTemplated, serverId);
+                    setMaxLength(maxLengthOptional, optionData);
+                    setMinLength(minLengthOptional, optionData);
+                    setMaxValue(maxValueOptional, optionData);
+                    setMinValue(minValueOptional, optionData);
                     requiredParameters.add(optionData);
                 }
             }
         });
         requiredParameters.addAll(optionalParameters);
         return requiredParameters;
+    }
+
+    private void setMaxLength(Optional<Integer> maxLengthOptional, OptionData optionData) {
+        maxLengthOptional.ifPresent(optionData::setMaxLength);
+    }
+
+    private void setMaxValue(Optional<Long> maxValueOptional, OptionData optionData) {
+        maxValueOptional.ifPresent(optionData::setMaxValue);
+    }
+
+    private void setMinLength(Optional<Integer> minLengthOptional, OptionData optionData) {
+        minLengthOptional.ifPresent(optionData::setMinLength);
+    }
+
+    private void setMinValue(Optional<Long> minValueOptional, OptionData optionData) {
+        minValueOptional.ifPresent(optionData::setMinValue);
     }
 
     private void addChoices(OptionData optionData, Parameter parameter, String commandName, boolean isTemplated, Long serverId) {

@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 public class MinStringLengthValidator implements ParameterValidator {
 
-    private Long minLength;
+    private Integer minLength;
 
     @Override
     public boolean validate(Object value) {
@@ -33,7 +33,7 @@ public class MinStringLengthValidator implements ParameterValidator {
     public List<ValidatorParam> getParameters() {
         SingleNumberValidatorParam param = SingleNumberValidatorParam
                 .builder()
-                .number(minLength)
+                .number(minLength.longValue())
                 .build();
         return Arrays.asList(param);
     }

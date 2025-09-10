@@ -74,7 +74,7 @@ public class CreateAssignableRolePlace extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        List<ParameterValidator> rolePlaceNameValidator = Arrays.asList(MaxStringLengthValidator.max(AssignableRolePlace.ASSIGNABLE_PLACE_NAME_LIMIT));
+        List<ParameterValidator> rolePlaceNameValidator = Arrays.asList(MaxStringLengthValidator.max(AssignableRolePlace.ASSIGNABLE_PLACE_NAME_LIMIT.intValue()));
         Parameter rolePostName = Parameter
                 .builder()
                 .name(ASSIGNABLE_ROLE_PLACE_NAME_PARAMETER)
@@ -95,7 +95,7 @@ public class CreateAssignableRolePlace extends AbstractConditionableCommand {
                 .templated(true)
                 .optional(true)
                 .build();
-        List<ParameterValidator> rolePlaceDescriptionValidator = Arrays.asList(MaxStringLengthValidator.max(AssignableRolePlace.ASSIGNABLE_PLACE_NAME_LIMIT));
+        List<ParameterValidator> rolePlaceDescriptionValidator = Arrays.asList(MaxStringLengthValidator.max(AssignableRolePlace.ASSIGNABLE_PLACE_NAME_LIMIT.intValue()));
         Parameter text = Parameter
                 .builder()
                 .name(ASSIGNABLE_ROLE_PLACE_TEXT_PARAMETER)

@@ -16,7 +16,7 @@ public class MinStringLengthValidatorTest {
 
     @Before
     public void setup() {
-        validator.setMinLength(4L);
+        validator.setMinLength(4);
     }
 
     @Test(expected = ValidatorConfigException.class)

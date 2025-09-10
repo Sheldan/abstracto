@@ -42,7 +42,7 @@ public class SlashCommandFeatureActivationListener implements FeatureActivationL
         List<Command> incomingSlashCommands = slashCommandListenerBean.getSlashCommands()
                 .stream()
                 .filter(command -> command.getFeature().getKey().equals(model.getFeatureName()))
-                .collect(Collectors.toList());
+                .toList();
         if(incomingSlashCommands.isEmpty()) {
             return DefaultListenerResult.IGNORED;
         }

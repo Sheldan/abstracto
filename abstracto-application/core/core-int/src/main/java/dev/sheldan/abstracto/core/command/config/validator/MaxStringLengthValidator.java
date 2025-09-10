@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 public class MaxStringLengthValidator implements ParameterValidator {
 
-    private Long maxLength;
+    private Integer maxLength;
 
     @Override
     public boolean validate(Object value) {
@@ -33,7 +33,7 @@ public class MaxStringLengthValidator implements ParameterValidator {
     public List<ValidatorParam> getParameters() {
         SingleNumberValidatorParam param = SingleNumberValidatorParam
                 .builder()
-                .number(maxLength)
+                .number(maxLength.longValue())
                 .build();
         return Arrays.asList(param);
     }
@@ -43,7 +43,7 @@ public class MaxStringLengthValidator implements ParameterValidator {
         return "command_parameter_validation_string_too_long";
     }
 
-    public static MaxStringLengthValidator max(Long number) {
+    public static MaxStringLengthValidator max(Integer number) {
         return  MaxStringLengthValidator
                 .builder()
                 .maxLength(number)

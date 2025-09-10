@@ -32,7 +32,7 @@ public class SetPrefix extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        List<ParameterValidator> validators = Arrays.asList(MaxStringLengthValidator.max(10L));
+        List<ParameterValidator> validators = Arrays.asList(MaxStringLengthValidator.max(10));
         Parameter newPrefixParameter = Parameter
                 .builder()
                 .name("prefix")

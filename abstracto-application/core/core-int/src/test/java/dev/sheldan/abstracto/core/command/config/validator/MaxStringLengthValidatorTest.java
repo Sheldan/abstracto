@@ -16,7 +16,7 @@ public class MaxStringLengthValidatorTest {
 
     @Before
     public void setup() {
-        validator.setMaxLength(4L);
+        validator.setMaxLength(4);
     }
 
     @Test(expected = ValidatorConfigException.class)
