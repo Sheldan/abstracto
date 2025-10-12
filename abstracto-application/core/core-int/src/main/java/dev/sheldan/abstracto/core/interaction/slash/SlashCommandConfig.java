@@ -2,6 +2,10 @@ package dev.sheldan.abstracto.core.interaction.slash;
 
 import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.utils.ContextUtils;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -66,5 +70,14 @@ public class SlashCommandConfig {
 
     public String getUserSlashCompatibleCommandName() {
         return userCommandName != null ? userCommandName.toLowerCase(Locale.ROOT) : null;
+    }
+
+    public String getSlashCommandPath() {
+        String root = getSlashCompatibleRootName();
+        String group = getSlashCompatibleGroupName();
+        String command = getSlashCompatibleCommandName();
+        return Stream.of(root, group, command)
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(" "));
     }
 }

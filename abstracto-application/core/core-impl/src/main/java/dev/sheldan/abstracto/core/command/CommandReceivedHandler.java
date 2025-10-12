@@ -182,10 +182,8 @@ public class CommandReceivedHandler extends ListenerAdapter {
     }
 
     public UnParsedCommandResult getUnparsedCommandResult(Message message) {
-        String contentStripped = message.getContentRaw();
-        List<String> parameters = Arrays.asList(contentStripped.split(" "));
-        UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(contentStripped, message);
-        String commandName = commandManager.getCommandName(parameters.get(0), message.getGuild().getIdLong());
+        String commandName = getCommandName(message);
+        UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(message.getContentRaw(), message);
         Command foundCommand = commandManager.findCommandByParameters(commandName, unParsedParameter, message.getGuild().getIdLong()).orElse(null);
         return UnParsedCommandResult
                 .builder()
@@ -194,13 +192,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 .build();
     }
 
-    public CompletableFuture<CommandParseResult> getParametersFromMessage(Message message) {
-        UnParsedCommandResult result = getUnparsedCommandResult(message);
-        return getParsedParameters(result.getParameter(), result.getCommand(), message).thenApply(foundParameters -> CommandParseResult
-                .builder()
-                .command(result.getCommand())
-                .parameters(foundParameters)
-                .build());
+    public String getCommandName(Message message) {
+        List<String> parameters = Arrays.asList( message.getContentRaw().split(" "));
+        return commandManager.getCommandName(parameters.get(0), message.getGuild().getIdLong());
     }
 
     public CompletableFuture<CommandParseResult> getParametersFromMessage(Message message, UnParsedCommandResult result) {

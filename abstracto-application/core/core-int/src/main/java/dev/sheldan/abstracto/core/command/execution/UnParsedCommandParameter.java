@@ -32,12 +32,12 @@ public class UnParsedCommandParameter {
             }
             if (m.group(1) != null) {
                 String group = m.group(1);
-                if(!group.equals("")) {
+                if(!group.isEmpty()) {
                     this.parameters.add(UnparsedCommandParameterPiece.builder().value(group).build());
                 }
             } else {
                 String group = m.group(2);
-                if(!group.equals("")) {
+                if(!group.isEmpty()) {
                     this.parameters.add(UnparsedCommandParameterPiece.builder().value(group).build());
                 }
             }
