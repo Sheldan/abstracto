@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncLeaveListener;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.listener.MemberLeaveModel;
+import dev.sheldan.abstracto.core.models.template.display.RoleDisplay;
 import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
@@ -13,6 +14,7 @@ import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.logging.config.LoggingFeatureDefinition;
 import dev.sheldan.abstracto.logging.config.LoggingPostTarget;
 import dev.sheldan.abstracto.logging.model.template.MemberLeaveLogModel;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,10 +43,17 @@ public class LeaveLogger implements AsyncLeaveListener {
                 .userId(listenerModel.getUser().getIdLong())
                 .serverId(listenerModel.getServerId())
                 .build();
+        List<RoleDisplay> roles = listenerModel
+            .getMember()
+            .getRoles()
+            .stream()
+            .map(RoleDisplay::fromRole)
+            .toList();
         MemberLeaveLogModel model = MemberLeaveLogModel
                 .builder()
                 .leavingUser(leavingUser)
                 .user(UserDisplay.fromUser(listenerModel.getUser()))
+                .roles(roles)
                 .build();
         log.debug("Logging leave event for user {} in server {}.", listenerModel.getUser().getIdLong(), listenerModel.getServerId());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(USER_LEAVE_TEMPLATE, model, listenerModel.getServerId());

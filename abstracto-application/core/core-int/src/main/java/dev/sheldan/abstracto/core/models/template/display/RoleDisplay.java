@@ -11,12 +11,14 @@ import net.dv8tion.jda.api.entities.Role;
 @Builder
 public class RoleDisplay {
     private String roleMention;
+    private String roleName;
     private Long roleId;
 
     public static RoleDisplay fromRole(Role role) {
         return RoleDisplay
                 .builder()
                 .roleId(role.getIdLong())
+                .roleName(role.getName())
                 .roleMention(role.getAsMention())
                 .build();
     }
