@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.entities.Member;
 @Builder
 public class MemberDisplay {
     private String memberMention;
+    private String avatarUrl;
     private String name;
     private Long userId;
     private String discriminator;
@@ -25,6 +26,7 @@ public class MemberDisplay {
                 .memberMention(member.getAsMention())
                 .name(member.getEffectiveName())
                 .discriminator(member.getUser().getDiscriminator())
+                .avatarUrl(member.getEffectiveAvatarUrl())
                 .serverId(member.getGuild().getIdLong())
                 .userId(member.getIdLong())
                 .build();

@@ -426,7 +426,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         Parameter param = parameters.get(0);
         CommandParameterIterators iterators = new CommandParameterIterators(channelIterator, emoteIterator, memberIterator, roleIterator);
         Set<CommandParameterHandler> usedParameterHandler = findNecessaryCommandParameterHandlers(parameters, unParsedCommandParameter);
-        List<CompletableFuture> futures = new ArrayList<>();
+        List<CompletableFuture<?>> futures = new ArrayList<>();
         // the actual parameters which were handled, might not coincide with the unparsed parameters
         // because we might ignore some parameters (for example referenced messages) in case the command does not use this as a parameter
         int parsedParameter = 0;
@@ -443,7 +443,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                         .getDependentFeatures()
                         .stream()
                         .map(s -> featureConfigService.getFeatureEnum(s))
-                        .collect(Collectors.toList());
+                        .toList();
                 boolean parameterActiveForFeatures = false;
                 for (FeatureDefinition featureDefinition : featureDefinitions) {
                     if(featureFlagService.getFeatureFlagValue(featureDefinition, message.getGuild().getIdLong())) {
@@ -460,7 +460,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 try {
                     if (handler.handles(param.getType(), value)) {
                         if (handler.async()) {
-                            CompletableFuture future = handler.handleAsync(value, iterators, param, message, command);
+                            CompletableFuture<?> future = handler.handleAsync(value, iterators, param, message, command);
                             futures.add(future);
                             parsedParameters.add(ParseResult.builder().parameter(param).result(future).build());
                         } else {
@@ -488,11 +488,11 @@ public class CommandReceivedHandler extends ListenerAdapter {
             combinedFuture.thenAccept(aVoid -> {
                 List<Object> allParamResults = parsedParameters.stream().map(o -> {
                     if (o.getResult() instanceof CompletableFuture) {
-                        return ((CompletableFuture) o.getResult()).join();
+                        return ((CompletableFuture<?>) o.getResult()).join();
                     } else {
                         return o.getResult();
                     }
-                }).collect(Collectors.toList());
+                }).toList();
                 List<ParseResult> parseResults = new ArrayList<>();
                 for (int i = 0; i < allParamResults.size(); i++) {
                     if (allParamResults.get(i) != null) {

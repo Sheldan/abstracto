@@ -232,7 +232,7 @@ public class CacheEntityServiceBean implements CacheEntityService {
         List<CompletableFuture<CachedReactions>> reactionFutures = new ArrayList<>();
         log.debug("Caching {} reactions.", message.getReactions().size());
         message.getReactions().forEach(messageReaction -> reactionFutures.add(getCachedReactionFromReaction(messageReaction)));
-        List<CompletableFuture> allFutures = new ArrayList<>(reactionFutures);
+        List<CompletableFuture<?>> allFutures = new ArrayList<>(reactionFutures);
         allFutures.add(referencedMessageFuture);
         FutureUtils.toSingleFuture(allFutures).thenAccept(aVoid ->
                 {

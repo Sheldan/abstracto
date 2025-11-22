@@ -15,13 +15,15 @@ public class UserDisplay {
     private String userMention;
     private String discriminator;
     private String name;
+    private String globalName;
     private String avatarUrl;
 
     public static UserDisplay fromUser(User user) {
         return UserDisplay
                 .builder()
-                .userMention(MemberUtils.getUserAsMention(user.getIdLong()))
+                .userMention(user.getAsMention())
                 .name(user.getEffectiveName())
+                .globalName(user.getGlobalName())
                 .discriminator(user.getDiscriminator())
                 .id(user.getIdLong())
                 .avatarUrl(user.getEffectiveAvatarUrl())

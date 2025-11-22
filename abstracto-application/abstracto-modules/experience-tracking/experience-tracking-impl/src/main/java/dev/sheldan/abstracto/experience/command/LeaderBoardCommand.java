@@ -97,7 +97,7 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
         } else {
             leaderBoard = userExperienceService.findLeaderBoardData(server, page);
         }
-        List<CompletableFuture> futures = new ArrayList<>();
+        List<CompletableFuture<?>> futures = new ArrayList<>();
         CompletableFuture<List<LeaderBoardEntryModel>> completableFutures = converter.fromLeaderBoard(leaderBoard, actorUser.getGuild().getIdLong());
         futures.add(completableFutures);
         log.info("Rendering leaderboard for page {} in server {} for user {}.", page, actorUser.getId(), actorUser.getGuild().getId());

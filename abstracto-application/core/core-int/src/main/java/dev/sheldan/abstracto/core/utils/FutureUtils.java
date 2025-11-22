@@ -12,7 +12,7 @@ public class FutureUtils {
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
-    public static CompletableFuture<Void> toSingleFuture(List<CompletableFuture> futures) {
+    public static CompletableFuture<Void> toSingleFuture(List<CompletableFuture<?>> futures) {
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 }

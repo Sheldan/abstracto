@@ -8,6 +8,8 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
+import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
@@ -148,22 +150,43 @@ public class StarboardServiceBean implements StarboardService {
 
 
     private CompletableFuture<StarboardPostModel> buildStarboardPostModel(CachedMessage message, Integer starCount)  {
-        return userService.retrieveUserForId(message.getAuthor().getAuthorId())
-        .thenApply(user -> createStarboardModel(message, starCount, user))
+        CompletableFuture<User> userFuture = userService.retrieveUserForId(message.getAuthor().getAuthorId());
+        CompletableFuture<Member> memberFuture = memberService.retrieveMemberInServer(message.getAuthorAsServerUser());
+        CompletableFuture<StarboardPostModel> returnedFuture = new CompletableFuture<>();
+        FutureUtils.toSingleFuture(List.of(userFuture, memberFuture))
+        .whenComplete((any, error) -> {
+            User user = null;
+            if(!userFuture.isCompletedExceptionally()) {
+                user = userFuture.join();
+            } else {
+                log.warn("Failed to retrieve user for author {} of starboard post.", message.getAuthor().getAuthorId());
+            }
+            Member member = null;
+            if(!memberFuture.isCompletedExceptionally()) {
+                member = memberFuture.join();
+            } else {
+                log.warn("Failed to retrieve user for author {} of starboard post.", message.getAuthor().getAuthorId());
+            }
+            StarboardPostModel starboardModel = createStarboardModel(message, starCount, user, member);
+            returnedFuture.complete(starboardModel);
+        })
         .exceptionally(throwable -> {
-            log.warn("Failed to retrieve user for author {} of starboard post.", message.getAuthor().getAuthorId(), throwable);
-            return createStarboardModel(message, starCount, null);
+            log.warn("Complete failure when handling creation starboard post of message {}.", message.getMessageId(), throwable);
+            returnedFuture.completeExceptionally(throwable);
+            return null;
         });
+        return returnedFuture;
     }
 
-    private StarboardPostModel createStarboardModel(CachedMessage message, Integer starCount, net.dv8tion.jda.api.entities.User user) {
+    private StarboardPostModel createStarboardModel(CachedMessage message, Integer starCount, net.dv8tion.jda.api.entities.User user, Member member) {
         Optional<GuildMessageChannel> channel = channelService.getMessageChannelFromServerOptional(message.getServerId(), message.getChannelId());
         Optional<Guild> guild = guildService.getGuildByIdOptional(message.getServerId());
         String starLevelEmote = getAppropriateEmote(message.getServerId(), starCount);
         return StarboardPostModel
                 .builder()
                 .message(message)
-                .author(user)
+                .authorUser(user != null ? UserDisplay.fromUser(user) : null)
+                .authorMember(member != null ? MemberDisplay.fromMember(member) : null)
                 .sourceChannelId(message.getChannelId())
                 .channel(channel.orElse(null))
                 .starCount(starCount)
@@ -214,7 +237,7 @@ public class StarboardServiceBean implements StarboardService {
         int count = 3;
         List<CompletableFuture<StarStatsUser>> topStarGiverFutures = starboardPostReactorManagementService.retrieveTopStarGiver(serverId, count);
         List<CompletableFuture<StarStatsUser>> topStarReceiverFutures = starboardPostReactorManagementService.retrieveTopStarReceiver(serverId, count);
-        List<CompletableFuture> allFutures = new ArrayList<>();
+        List<CompletableFuture<?>> allFutures = new ArrayList<>();
         allFutures.addAll(topStarGiverFutures);
         allFutures.addAll(topStarReceiverFutures);
         return FutureUtils.toSingleFuture(allFutures).thenApply(aVoid -> {
