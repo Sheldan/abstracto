@@ -314,9 +314,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
             AServer server = serverManagementService.loadOrCreate(serverId);
             List<ADisabledExpRole> disabledExpRoles = disabledExpRoleManagementService.getDisabledRolesForServer(server);
             List<ARole> disabledRoles = disabledExpRoles
-                    .stream()
-                    .map(ADisabledExpRole::getRole)
-                    .collect(Collectors.toList());
+                .stream()
+                .map(ADisabledExpRole::getRole)
+                .collect(Collectors.toList());
             if (roleService.hasAnyOfTheRoles(member, disabledRoles)) {
                 log.debug("User {} has a experience disable role in server {} - not giving any experience.", member.getIdLong(), serverId);
                 newSpan.end();
@@ -342,29 +342,31 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
 
                 log.debug("Handling {}. The user gains {}.", userInServerId, gainedExperience);
 
-            Long oldExperience = aUserExperience.getExperience();
-            Long newExperienceCount = oldExperience + gainedExperience;
-            aUserExperience.setExperience(newExperienceCount);
-            AExperienceLevel newLevel = calculateLevel(levels, newExperienceCount);
-            RoleCalculationResult result = RoleCalculationResult
+                Long oldExperience = aUserExperience.getExperience();
+                Long newExperienceCount = oldExperience + gainedExperience;
+                aUserExperience.setExperience(newExperienceCount);
+                AExperienceLevel newLevel = calculateLevel(levels, newExperienceCount);
+                RoleCalculationResult result = RoleCalculationResult
                     .builder()
                     .build();
-            boolean userChangesLevel = !Objects.equals(newLevel.getLevel(), aUserExperience.getCurrentLevel().getLevel());
-            Integer oldLevel = aUserExperience.getCurrentLevel() != null ? aUserExperience.getCurrentLevel().getLevel() : 0;
-            if(userChangesLevel) {
-                log.info("User {} in server {} changed level. New {}, Old {}.", member.getIdLong(),
+                boolean userChangesLevel = !Objects.equals(newLevel.getLevel(), aUserExperience.getCurrentLevel().getLevel());
+                Integer oldLevel = aUserExperience.getCurrentLevel() != null ? aUserExperience.getCurrentLevel().getLevel() : 0;
+                if (userChangesLevel) {
+                    log.info("User {} in server {} changed level. New {}, Old {}.", member.getIdLong(),
                         member.getGuild().getIdLong(), newLevel.getLevel(),
                         oldLevel);
-                aUserExperience.setCurrentLevel(newLevel);
-                AExperienceRole calculatedNewRole = experienceRoleService.calculateRole(roles, newLevel.getLevel());
-                Long oldRoleId = aUserExperience.getCurrentExperienceRole() != null && aUserExperience.getCurrentExperienceRole().getRole() != null ? aUserExperience.getCurrentExperienceRole().getRole().getId() : null;
-                Long newRoleId = calculatedNewRole != null && calculatedNewRole.getRole() != null ? calculatedNewRole.getRole().getId() : null;
-                result.setOldRoleId(oldRoleId);
-                result.setNewRoleId(newRoleId);
-                if(message != null
+                    aUserExperience.setCurrentLevel(newLevel);
+                    AExperienceRole calculatedNewRole = experienceRoleService.calculateRole(roles, newLevel.getLevel());
+                    Long oldRoleId = aUserExperience.getCurrentExperienceRole() != null && aUserExperience.getCurrentExperienceRole().getRole() != null ?
+                        aUserExperience.getCurrentExperienceRole().getRole().getId() : null;
+                    Long newRoleId = calculatedNewRole != null && calculatedNewRole.getRole() != null ? calculatedNewRole.getRole().getId() : null;
+                    result.setOldRoleId(oldRoleId);
+                    result.setNewRoleId(newRoleId);
+                    if (message != null
                         && aUserExperience.getLevelUpNotification()
-                        && featureModeService.featureModeActive(ExperienceFeatureDefinition.EXPERIENCE, serverId, ExperienceFeatureMode.LEVEL_UP_NOTIFICATION)) {
-                    LevelUpNotificationModel model = LevelUpNotificationModel
+                        &&
+                        featureModeService.featureModeActive(ExperienceFeatureDefinition.EXPERIENCE, serverId, ExperienceFeatureMode.LEVEL_UP_NOTIFICATION)) {
+                        LevelUpNotificationModel model = LevelUpNotificationModel
                             .builder()
                             .memberDisplay(MemberDisplay.fromMember(member))
                             .oldExperience(oldExperience)
@@ -374,63 +376,72 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                             .newRole(oldRoleId != null ? RoleDisplay.fromRole(oldRoleId) : null)
                             .newRole(newRoleId != null ? RoleDisplay.fromRole(newRoleId) : null)
                             .build();
-                    MessageToSend messageToSend = templateService.renderEmbedTemplate("experience_level_up_notification", model, serverId);
-                    FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, message.getChannel())).thenAccept(unused -> {
-                        log.info("Sent level up notification to user {} in server {} in channel {}.", member.getIdLong(), serverId, message.getChannel().getIdLong());
-                    }).exceptionally(throwable -> {
-                        log.warn("Failed to send level up notification to user {} in server {} in channel {}.", member.getIdLong(), serverId, message.getChannel().getIdLong());
-                        return null;
-                    });
-                }
-                aUserExperience.setCurrentExperienceRole(calculatedNewRole);
-            }
-            aUserExperience.setMessageCount(aUserExperience.getMessageCount() + 1L);
-            if(userChangesLevel && featureModeService.featureModeActive(ExperienceFeatureDefinition.EXPERIENCE, server, ExperienceFeatureMode.LEVEL_ACTION)) {
-                levelActionService.applyLevelActionsToUser(aUserExperience, oldLevel)
-                    .thenAccept(unused -> {
-                        log.info("Executed level actions for user {}.", userInServerId);
-                    })
-                    .exceptionally(throwable -> {
-                        log.warn("Failed to execute level actions for user {}.", userInServerId, throwable);
-                        return null;
-                    });
-            }
-            if(aUserExperienceOptional.isEmpty()) {
-                userExperienceManagementService.saveUser(aUserExperience);
-            }
-            if(!Objects.equals(result.getOldRoleId(), result.getNewRoleId())) {
-                if(result.getOldRoleId() != null && result.getNewRoleId() != null) {
-                    roleService.updateRolesIds(member, Arrays.asList(result.getOldRoleId()), Arrays.asList(result.getNewRoleId())).thenAccept(unused -> {
-                        log.debug("Removed role {} from and added role {} to member {} in server {}.", result.getOldRoleId(), result.getNewRoleId(), member.getIdLong(), member.getGuild().getIdLong());
-                    }).exceptionally(throwable -> {
-                        log.warn("Failed to remove role {} from and add role {} to  member {} in server {}.", result.getOldRoleId(), result.getNewRoleId(), member.getIdLong(), member.getGuild().getIdLong(), throwable);
-                        return null;
-                    });
-                } else {
-                    if(result.getOldRoleId() != null) {
-                        roleService.removeRoleFromMemberAsync(member, result.getOldRoleId()).thenAccept(unused -> {
-                            log.debug("Removed role {} from member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong());
+                        MessageToSend messageToSend = templateService.renderEmbedTemplate("experience_level_up_notification", model, serverId);
+                        FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, message.getChannel())).thenAccept(unused -> {
+                            log.info("Sent level up notification to user {} in server {} in channel {}.", member.getIdLong(), serverId,
+                                message.getChannel().getIdLong());
                         }).exceptionally(throwable -> {
-                            log.warn("Failed to remove role {} from member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong(), throwable);
+                            log.warn("Failed to send level up notification to user {} in server {} in channel {}.", member.getIdLong(), serverId,
+                                message.getChannel().getIdLong());
                             return null;
                         });
                     }
-                    if(result.getNewRoleId() != null) {
-                        roleService.addRoleToMemberAsync(member, result.getNewRoleId()).thenAccept(unused -> {
-                            log.debug("Added role {} to member {} in server {}.", result.getNewRoleId(), member.getIdLong(), member.getGuild().getIdLong());
-                        }).exceptionally(throwable -> {
-                            log.warn("Failed to add role {} to member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong(), throwable);
+                    aUserExperience.setCurrentExperienceRole(calculatedNewRole);
+                }
+                aUserExperience.setMessageCount(aUserExperience.getMessageCount() + 1L);
+                if (userChangesLevel &&
+                    featureModeService.featureModeActive(ExperienceFeatureDefinition.EXPERIENCE, server, ExperienceFeatureMode.LEVEL_ACTION)) {
+                    levelActionService.applyLevelActionsToUser(aUserExperience, oldLevel)
+                        .thenAccept(unused -> {
+                            log.info("Executed level actions for user {}.", userInServerId);
+                        })
+                        .exceptionally(throwable -> {
+                            log.warn("Failed to execute level actions for user {}.", userInServerId, throwable);
                             return null;
                         });
+                }
+                if (aUserExperienceOptional.isEmpty()) {
+                    userExperienceManagementService.saveUser(aUserExperience);
+                }
+                if (!Objects.equals(result.getOldRoleId(), result.getNewRoleId())) {
+                    if (result.getOldRoleId() != null && result.getNewRoleId() != null) {
+                        roleService.updateRolesIds(member, Arrays.asList(result.getOldRoleId()), Arrays.asList(result.getNewRoleId())).thenAccept(unused -> {
+                            log.debug("Removed role {} from and added role {} to member {} in server {}.", result.getOldRoleId(), result.getNewRoleId(),
+                                member.getIdLong(), member.getGuild().getIdLong());
+                        }).exceptionally(throwable -> {
+                            log.warn("Failed to remove role {} from and add role {} to  member {} in server {}.", result.getOldRoleId(), result.getNewRoleId(),
+                                member.getIdLong(), member.getGuild().getIdLong(), throwable);
+                            return null;
+                        });
+                    } else {
+                        if (result.getOldRoleId() != null) {
+                            roleService.removeRoleFromMemberAsync(member, result.getOldRoleId()).thenAccept(unused -> {
+                                log.debug("Removed role {} from member {} in server {}.", result.getOldRoleId(), member.getIdLong(),
+                                    member.getGuild().getIdLong());
+                            }).exceptionally(throwable -> {
+                                log.warn("Failed to remove role {} from member {} in server {}.", result.getOldRoleId(), member.getIdLong(),
+                                    member.getGuild().getIdLong(), throwable);
+                                return null;
+                            });
+                        }
+                        if (result.getNewRoleId() != null) {
+                            roleService.addRoleToMemberAsync(member, result.getNewRoleId()).thenAccept(unused -> {
+                                log.debug("Added role {} to member {} in server {}.", result.getNewRoleId(), member.getIdLong(), member.getGuild().getIdLong());
+                            }).exceptionally(throwable -> {
+                                log.warn("Failed to add role {} to member {} in server {}.", result.getOldRoleId(), member.getIdLong(),
+                                    member.getGuild().getIdLong(), throwable);
+                                return null;
+                            });
+                        }
                     }
                 }
+            } else {
+                log.debug("Experience gain was disabled. User did not gain any experience.");
             }
-        } else {
-            log.debug("Experience gain was disabled. User did not gain any experience.");
+            return CompletableFuture.allOf(notificationFuture, levelActionFuture, roleFuture).whenComplete((unused, throwable) -> {
+                newSpan.end();
+            });
         }
-        return CompletableFuture.allOf(notificationFuture, levelActionFuture, roleFuture).whenComplete((unused, throwable) -> {
-            newSpan.end();
-        });
     }
 
     @Override

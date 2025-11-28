@@ -19,23 +19,31 @@ import dev.sheldan.abstracto.core.interaction.slash.payload.SlashCommandConfirma
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
+import dev.sheldan.abstracto.core.metric.service.MetricUtils;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.scheduling.model.JobParameters;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import dev.sheldan.abstracto.core.utils.ContextUtils;
-import dev.sheldan.abstracto.core.metric.service.MetricUtils;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
@@ -49,15 +57,6 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Nonnull;
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -118,46 +117,49 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     public static final String SLASH_COMMAND_CONFIRMATION_ORIGIN = "SLASH_COMMAND_CONFIRMATION";
 
     public static final CounterMetric SLASH_COMMANDS_PROCESSED_COUNTER = CounterMetric
-            .builder()
-            .name(CommandReceivedHandler.COMMAND_PROCESSED)
-            .tagList(Arrays.asList(MetricTag.getTag(CommandReceivedHandler.STATUS_TAG, "processed"), MetricTag.getTag(CommandReceivedHandler.TYPE_TAG, "slash")))
-            .build();
+        .builder()
+        .name(CommandReceivedHandler.COMMAND_PROCESSED)
+        .tagList(Arrays.asList(MetricTag.getTag(CommandReceivedHandler.STATUS_TAG, "processed"), MetricTag.getTag(CommandReceivedHandler.TYPE_TAG, "slash")))
+        .build();
 
     public List<Command> getSlashCommands() {
-        if(commands == null || commands.isEmpty()) {
+        if (commands == null || commands.isEmpty()) {
             return new ArrayList<>();
         }
         return commands.stream()
-                .filter(command -> command.getConfiguration()
-                        .getSlashCommandConfig().isEnabled())
-                .collect(Collectors.toList());
+            .filter(command -> command.getConfiguration()
+                .getSlashCommandConfig().isEnabled())
+            .collect(Collectors.toList());
     }
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         Observation observation = Observation.createNotStarted("slash-command-received", this.observationRegistry);
         observation.observe(() -> {
-        try {
-            if(commands == null || commands.isEmpty()) return;
-            if(ContextUtils.hasGuild(event.getInteraction())) {
-                log.debug("Executing slash command in guild {} from user {}.", event.getGuild().getIdLong(), event.getUser().getIdLong());
-            } else {
-                log.debug("Executing slash command by user {}", event.getUser().getIdLong());
-            }
-            Span span = tracer.currentSpan();
-            CompletableFuture.runAsync(() -> {
-                try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
-                    self.executeListenerLogic(event).whenComplete((unused, throwable) -> {
-                        span.end();
-                    });
+            try {
+                if (commands == null || commands.isEmpty()) {
+                    return;
                 }
-               
-            }, slashCommandExecutor).exceptionally(throwable -> {
-                log.error("Failed to execute listener logic in async slash command event.", throwable);
-                return null;
-            });
-        } catch (Exception exception) {
-            log.error("Failed to process slash command interaction event.", exception);
+                if (ContextUtils.hasGuild(event.getInteraction())) {
+                    log.debug("Executing slash command in guild {} from user {}.", event.getGuild().getIdLong(), event.getUser().getIdLong());
+                } else {
+                    log.debug("Executing slash command by user {}", event.getUser().getIdLong());
+                }
+                Span span = tracer.currentSpan();
+                CompletableFuture.runAsync(() -> {
+                    try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
+                        self.executeListenerLogic(event).whenComplete((unused, throwable) -> {
+                            span.end();
+                        });
+                    }
+
+                }, slashCommandExecutor).exceptionally(throwable -> {
+                    log.error("Failed to execute listener logic in async slash command event.", throwable);
+                    return null;
+                });
+            } catch (Exception exception) {
+                log.error("Failed to process slash command interaction event.", exception);
+            }
         });
     }
 
@@ -165,28 +167,28 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     @Transactional
     public CompletableFuture<Void> executeListenerLogic(SlashCommandInteractionEvent event) {
         Optional<Command> potentialCommand = findCommand(event);
-        if(potentialCommand.isPresent()) {
+        if (potentialCommand.isPresent()) {
             Command command = potentialCommand.get();
-                metricService.incrementCounter(SLASH_COMMANDS_PROCESSED_COUNTER);
-                try {
-                    Span span = tracer.currentSpan();
-                    span.tag("command-name", command.getConfiguration().getName());
-                    return commandService.isCommandExecutable(command, event).thenCompose(conditionResult -> {
-                        try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
-                            return self.executeCommand(event, command, conditionResult);
-                        }
-                    }).exceptionally(throwable -> {
-                        log.error("Error while executing command {}", command.getConfiguration().getName(), throwable);
-                        CommandResult commandResult = CommandResult.fromError(throwable.getMessage(), throwable);
-                        self.executePostCommandListener(command, event, commandResult);
-                        return null;
-                    });
-                } catch (Exception exception) {
-                    log.error("Error while checking if command {} is executable.", command.getConfiguration().getName(), exception);
-                    CommandResult commandResult = CommandResult.fromError(exception.getMessage(), exception);
+            metricService.incrementCounter(SLASH_COMMANDS_PROCESSED_COUNTER);
+            try {
+                Span span = tracer.currentSpan();
+                span.tag("command-name", command.getConfiguration().getName());
+                return commandService.isCommandExecutable(command, event).thenCompose(conditionResult -> {
+                    try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
+                        return self.executeCommand(event, command, conditionResult);
+                    }
+                }).exceptionally(throwable -> {
+                    log.error("Error while executing command {}", command.getConfiguration().getName(), throwable);
+                    CommandResult commandResult = CommandResult.fromError(throwable.getMessage(), throwable);
                     self.executePostCommandListener(command, event, commandResult);
-                    return CompletableFuture.completedFuture(null);
-                }
+                    return null;
+                });
+            } catch (Exception exception) {
+                log.error("Error while checking if command {} is executable.", command.getConfiguration().getName(), exception);
+                CommandResult commandResult = CommandResult.fromError(exception.getMessage(), exception);
+                self.executePostCommandListener(command, event, commandResult);
+                return CompletableFuture.completedFuture(null);
+            }
         } else {
             return CompletableFuture.completedFuture(null);
         }
@@ -195,11 +197,14 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     @Override
     public void onCommandAutoCompleteInteraction(@Nonnull CommandAutoCompleteInteractionEvent event) {
         try {
-            if(commands == null || commands.isEmpty()) return;
-            CompletableFuture.runAsync(() ->  self.executeAutCompleteListenerLogic(event), MetricUtils.wrapExecutor(slashCommandAutoCompleteExecutor)).exceptionally(throwable -> {
-                log.error("Failed to execute listener logic in async auto complete interaction event.", throwable);
-                return null;
-            });
+            if (commands == null || commands.isEmpty()) {
+                return;
+            }
+            CompletableFuture.runAsync(() -> self.executeAutCompleteListenerLogic(event), MetricUtils.wrapExecutor(slashCommandAutoCompleteExecutor))
+                .exceptionally(throwable -> {
+                    log.error("Failed to execute listener logic in async auto complete interaction event.", throwable);
+                    return null;
+                });
         } catch (Exception e) {
             log.error("Failed to process slash command auto complete interaction.", e);
         }
@@ -212,15 +217,17 @@ public class SlashCommandListenerBean extends ListenerAdapter {
             try {
                 List<String> fullRepliesList = command.performAutoComplete(event);
                 List<String> replies = fullRepliesList.subList(0, Math.min(fullRepliesList.size(), OptionData.MAX_CHOICES));
-                event.replyChoiceStrings(replies).queue(unused -> {},
-                        throwable -> {
-                            if(ContextUtils.hasGuild(event)) {
-                                log.error("Failed to respond to complete of command {} in guild {} by user {}.",
-                                        command.getConfiguration().getName(), event.getGuild().getIdLong(), event.getUser().getIdLong());
-                            } else {
-                                log.error("Failed to resp ond to complete of command {} for user {}.", command.getConfiguration().getName(), event.getUser().getIdLong());
-                            }
-                        });
+                event.replyChoiceStrings(replies).queue(unused -> {
+                    },
+                    throwable -> {
+                        if (ContextUtils.hasGuild(event)) {
+                            log.error("Failed to respond to complete of command {} in guild {} by user {}.",
+                                command.getConfiguration().getName(), event.getGuild().getIdLong(), event.getUser().getIdLong());
+                        } else {
+                            log.error("Failed to resp ond to complete of command {} for user {}.", command.getConfiguration().getName(),
+                                event.getUser().getIdLong());
+                        }
+                    });
             } catch (Exception exception) {
                 log.error("Error while executing autocomplete of command {}.", command.getConfiguration().getName(), exception);
             }
@@ -228,8 +235,9 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     }
 
     @Transactional
-    public void continueSlashCommand(Long interactionId, ButtonInteractionEvent buttonInteractionEvent, SlashCommandConfirmationPayload  slashCommandConfirmationPayload) {
-        if(COMMANDS_WAITING_FOR_CONFIRMATION.containsKey(interactionId)) {
+    public void continueSlashCommand(Long interactionId, ButtonInteractionEvent buttonInteractionEvent,
+                                     SlashCommandConfirmationPayload slashCommandConfirmationPayload) {
+        if (COMMANDS_WAITING_FOR_CONFIRMATION.containsKey(interactionId)) {
             DriedSlashCommand driedSlashCommand = COMMANDS_WAITING_FOR_CONFIRMATION.get(interactionId);
             Command commandInstance = driedSlashCommand.getCommand();
             String commandName = commandInstance.getConfiguration().getName();
@@ -250,23 +258,28 @@ public class SlashCommandListenerBean extends ListenerAdapter {
                 return null;
             });
         } else {
-            log.warn("Interaction was not found in internal map - not continuing interaction from user {} in server {}.", buttonInteractionEvent.getUser().getIdLong(), buttonInteractionEvent.getGuild().getIdLong());
+            log.warn("Interaction was not found in internal map - not continuing interaction from user {} in server {}.",
+                buttonInteractionEvent.getUser().getIdLong(), buttonInteractionEvent.getGuild().getIdLong());
         }
     }
 
     @Transactional
-    public void cleanupSlashCommandConfirmation(SlashCommandConfirmationPayload  slashCommandConfirmationPayload, ButtonInteractionEvent buttonInteractionEvent) {
-        log.debug("Cleaning up component {} and {}.", slashCommandConfirmationPayload.getConfirmationPayloadId(), slashCommandConfirmationPayload.getAbortPayloadId());
-        componentPayloadManagementService.deletePayloads(Arrays.asList(slashCommandConfirmationPayload.getAbortPayloadId(), slashCommandConfirmationPayload.getConfirmationPayloadId()));
+    public void cleanupSlashCommandConfirmation(SlashCommandConfirmationPayload slashCommandConfirmationPayload,
+                                                ButtonInteractionEvent buttonInteractionEvent) {
+        log.debug("Cleaning up component {} and {}.", slashCommandConfirmationPayload.getConfirmationPayloadId(),
+            slashCommandConfirmationPayload.getAbortPayloadId());
+        componentPayloadManagementService.deletePayloads(
+            Arrays.asList(slashCommandConfirmationPayload.getAbortPayloadId(), slashCommandConfirmationPayload.getConfirmationPayloadId()));
     }
 
     @Transactional
     public void removeSlashCommandConfirmationInteraction(Long interactionId, String confirmationPayload, String abortPayload) {
-        if(COMMANDS_WAITING_FOR_CONFIRMATION.containsKey(interactionId)) {
+        if (COMMANDS_WAITING_FOR_CONFIRMATION.containsKey(interactionId)) {
             DriedSlashCommand removedSlashCommand = COMMANDS_WAITING_FOR_CONFIRMATION.remove(interactionId);
             SlashCommandInteractionEvent event = removedSlashCommand.getEvent();
             event.getInteraction().getHook().deleteOriginal().queue();
-            log.info("Remove interaction for command {} in server {} from user {}.", removedSlashCommand.getCommand().getConfiguration().getName(), event.getGuild().getIdLong(), event.getUser().getIdLong());
+            log.info("Remove interaction for command {} in server {} from user {}.", removedSlashCommand.getCommand().getConfiguration().getName(),
+                event.getGuild().getIdLong(), event.getUser().getIdLong());
         } else {
             log.info("Did not find interaction to clean up.");
         }
@@ -274,9 +287,9 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     }
 
     @Transactional(rollbackFor = AbstractoRunTimeException.class)
-    public void executeCommand(SlashCommandInteractionEvent event, Command command, ConditionResult conditionResult) {
+    public CompletableFuture<Void> executeCommand(SlashCommandInteractionEvent event, Command command, ConditionResult conditionResult) {
         String commandName = command.getConfiguration().getName();
-        if(command.getConfiguration().isRequiresConfirmation() && conditionResult.isResult()) {
+        if (command.getConfiguration().isRequiresConfirmation() && conditionResult.isResult()) {
             DriedSlashCommand slashCommand = DriedSlashCommand
                 .builder()
                 .command(command)
@@ -310,19 +323,22 @@ public class SlashCommandListenerBean extends ListenerAdapter {
                 .commandName(commandName)
                 .build();
             Long userId = event.getUser().getIdLong();
-            interactionService.replyEmbed(COMMAND_CONFIRMATION_MESSAGE_TEMPLATE_KEY, model, event).thenAccept(interactionHook -> {
-                log.info("Sent confirmation for command {} in server {} for user {}.", commandName, serverId, userId);
-            }).exceptionally(throwable -> {
-                log.warn("Failed to send confirmation for command {} in server {} for user {}.", commandName, serverId, userId);
-                return null;
-            });
+            CompletableFuture<Void> replyFuture =
+                interactionService.replyEmbed(COMMAND_CONFIRMATION_MESSAGE_TEMPLATE_KEY, model, event).thenAccept(interactionHook -> {
+                    log.info("Sent confirmation for command {} in server {} for user {}.", commandName, serverId, userId);
+                }).exceptionally(throwable -> {
+                    log.warn("Failed to send confirmation for command {} in server {} for user {}.", commandName, serverId, userId);
+                    return null;
+                });
             scheduleConfirmationDeletion(event.getIdLong(), confirmationId, abortId, serverId);
+            return replyFuture;
         } else {
             CompletableFuture<CommandResult> commandOutput;
-            if(conditionResult.isResult()) {
+            if (conditionResult.isResult()) {
                 commandOutput = command.executeSlash(event).thenApply(commandResult -> {
-                    if(ContextUtils.hasGuild(event)) {
-                        log.info("Command {} in server {} was executed by user {}.", command.getConfiguration().getName(), event.getGuild().getIdLong(), event.getUser().getIdLong());
+                    if (ContextUtils.hasGuild(event)) {
+                        log.info("Command {} in server {} was executed by user {}.", command.getConfiguration().getName(), event.getGuild().getIdLong(),
+                            event.getUser().getIdLong());
                     } else {
                         log.info("Command {} was executed by user {}.", command.getConfiguration().getName(), event.getUser().getId());
                     }
@@ -331,7 +347,7 @@ public class SlashCommandListenerBean extends ListenerAdapter {
             } else {
                 commandOutput = CompletableFuture.completedFuture(CommandResult.fromCondition(conditionResult));
             }
-            commandOutput.thenAccept(commandResult -> {
+            return commandOutput.thenAccept(commandResult -> {
                 self.executePostCommandListener(command, event, commandResult);
             }).exceptionally(throwable -> {
                 log.error("Error while handling post execution of command {}", commandName, throwable);
@@ -366,26 +382,26 @@ public class SlashCommandListenerBean extends ListenerAdapter {
 
     private Optional<Command> findCommand(SlashCommandInteractionEvent event) {
         return commands
-                .stream()
-                .filter(command -> command.getConfiguration().getSlashCommandConfig().isEnabled())
-                .filter(command -> command.getConfiguration().getSlashCommandConfig().matchesInteraction(event.getInteraction()))
-                .findAny();
+            .stream()
+            .filter(command -> command.getConfiguration().getSlashCommandConfig().isEnabled())
+            .filter(command -> command.getConfiguration().getSlashCommandConfig().matchesInteraction(event.getInteraction()))
+            .findAny();
     }
 
     private Optional<Command> findCommand(CommandAutoCompleteInteractionEvent event) {
         return commands
-                .stream()
-                .filter(command -> command.getConfiguration().getSlashCommandConfig().isEnabled())
-                .filter(command -> command.getConfiguration().getSlashCommandConfig().matchesInteraction(event.getInteraction()))
-                .findAny();
+            .stream()
+            .filter(command -> command.getConfiguration().getSlashCommandConfig().isEnabled())
+            .filter(command -> command.getConfiguration().getSlashCommandConfig().matchesInteraction(event.getInteraction()))
+            .findAny();
     }
 
     @PostConstruct
     public void filterPostProcessors() {
         metricService.registerCounter(SLASH_COMMANDS_PROCESSED_COUNTER, "Slash Commands processed");
         executions = executions
-                .stream()
-                .filter(PostCommandExecution::supportsSlash)
-                .collect(Collectors.toList());
+            .stream()
+            .filter(PostCommandExecution::supportsSlash)
+            .collect(Collectors.toList());
     }
 }

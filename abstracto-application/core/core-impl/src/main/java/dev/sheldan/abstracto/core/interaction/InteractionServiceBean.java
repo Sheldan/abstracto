@@ -266,85 +266,85 @@ public class InteractionServiceBean implements InteractionService {
     public CompletableFuture<InteractionHook> replyMessageToSend(MessageToSend messageToSend, IReplyCallback callback) {
         Span newSpan = tracer.nextSpan().name("send-message-to-interaction");
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
-        ReplyCallbackAction action = null;
-        if(messageToSend.getUseComponentsV2()) {
-            action = callback.replyComponents(messageToSend.getComponents()).useComponentsV2();
-        } else {
-            if(messageToSend.getMessages() != null && !messageToSend.getMessages().isEmpty()) {
-                metricService.incrementCounter(MESSAGE_SEND_METRIC);
-                action = callback.reply(messageToSend.getMessages().get(0));
-            }
-            if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
-                if(action != null) {
-                    action = action.addEmbeds(messageToSend.getEmbeds().subList(0, Math.min(10, messageToSend.getEmbeds().size())));
-                } else {
-                    action = callback.replyEmbeds(messageToSend.getEmbeds());
-                }
-            }
-            if(messageToSend.hasFilesToSend()) {
-                List<FileUpload> attachedFiles = messageToSend
-                    .getAttachedFiles()
-                    .stream()
-                    .map(AttachedFile::convertToFileUpload)
-                    .collect(Collectors.toList());
-                if(action != null) {
-                    action.setFiles(attachedFiles);
-                } else {
+            ReplyCallbackAction action = null;
+            if (messageToSend.getUseComponentsV2()) {
+                action = callback.replyComponents(messageToSend.getComponents()).useComponentsV2();
+            } else {
+                if (messageToSend.getMessages() != null && !messageToSend.getMessages().isEmpty()) {
                     metricService.incrementCounter(MESSAGE_SEND_METRIC);
-                    action = callback.replyFiles(attachedFiles);
+                    action = callback.reply(messageToSend.getMessages().get(0));
                 }
-            }
-            // this should be last, because we are "faking" a message, by inserting a ., in case there has not been a reply yet
-            // we could also throw an exception, but we are allowing this to go through
-            List<ActionRow> actionRows = messageToSend.getActionRows();
-            if(actionRows != null && !actionRows.isEmpty()) {
-                if(action == null) {
-                    action = callback.reply(".");
-                }
-                action = action.setComponents(actionRows);
-                AServer server;
-                if(ContextUtils.isGuildKnown(callback)) {
-                    server = serverManagementService.loadServer(callback.getGuild().getIdLong());
-                } else {
-                    server = null;
-                }
-                actionRows.forEach(components -> components.forEach(component -> {
-                    if(component instanceof ActionComponent) {
-                        String id = ((ActionComponent)component).getId();
-                        MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
-                        if(payload != null && payload.getPersistCallback()) {
-                            componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
-                        }
+                if (messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
+                    if (action != null) {
+                        action = action.addEmbeds(messageToSend.getEmbeds().subList(0, Math.min(10, messageToSend.getEmbeds().size())));
+                    } else {
+                        action = callback.replyEmbeds(messageToSend.getEmbeds());
                     }
-                }));
+                }
+                if (messageToSend.hasFilesToSend()) {
+                    List<FileUpload> attachedFiles = messageToSend
+                        .getAttachedFiles()
+                        .stream()
+                        .map(AttachedFile::convertToFileUpload)
+                        .collect(Collectors.toList());
+                    if (action != null) {
+                        action.setFiles(attachedFiles);
+                    } else {
+                        metricService.incrementCounter(MESSAGE_SEND_METRIC);
+                        action = callback.replyFiles(attachedFiles);
+                    }
+                }
+                // this should be last, because we are "faking" a message, by inserting a ., in case there has not been a reply yet
+                // we could also throw an exception, but we are allowing this to go through
+                List<ActionRow> actionRows = messageToSend.getActionRows();
+                if (actionRows != null && !actionRows.isEmpty()) {
+                    if (action == null) {
+                        action = callback.reply(".");
+                    }
+                    action = action.setComponents(actionRows);
+                    AServer server;
+                    if (ContextUtils.isGuildKnown(callback)) {
+                        server = serverManagementService.loadServer(callback.getGuild().getIdLong());
+                    } else {
+                        server = null;
+                    }
+                    actionRows.forEach(components -> components.forEach(component -> {
+                        if (component instanceof ActionComponent) {
+                            String id = ((ActionComponent) component).getId();
+                            MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
+                            if (payload != null && payload.getPersistCallback()) {
+                                componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(),
+                                    payload.getComponentOrigin(), server, payload.getComponentType());
+                            }
+                        }
+                    }));
+                }
             }
-        }
 
-        if(messageToSend.getEphemeral()) {
-            if(ContextUtils.hasGuild(callback)) {
-                log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
+            if (messageToSend.getEphemeral()) {
+                if (ContextUtils.hasGuild(callback)) {
+                    log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
                         callback.getGuild().getIdLong(), callback.getChannel().getId(),
                         callback.getUser().getIdLong());
-            } else {
-                log.info("Sending ephemeral message to user {}.", callback.getUser().getIdLong());
+                } else {
+                    log.info("Sending ephemeral message to user {}.", callback.getUser().getIdLong());
+                }
+                metricService.incrementCounter(EPHEMERAL_MESSAGES_SEND);
+                if (action != null) {
+                    action = action.setEphemeral(messageToSend.getEphemeral());
+                }
             }
-            metricService.incrementCounter(EPHEMERAL_MESSAGES_SEND);
-            if(action != null) {
-                action = action.setEphemeral(messageToSend.getEphemeral());
+            if (ContextUtils.isGuildKnown(callback)) {
+                Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(callback.getMessageChannel(), messageToSend);
+                if (action != null) {
+                    action = action.setAllowedMentions(allowedMentions);
+                }
             }
-        }
-        if(ContextUtils.isGuildKnown(callback)) {
-            Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(callback.getMessageChannel(), messageToSend);
-            if (action != null) {
-                action = action.setAllowedMentions(allowedMentions);
-            }
-        }
 
             if (action == null) {
                 throw new AbstractoRunTimeException("The callback did not result in any message.");
             }
             return action.submit();
-        }
         }
     }
 
