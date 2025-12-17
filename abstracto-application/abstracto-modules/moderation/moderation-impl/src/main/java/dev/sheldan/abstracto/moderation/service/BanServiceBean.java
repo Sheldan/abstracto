@@ -168,14 +168,14 @@ public class BanServiceBean implements BanService {
     @Transactional
     public CompletableFuture<Void> sendUnBanLogMessage(UserUnBannedLogModel model, Long serverId) {
         MessageToSend messageToSend = templateService.renderEmbedTemplate(USER_UN_BANNED_NOTIFICATION_TEMPLATE, model, serverId);
-        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, ModerationPostTarget.BAN_LOG, serverId));
+        return FutureUtils.toSingleFutureGenericList(postTargetService.sendEmbedInPostTarget(messageToSend, ModerationPostTarget.BAN_LOG, serverId));
     }
 
     @Override
     @Transactional
     public CompletableFuture<Void> sendBanLogMessage(UserBannedLogModel model, Long serverId) {
         MessageToSend messageToSend = templateService.renderEmbedTemplate(USER_BANNED_NOTIFICATION_TEMPLATE, model, serverId);
-        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, ModerationPostTarget.BAN_LOG, serverId));
+        return FutureUtils.toSingleFutureGenericList(postTargetService.sendEmbedInPostTarget(messageToSend, ModerationPostTarget.BAN_LOG, serverId));
     }
 
 }

@@ -22,4 +22,5 @@
     <include file="1.4.0/collection.xml" relativeToChangelogFile="true"/>
     <include file="1.5.8/collection.xml" relativeToChangelogFile="true"/>
     <include file="1.5.10/collection.xml" relativeToChangelogFile="true"/>
+    <include file="1.6.18/collection.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

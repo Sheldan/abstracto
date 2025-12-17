@@ -320,7 +320,7 @@ public class MuteServiceBean implements MuteService {
     @Override
     public CompletableFuture<Void> sendMuteLogMessage(MuteLogModel model, Long serverId) {
         MessageToSend message = templateService.renderEmbedTemplate(MuteServiceBean.MUTE_LOG_TEMPLATE, model, serverId);
-        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, serverId));
+        return FutureUtils.toSingleFutureGenericList(postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, serverId));
     }
 
     @Override

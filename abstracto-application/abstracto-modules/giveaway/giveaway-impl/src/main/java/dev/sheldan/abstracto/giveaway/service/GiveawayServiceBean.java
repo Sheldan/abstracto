@@ -134,7 +134,7 @@ public class GiveawayServiceBean implements GiveawayService {
         if(giveawayCreationRequest.getTargetChannel() == null) {
             log.info("Sending giveaway to post target in server {}", serverId);
             postTargetService.validatePostTarget(GiveawayPostTarget.GIVEAWAYS, serverId);
-            messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, GiveawayPostTarget.GIVEAWAYS, serverId);
+            messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, GiveawayPostTarget.GIVEAWAYS, serverId).get(0);
         } else {
             log.info("Sending giveaway to channel {} in server {}.", giveawayCreationRequest.getTargetChannel().getId(), serverId);
             messageFutures = channelService.sendMessageToSendToChannel(messageToSend, giveawayCreationRequest.getTargetChannel());

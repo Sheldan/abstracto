@@ -12,6 +12,11 @@ public class FutureUtils {
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
+    public static <T> CompletableFuture<Void> toSingleFutureGenericList(List<List<CompletableFuture<T>>> futures) {
+        List<CompletableFuture<T>> allFutures = futures.stream().flatMap(List::stream).toList();
+        return toSingleFutureGeneric(allFutures);
+    }
+
     public static CompletableFuture<Void> toSingleFuture(List<CompletableFuture<?>> futures) {
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }

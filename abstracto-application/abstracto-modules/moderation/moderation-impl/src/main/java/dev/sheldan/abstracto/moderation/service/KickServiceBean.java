@@ -125,7 +125,7 @@ public class KickServiceBean implements KickService {
     public CompletableFuture<Message> sendKicklog(KickLogModel kickLogModel, Long serverId) {
         MessageToSend warnLogMessage = templateService.renderEmbedTemplate(KICK_LOG_TEMPLATE, kickLogModel, serverId);
         log.debug("Sending kick log message in guild {}.", serverId);
-        List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(warnLogMessage, ModerationPostTarget.KICK_LOG, serverId);
+        List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(warnLogMessage, ModerationPostTarget.KICK_LOG, serverId).get(0);
         return FutureUtils.toSingleFutureGeneric(messageFutures).thenApply(unused -> messageFutures.get(0).join());
     }
 

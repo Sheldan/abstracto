@@ -118,7 +118,7 @@ public class StarboardServiceBean implements StarboardService {
     public CompletionStage<Void> sendStarboardPostAndStore(CachedMessage message, Long starredUserId, List<Long> userExceptAuthorIds, StarboardPostModel starboardPostModel, Long userReactingId) {
         MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel, message.getServerId());
         PostTarget starboard = postTargetManagement.getPostTarget(StarboardPostTarget.STARBOARD.getKey(), message.getServerId());
-        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, StarboardPostTarget.STARBOARD, message.getServerId());
+        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, StarboardPostTarget.STARBOARD, message.getServerId()).get(0);
         Long starboardChannelId = starboard.getChannelReference().getId();
         return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid ->
             self.persistPost(message, userExceptAuthorIds, completableFutures, starboardChannelId, starredUserId, userReactingId)

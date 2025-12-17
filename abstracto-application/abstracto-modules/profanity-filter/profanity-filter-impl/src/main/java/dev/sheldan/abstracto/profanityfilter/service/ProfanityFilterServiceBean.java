@@ -126,7 +126,7 @@ public class ProfanityFilterServiceBean implements ProfanityFilterService {
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(PROFANITY_REPORT_TEMPLATE_KEY, reportModel, serverId);
         List<CompletableFuture<Message>> messageFutures = postTargetService
-                .sendEmbedInPostTarget(messageToSend, ProfanityFilterPostTarget.PROFANITY_FILTER_QUEUE, serverId);
+                .sendEmbedInPostTarget(messageToSend, ProfanityFilterPostTarget.PROFANITY_FILTER_QUEUE, serverId).get(0);
         Long profanityRegexId = foundProfanityRegex.getId();
         return FutureUtils.toSingleFutureGeneric(messageFutures).thenCompose(aVoid -> {
             Message createdMessage = messageFutures.get(0).join();

@@ -212,7 +212,7 @@ public class PollServiceBean implements PollService {
                 .build();
         componentPayloadManagementService.createButtonPayload(buttonConfigModel, serverId);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_TEMPLATE_KEY, model, serverId);
-        List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, PollPostTarget.POLLS, serverId);
+        List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, PollPostTarget.POLLS, serverId).get(0);
         return FutureUtils.toSingleFutureGeneric(messageFutures)
                 .thenAccept(unused -> self.persistPoll(messageFutures.get(0).join(), pollCreationRequest));
     }
@@ -373,7 +373,7 @@ public class PollServiceBean implements PollService {
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_EVALUATION_UPDATE_TEMPLATE_KEY, model, serverId);
         log.info("Sending update message for poll evaluation of server poll {} in server {}.", pollId, serverId);
-        List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, PollPostTarget.POLLS, serverId);
+        List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, PollPostTarget.POLLS, serverId).get(0);
         GuildMessageChannel channel = channelService.getMessageChannelFromServer(serverId, poll.getChannel().getId());
         log.info("Cleaning existing components in message {} for server poll {} in server {}.", poll.getMessageId(), pollId, serverId);
         CompletableFuture<Message> cleanMessageFuture = channelService.removeComponents(channel, poll.getMessageId());
@@ -408,7 +408,7 @@ public class PollServiceBean implements PollService {
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_REMINDER_TEMPLATE_KEY, model, serverId);
         log.info("Sending poll reminder about server poll {} in server {}.", pollId, serverId);
-        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, PollPostTarget.POLL_REMINDER, serverId));
+        return FutureUtils.toSingleFutureGenericList(postTargetService.sendEmbedInPostTarget(messageToSend, PollPostTarget.POLL_REMINDER, serverId));
     }
 
     @Override
@@ -464,10 +464,10 @@ public class PollServiceBean implements PollService {
             schedulerService.stopTrigger(poll.getEvaluationJobTriggerKey());
         }
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_CLOSE_MESSAGE, model, serverId);
-        List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, PollPostTarget.POLLS, serverId);
+        List<List<CompletableFuture<Message>>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, PollPostTarget.POLLS, serverId);
         MessageChannel channel = channelService.getMessageChannelFromServer(serverId, poll.getChannel().getId());
         CompletableFuture<Message> removeComponentsFuture = channelService.removeComponents(channel, poll.getMessageId());
-        return CompletableFuture.allOf(FutureUtils.toSingleFutureGeneric(messageFutures), removeComponentsFuture);
+        return CompletableFuture.allOf(FutureUtils.toSingleFutureGenericList(messageFutures), removeComponentsFuture);
     }
 
     @Override

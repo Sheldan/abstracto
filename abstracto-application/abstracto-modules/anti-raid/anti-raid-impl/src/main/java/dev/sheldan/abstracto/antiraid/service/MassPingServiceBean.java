@@ -108,6 +108,6 @@ public class MassPingServiceBean implements MassPingService {
                 .memberDisplay(MemberDisplay.fromMember(member))
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(MASS_PING_MUTE_NOTIFICATION_TEMPLATE_KEY, model, member.getGuild().getIdLong());
-        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, AntiRaidPostTarget.MASS_PING_LOG, member.getGuild().getIdLong()));
+        return FutureUtils.toSingleFutureGenericList(postTargetService.sendEmbedInPostTarget(messageToSend, AntiRaidPostTarget.MASS_PING_LOG, member.getGuild().getIdLong()));
     }
 }

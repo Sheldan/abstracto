@@ -129,7 +129,7 @@ public class InfractionServiceBean implements InfractionService {
                     .build();
             infractionLevelChangedListenerManager.sendInfractionLevelChangedEvent(newLevel, oldLevel, currentPoints, oldPoints, ServerUser.fromAUserInAServer(aUserInAServer));
             MessageToSend messageToSend = templateService.renderEmbedTemplate(INFRACTION_NOTIFICATION_TEMPLATE_KEY, model, serverId);
-            return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, InfractionPostTarget.INFRACTION_NOTIFICATION, serverId));
+            return FutureUtils.toSingleFutureGenericList(postTargetService.sendEmbedInPostTarget(messageToSend, InfractionPostTarget.INFRACTION_NOTIFICATION, serverId));
         } else {
             return CompletableFuture.completedFuture(null);
         }

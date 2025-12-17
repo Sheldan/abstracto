@@ -139,7 +139,7 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
 
     @Override
     public AChannelGroup findByNameAndServerAndType(String name, AServer server, String expectedType) {
-        Optional<AChannelGroup> channelOptional = channelGroupRepository.findByGroupNameIgnoreCaseAndServerAndChannelGroupType_GroupTypeKey(name, server, expectedType);
+        Optional<AChannelGroup> channelOptional = findByNameAndServerAndTypeOptional(name, server, expectedType);
         return channelOptional.orElseThrow(() -> {
             if(channelGroupRepository.existsByGroupNameIgnoreCaseAndServer(name, server)) {
                 return new ChannelGroupIncorrectTypeException(name, expectedType);
@@ -148,6 +148,11 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
                 return new ChannelGroupNotFoundException(name, channelGroupNames);
             }
         });
+    }
+
+    @Override
+    public Optional<AChannelGroup> findByNameAndServerAndTypeOptional(String name, AServer server, String expectedType) {
+        return channelGroupRepository.findByGroupNameIgnoreCaseAndServerAndChannelGroupType_GroupTypeKey(name, server, expectedType);
     }
 
     @Override

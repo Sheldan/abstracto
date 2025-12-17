@@ -114,7 +114,7 @@ public class ReactionReportServiceBean implements ReactionReportService {
                     .reportedMessage(reportedMessage)
                     .build();
             MessageToSend messageToSend = templateService.renderEmbedTemplate(REACTION_REPORT_TEMPLATE_KEY, model, serverId);
-            List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, ReactionReportPostTarget.REACTION_REPORTS, serverId);
+            List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, ReactionReportPostTarget.REACTION_REPORTS, serverId).get(0);
             return FutureUtils.toSingleFutureGeneric(messageFutures)
                     .thenAccept(unused -> reportMessageCreatedListenerManager.sendReportMessageCreatedEvent(reportedMessage, messageFutures.get(0).join(), anonymous ? null : reporter))
                     .thenAccept(unused -> {

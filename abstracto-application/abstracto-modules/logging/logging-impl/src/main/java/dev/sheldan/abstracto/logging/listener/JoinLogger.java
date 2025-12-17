@@ -37,7 +37,7 @@ public class JoinLogger implements AsyncJoinListener {
                 .build();
         log.debug("Logging join event for user {} in server {}.", listenerModel.getMember().getIdLong(), listenerModel.getServerId());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(USER_JOIN_TEMPLATE, model, listenerModel.getServerId());
-        FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, LoggingPostTarget.JOIN_LOG, listenerModel.getServerId()))
+        FutureUtils.toSingleFutureGenericList(postTargetService.sendEmbedInPostTarget(messageToSend, LoggingPostTarget.JOIN_LOG, listenerModel.getServerId()))
         .exceptionally(throwable -> {
             log.error("Failed to send member joining log.", throwable);
             return null;

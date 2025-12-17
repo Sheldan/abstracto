@@ -254,8 +254,8 @@ public class InviteLinkFilterServiceBean implements InviteLinkFilterService {
         log.info("Sending notification about {} deleted invite links in guild {} from user {} in channel {} in message {}.",
                 codes.size(), serverId, message.getAuthor().getIdLong(), message.getChannel().getIdLong(), message.getIdLong());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(INVITE_LINK_DELETED_NOTIFICATION_EMBED_TEMPLATE_KEY, model, message.getGuild().getIdLong());
-        List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, InviteFilterPostTarget.INVITE_DELETE_LOG, serverId);
-        return FutureUtils.toSingleFutureGeneric(messageFutures).thenAccept(unused ->
+        List<List<CompletableFuture<Message>>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, InviteFilterPostTarget.INVITE_DELETE_LOG, serverId);
+        return FutureUtils.toSingleFutureGenericList(messageFutures).thenAccept(unused ->
                 log.debug("Successfully send notification about deleted invite link in message {}.", message.getIdLong())
         );
     }

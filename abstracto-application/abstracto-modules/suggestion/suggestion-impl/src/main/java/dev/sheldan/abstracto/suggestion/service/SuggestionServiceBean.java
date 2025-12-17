@@ -154,7 +154,7 @@ public class SuggestionServiceBean implements SuggestionService {
         }
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_CREATION_TEMPLATE, model, serverId);
         log.info("Creating suggestion with id {} in server {} from member {}.", newSuggestionId, serverId, suggester.getIdLong());
-        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, serverId);
+        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, serverId).get(0);
         List<ButtonConfigModel> buttonConfigModels = Arrays.asList(model.getAgreeButtonModel(), model.getDisAgreeButtonModel(), model.getRemoveVoteButtonModel());
         return FutureUtils.toSingleFutureGeneric(completableFutures)
                 .thenCompose(aVoid -> self.addVotingPossibility(suggestionChannelId, suggestionMessageId, text, suggester, serverId, newSuggestionId, completableFutures, buttonConfigModels, useButtons))
@@ -393,7 +393,7 @@ public class SuggestionServiceBean implements SuggestionService {
         suggestionLog.setReason(text);
         Long serverId = suggestionLog.getServerId();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_UPDATE_TEMPLATE, suggestionLog, serverId);
-        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, serverId);
+        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, serverId).get(0);
         return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]));
     }
 
@@ -463,8 +463,8 @@ public class SuggestionServiceBean implements SuggestionService {
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_REMINDER_TEMPLATE_KEY, model, serverId);
         log.info("Reminding about suggestion {} in server {}.", suggestionId.getId(), serverId);
-        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION_REMINDER, serverId);
-        return FutureUtils.toSingleFutureGeneric(completableFutures);
+        List<List<CompletableFuture<Message>>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION_REMINDER, serverId);
+        return FutureUtils.toSingleFutureGenericList(completableFutures);
     }
 
     @Override

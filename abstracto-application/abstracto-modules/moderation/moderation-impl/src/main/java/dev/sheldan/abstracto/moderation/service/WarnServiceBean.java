@@ -120,7 +120,7 @@ public class WarnServiceBean implements WarnService {
                 .reason(reason)
                 .build();
         MessageToSend message = renderMessageModel(warnContext, guild.getIdLong());
-        List<CompletableFuture<Message>> futures = postTargetService.sendEmbedInPostTarget(message, WarningPostTarget.WARN_LOG, guild.getIdLong());
+        List<CompletableFuture<Message>> futures = postTargetService.sendEmbedInPostTarget(message, WarningPostTarget.WARN_LOG, guild.getIdLong()).get(0);
         return FutureUtils.toSingleFutureGeneric(futures).thenCompose(unused -> futures.get(0));
     }
 
@@ -363,7 +363,7 @@ public class WarnServiceBean implements WarnService {
                 .warnings(warnDecayWarnings)
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(WARN_DECAY_LOG_TEMPLATE_KEY, warnDecayLogModel, serverId);
-        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, WarnDecayPostTarget.DECAY_LOG, server.getId()));
+        return FutureUtils.toSingleFutureGenericList(postTargetService.sendEmbedInPostTarget(messageToSend, WarnDecayPostTarget.DECAY_LOG, server.getId()));
     }
 
     @Override

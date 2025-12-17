@@ -14,13 +14,19 @@ import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.CoreSlashCommandNames;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandAutoCompleteService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
+import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.models.template.commands.PostTargetDisplayModel;
 import dev.sheldan.abstracto.core.models.template.commands.PostTargetModelEntry;
+import dev.sheldan.abstracto.core.models.template.display.ChannelDisplay;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.core.service.PostTargetServiceBean;
+import dev.sheldan.abstracto.core.service.management.ChannelGroupManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
@@ -35,6 +41,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,6 +77,12 @@ public class PostTargetCommand extends AbstractConditionableCommand {
     @Autowired
     private SlashCommandParameterService slashCommandParameterService;
 
+    @Autowired
+    private SlashCommandAutoCompleteService slashCommandAutoCompleteService;
+
+    @Autowired
+    private ChannelGroupManagementService channelGroupManagementService;
+
     private void validateAndCreatePosttarget(Guild guild, String targetName, GuildChannel channel) {
         if (!postTargetService.validPostTarget(targetName)) {
             throw new PostTargetNotValidException(targetName, postTargetService.getAvailablePostTargets());
@@ -85,12 +98,33 @@ public class PostTargetCommand extends AbstractConditionableCommand {
         List<PostTarget> postTargets = postTargetService.getPostTargets(server);
         ArrayList<PostTargetModelEntry> postTargetEntries = new ArrayList<>();
         postTargets.forEach(target -> {
+            Optional<AChannelGroup> channelGroupOptional =
+                channelGroupManagementService.findByNameAndServerAndTypeOptional(target.getName(), server, PostTargetServiceBean.POSTTARGET_CHANNEL_GROUP_TYPE);
             Optional<GuildMessageChannel> channelFromAChannel = channelService.getGuildMessageChannelFromAChannelOptional(target.getChannelReference());
+            PostTargetModelEntry.PostTargetChannelGroup channelGroupDisplay;
+            if(channelGroupOptional.isPresent()) {
+                AChannelGroup aChannelGroup = channelGroupOptional.get();
+                List<ChannelDisplay> guildMessageChannels = new ArrayList<>();
+                for (AChannel aChannel : aChannelGroup.getChannels()) {
+                    Optional<GuildMessageChannel> channelOptional = channelService.getGuildMessageChannelFromAChannelOptional(aChannel);
+                    channelOptional.ifPresent(e -> guildMessageChannels.add(ChannelDisplay.fromChannel(e)));
+                }
+                channelGroupDisplay = PostTargetModelEntry.PostTargetChannelGroup
+                    .builder()
+                    .disabled(!aChannelGroup.getEnabled())
+                    .name(aChannelGroup.getGroupName())
+                    .additionalChannels(guildMessageChannels)
+                    .build();
+            } else {
+                channelGroupDisplay = null;
+            }
             PostTargetModelEntry targetEntry = PostTargetModelEntry
                     .builder()
-                    .channel(channelFromAChannel.orElse(null))
+                    .channel(channelFromAChannel.map(ChannelDisplay::fromChannel).orElse(null))
                     .disabled(target.getDisabled())
-                    .postTarget(target).build();
+                    .channelGroup(channelGroupDisplay)
+                    .name(target.getName())
+                    .build();
             postTargetEntries.add(targetEntry);
         });
         PostTargetDisplayModel posttargetDisplayModel = PostTargetDisplayModel
@@ -100,14 +134,14 @@ public class PostTargetCommand extends AbstractConditionableCommand {
 
         List<String> postTargetConfigs = postTargetService.getPostTargetsOfEnabledFeatures(server);
         postTargetConfigs.forEach(postTargetName -> {
-            if(postTargetEntries.stream().noneMatch(postTargetModelEntry -> postTargetModelEntry.getPostTarget().getName().equalsIgnoreCase(postTargetName))) {
+            if(postTargetEntries.stream().noneMatch(postTargetModelEntry -> postTargetModelEntry.getName().equalsIgnoreCase(postTargetName))) {
                 PostTarget fakeEntry = PostTarget
                         .builder()
                         .name(postTargetName)
                         .build();
                 PostTargetModelEntry postTargetEntry = PostTargetModelEntry
                         .builder()
-                        .postTarget(fakeEntry)
+                        .name(fakeEntry.getName())
                         .disabled(false)
                         .build();
                 postTargetEntries.add(postTargetEntry);
@@ -138,11 +172,24 @@ public class PostTargetCommand extends AbstractConditionableCommand {
     }
 
     @Override
+    public List<String> performAutoComplete(CommandAutoCompleteInteractionEvent event) {
+        if (slashCommandAutoCompleteService.matchesParameter(event.getFocusedOption(), NAME_PARAMETER)) {
+            String input = event.getFocusedOption().getValue().toLowerCase();
+            return postTargetService.getAvailablePostTargets()
+                .stream()
+                .filter(name -> name.toLowerCase().startsWith(input))
+                .toList();
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
         Parameter postTargetName = Parameter
             .builder()
             .name(NAME_PARAMETER)
             .type(String.class)
+            .supportsAutoComplete(true)
             .optional(true)
             .templated(true)
             .build();

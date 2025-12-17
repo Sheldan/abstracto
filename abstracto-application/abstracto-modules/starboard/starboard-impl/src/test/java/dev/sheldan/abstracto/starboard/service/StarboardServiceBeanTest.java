@@ -185,7 +185,7 @@ public class StarboardServiceBeanTest {
         when(postTarget.getChannelReference()).thenReturn(starboardChannel);
         when(starboardChannel.getId()).thenReturn(STARBOARD_CHANNEL_ID);
         when(postTargetManagement.getPostTarget(StarboardPostTarget.STARBOARD.getKey(), SERVER_ID)).thenReturn(postTarget);
-        when(postTargetService.sendEmbedInPostTarget(messageToSend, StarboardPostTarget.STARBOARD, SERVER_ID)).thenReturn(Arrays.asList(CompletableFuture.completedFuture(null)));
+        when(postTargetService.sendEmbedInPostTarget(messageToSend, StarboardPostTarget.STARBOARD, SERVER_ID)).thenReturn(List.of(List.of(CompletableFuture.completedFuture(null))));
         ArrayList<Long> userExceptAuthorIds = new ArrayList<>();
         testUnit.sendStarboardPostAndStore(message, STARRED_USER_ID, userExceptAuthorIds, model, STARRING_USER_ID);
         verify(self, times(1)).persistPost(eq(message), eq(userExceptAuthorIds), any(), eq(STARBOARD_CHANNEL_ID), eq(STARRED_USER_ID), eq(STARRING_USER_ID));

@@ -66,7 +66,7 @@ public class MessageEditedListener implements AsyncMessageUpdatedListener {
                 .member(messageAfter.getMember())
                 .build();
         MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_EDITED_TEMPLATE, lodModel, model.getServerId());
-        FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.EDIT_LOG, model.getServerId()))
+        FutureUtils.toSingleFutureGenericList(postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.EDIT_LOG, model.getServerId()))
         .exceptionally(throwable -> {
             log.error("Failed to send message edited log.", throwable);
             return null;
@@ -90,7 +90,7 @@ public class MessageEditedListener implements AsyncMessageUpdatedListener {
                         .build();
                 MessageToSend attachmentEmbed = templateService.renderEmbedTemplate(MESSAGE_EDITED_ATTACHMENT_REMOVED_TEMPLATE,
                         attachmentModel, messageBefore.getServerId());
-                FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(attachmentEmbed, LoggingPostTarget.DELETE_LOG, messageBefore.getServerId()))
+                FutureUtils.toSingleFutureGenericList(postTargetService.sendEmbedInPostTarget(attachmentEmbed, LoggingPostTarget.DELETE_LOG, messageBefore.getServerId()))
                 .exceptionally(throwable -> {
                     log.error("Failed to send message edited attachment log.", throwable);
                     return null;

@@ -158,7 +158,7 @@ public class StreamerServiceBean implements StreamerService {
             return new CompletableFutureList<>(futures);
         } else {
             log.info("Announcing streamer {} in server {}.", streamer.getId(), streamer.getServer().getId());
-            List<CompletableFuture<Message>> futures = postTargetService.sendEmbedInPostTarget(messagetoSend, TwitchPostTarget.TWITCH_LIVE_NOTIFICATION, streamer.getServer().getId());
+            List<CompletableFuture<Message>> futures = postTargetService.sendEmbedInPostTarget(messagetoSend, TwitchPostTarget.TWITCH_LIVE_NOTIFICATION, streamer.getServer().getId()).get(0);
             return new CompletableFutureList<>(futures);
         }
     }

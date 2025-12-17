@@ -19,6 +19,7 @@ public interface ChannelGroupManagementService {
     AChannelGroup findByNameAndServer(String name, AServer server);
     Optional<AChannelGroup> findByNameAndServerOptional(String name, AServer server);
     AChannelGroup findByNameAndServerAndType(String name, AServer server, String expectedType);
+    Optional<AChannelGroup> findByNameAndServerAndTypeOptional(String name, AServer server, String expectedType);
     List<AChannelGroup> findAllInServer(AServer server);
     List<String> getAllAvailableAsString(AServer server);
     List<AChannelGroup> findAllInServer(Long serverId);

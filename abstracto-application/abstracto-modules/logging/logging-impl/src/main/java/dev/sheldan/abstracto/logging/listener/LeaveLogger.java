@@ -57,7 +57,7 @@ public class LeaveLogger implements AsyncLeaveListener {
                 .build();
         log.debug("Logging leave event for user {} in server {}.", listenerModel.getUser().getIdLong(), listenerModel.getServerId());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(USER_LEAVE_TEMPLATE, model, listenerModel.getServerId());
-        FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, LoggingPostTarget.LEAVE_LOG, listenerModel.getServerId()))
+        FutureUtils.toSingleFutureGenericList(postTargetService.sendEmbedInPostTarget(messageToSend, LoggingPostTarget.LEAVE_LOG, listenerModel.getServerId()))
         .exceptionally(throwable -> {
             log.error("Failed to send member leaving log.", throwable);
             return null;

@@ -332,7 +332,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     public CompletableFuture<Void> sendModMailNotification(User user, GuildMessageChannel channel, boolean appeal) {
         Long serverId = channel.getGuild().getIdLong();
         MessageToSend messageToSend = getModmailNotificationMessageToSend(user, channel, serverId, true, appeal);
-        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_PING, serverId));
+        return FutureUtils.toSingleFutureGenericList(postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_PING, serverId));
     }
 
     private MessageToSend getModmailNotificationMessageToSend(User user, GuildMessageChannel channel, Long serverId, boolean pingRole, boolean appeal) {
@@ -1023,7 +1023,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             ModMailThread modMailThread = modMailThreadManagementService.getById(modmailThreadId);
             return channelService.sendMessageEmbedToSendToAChannel(messageToSend, modMailThread.getChannel());
         } else {
-            return postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_LOG, model.getServerId());
+            return postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_LOG, model.getServerId()).get(0);
         }
     }
 
@@ -1064,7 +1064,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             ModMailLoggedMessageModel message = loadedMessages.get(i);
             log.debug("Sending message {} of modmail thread {} to modmail log post target.", modMailThreadId, message.getMessage().getId());
             MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_close_logged_message", message, updateMessage.getGuild().getIdLong());
-            List<CompletableFuture<Message>> logFuture = postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_LOG, updateMessage.getGuild().getIdLong());
+            List<CompletableFuture<Message>> logFuture = postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_LOG, updateMessage.getGuild().getIdLong()).get(0);
             if(i != 0 && (i % 10) == 0) {
                 progressModel.setLoggedMessages(i);
                 messageService.editMessageWithNewTemplate(updateMessage, MODMAIL_CLOSE_PROGRESS_TEMPLATE_KEY, progressModel);

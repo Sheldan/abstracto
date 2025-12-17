@@ -13,14 +13,15 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface PostTargetService {
-    CompletableFuture<Message> sendTextInPostTarget(String text, PostTarget target);
-    CompletableFuture<Message> sendEmbedInPostTarget(MessageEmbed embed, PostTarget target);
-    CompletableFuture<Message> sendTextInPostTarget(String text, PostTargetEnum postTargetName, Long serverId);
-    CompletableFuture<Message> sendEmbedInPostTarget(MessageEmbed embed, PostTargetEnum postTargetName, Long serverId);
-    CompletableFuture<Message> sendMessageInPostTarget(Message message, PostTargetEnum postTargetName,  Long serverId);
-    CompletableFuture<Message> sendMessageInPostTarget(Message message, PostTarget target);
-    List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, PostTargetEnum postTargetName, Long serverId);
-    List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, PostTarget target);
+    List<CompletableFuture<Message>> sendTextInPostTarget(String text, PostTarget target);
+    List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageEmbed embed, PostTarget target);
+    List<CompletableFuture<Message>> sendTextInPostTarget(String text, PostTargetEnum postTargetName, Long serverId);
+    List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageEmbed embed, PostTargetEnum postTargetName, Long serverId);
+    List<CompletableFuture<Message>> sendMessageInPostTarget(Message message, PostTargetEnum postTargetName,  Long serverId);
+    List<CompletableFuture<Message>> sendMessageInPostTarget(Message message, PostTarget target);
+    List<List<CompletableFuture<Message>>> sendEmbedInPostTarget(MessageToSend message, PostTargetEnum postTargetName, Long serverId);
+    List<List<CompletableFuture<Message>>> sendEmbedInPostTarget(List<MessageToSend> messages, PostTargetEnum postTargetName, Long serverId);
+    List<List<CompletableFuture<Message>>> sendEmbedInPostTarget(MessageToSend message, PostTarget target);
     List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTarget target);
     List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTargetEnum postTargetName, Long serverId);
     List<CompletableFuture<Message>> editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target);
