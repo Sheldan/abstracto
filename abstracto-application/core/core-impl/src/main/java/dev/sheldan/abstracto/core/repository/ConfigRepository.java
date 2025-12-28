@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.repository;
 
 import dev.sheldan.abstracto.core.models.database.AConfig;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +12,7 @@ public interface ConfigRepository extends JpaRepository<AConfig, Long> {
 
     AConfig findAConfigByServerIdAndNameIgnoreCase(Long serverId, String name);
     void deleteAConfigByServerId(Long serverId);
+    List<AConfig> findByServerId(Long serverId);
 
     boolean existsAConfigByServerIdAndNameIgnoreCase(Long serverId, String name);
 

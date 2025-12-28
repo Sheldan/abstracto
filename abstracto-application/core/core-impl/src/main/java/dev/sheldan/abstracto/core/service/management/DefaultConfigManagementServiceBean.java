@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.config.DefaultConfigProperties;
 import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,5 +22,10 @@ public class DefaultConfigManagementServiceBean implements DefaultConfigManageme
     @Override
     public boolean configKeyExists(String key) {
         return defaultConfigProperties.getSystemConfigs().containsKey(key.toLowerCase());
+    }
+
+    @Override
+    public List<String> getConfigKeys() {
+        return defaultConfigProperties.getSystemConfigs().keySet().stream().toList();
     }
 }

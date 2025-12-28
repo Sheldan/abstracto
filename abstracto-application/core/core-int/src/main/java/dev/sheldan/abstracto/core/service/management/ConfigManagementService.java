@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AConfig;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import java.util.List;
 
 public interface ConfigManagementService {
     AConfig setOrCreateStringValue(Long serverId, String name, String value);
@@ -11,6 +12,7 @@ public interface ConfigManagementService {
     AConfig createConfig(Long serverId, String name, Double value);
     AConfig createConfig(Long serverId, String name, Long value);
     AConfig loadOrCreateIfNotExists(Long serverId, String name, String value);
+    List<AConfig> loadForServer(Long serverId);
     AConfig loadOrCreateIfNotExists(Long serverId, String name, Long value);
     AConfig loadOrCreateIfNotExists(Long serverId, String name, Double value);
     AConfig loadConfig(Long serverId, String name);

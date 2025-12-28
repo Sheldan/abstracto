@@ -11,8 +11,12 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandAutoCompleteService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
+import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
+import java.util.ArrayList;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,6 +40,12 @@ public class SetConfig extends AbstractConditionableCommand {
     @Autowired
     private InteractionService interactionService;
 
+    @Autowired
+    private SlashCommandAutoCompleteService slashCommandAutoCompleteService;
+
+    @Autowired
+    private DefaultConfigManagementService defaultConfigManagementService;
+
     private static final String RESPONSE_TEMPLATE = "setConfig_response";
 
     @Override
@@ -48,10 +58,25 @@ public class SetConfig extends AbstractConditionableCommand {
     }
 
     @Override
+    public List<String> performAutoComplete(CommandAutoCompleteInteractionEvent event) {
+        if(slashCommandAutoCompleteService.matchesParameter(event.getFocusedOption(), KEY_PARAMETER)) {
+            String input = event.getFocusedOption().getValue().toLowerCase();
+            return defaultConfigManagementService
+                .getConfigKeys()
+                .stream()
+                .map(String::toLowerCase)
+                .filter(key -> key.startsWith(input))
+                .toList();
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
         Parameter keyToChange = Parameter
                 .builder()
                 .name(KEY_PARAMETER)
+                .supportsAutoComplete(true)
                 .type(String.class)
                 .templated(true)
                 .build();

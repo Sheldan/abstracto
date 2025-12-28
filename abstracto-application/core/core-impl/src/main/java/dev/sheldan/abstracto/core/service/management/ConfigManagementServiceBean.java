@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.service.management;
 import dev.sheldan.abstracto.core.models.database.AConfig;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.repository.ConfigRepository;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -96,6 +97,11 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
             return this.createConfig(serverId, name, value);
         }
         return config;
+    }
+
+    @Override
+    public List<AConfig> loadForServer(Long serverId) {
+        return configRepository.findByServerId(serverId);
     }
 
     @Override
