@@ -60,7 +60,7 @@ public class WarnModerationActionModalListener implements ModalInteractionListen
                 .getEvent()
                 .getValues()
                 .stream()
-                .filter(modalMapping -> modalMapping.getId().equals(payload.getReasonInputId()))
+                .filter(modalMapping -> modalMapping.getCustomId().equals(payload.getReasonInputId()))
                 .map(ModalMapping::getAsString)
                 .findFirst()
                 .orElse(null);

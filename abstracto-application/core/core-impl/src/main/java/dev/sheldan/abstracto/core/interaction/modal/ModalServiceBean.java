@@ -6,12 +6,12 @@ import dev.sheldan.abstracto.core.interaction.modal.config.ModalConfig;
 import dev.sheldan.abstracto.core.interaction.modal.config.TextInputComponent;
 import dev.sheldan.abstracto.core.interaction.modal.config.TextInputComponentStyle;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import net.dv8tion.jda.api.components.ModalTopLevelComponent;
+import net.dv8tion.jda.api.components.label.Label;
 import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.components.actionrow.ActionRow;
-import net.dv8tion.jda.api.interactions.components.ItemComponent;
 import net.dv8tion.jda.api.components.textinput.TextInput;
-import net.dv8tion.jda.api.interactions.modals.Modal;
+import net.dv8tion.jda.api.modals.Modal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -55,29 +55,27 @@ public class ModalServiceBean implements ModalService {
                 .build();
     }
 
-    private List<ActionRow> convertToActionRows(List<ModalComponent> components) {
+    private List<ModalTopLevelComponent> convertToActionRows(List<ModalComponent> components) {
         return components
                 .stream()
                 .map(this::convertComponent)
-                .map(ActionRow::of)
                 .collect(Collectors.toList());
     }
 
-    private ItemComponent convertComponent(ModalComponent component) {
+    private ModalTopLevelComponent convertComponent(ModalComponent component) {
         if(component instanceof TextInputComponent) {
             TextInputComponent tic = (TextInputComponent) component;
-            TextInput.Builder builder = TextInput
-                    .create(tic.getId(), tic.getLabel(), TextInputComponentStyle.getStyle(tic.getStyle()));
+            TextInput.Builder tiBuilder =  TextInput.create(tic.getId(), TextInputComponentStyle.getStyle(tic.getStyle()));
             if(tic.getMinLength() != null) {
-                builder.setMinLength(tic.getMinLength());
+                tiBuilder.setMinLength(tic.getMinLength());
             }
             if(tic.getMaxLength() != null) {
-                builder.setMaxLength(tic.getMaxLength());
+                tiBuilder.setMaxLength(tic.getMaxLength());
             }
             if(tic.getRequired() != null) {
-                builder.setRequired(tic.getRequired());
+                tiBuilder.setRequired(tic.getRequired());
             }
-            return builder.build();
+            return Label.of(tic.getLabel(), tiBuilder.build());
         }
         return null;
     }

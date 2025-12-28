@@ -48,7 +48,7 @@ public class ServerPollAddOptionModalListener implements ModalInteractionListene
                 .getEvent()
                 .getValues()
                 .stream()
-                .filter(modalMapping -> modalMapping.getId().equals(payload.getLabelInputComponentId()))
+                .filter(modalMapping -> modalMapping.getCustomId().equals(payload.getLabelInputComponentId()))
                 .map(ModalMapping::getAsString)
                 .findFirst()
                 .orElse(null);
@@ -62,7 +62,7 @@ public class ServerPollAddOptionModalListener implements ModalInteractionListene
                 .getEvent()
                 .getValues()
                 .stream()
-                .filter(modalMapping -> modalMapping.getId().equals(payload.getDescriptionInputComponentId()))
+                .filter(modalMapping -> modalMapping.getCustomId().equals(payload.getDescriptionInputComponentId()))
                 .map(ModalMapping::getAsString)
                 .findFirst()
                 .orElse(null);

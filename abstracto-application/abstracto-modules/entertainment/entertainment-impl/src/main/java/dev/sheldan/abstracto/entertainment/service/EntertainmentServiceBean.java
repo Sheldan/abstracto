@@ -200,8 +200,8 @@ public class EntertainmentServiceBean implements EntertainmentService {
             return FutureUtils.toSingleFutureGeneric(channelService.sendMessageEmbedToSendToAChannel(messageToSend, pressF.getPressFChannel()))
             .thenCompose(unused -> messageService.loadMessage(serverId, channelId, messageId).thenCompose(message -> {
                 log.info("Clearing buttons from pressF {} in with message {} in channel {} in server {}.", pressFId, pressFId, channelId, serverId);
-                return componentService.clearButtons(message);
-            }));
+                return componentService.clearComponents(message);
+            })).thenAccept(message -> {});
         } else {
             throw new AbstractoRunTimeException(String.format("PressF with id %s not found.", pressFId));
         }

@@ -5,6 +5,7 @@
         <artifactId>twitch</artifactId>
         <version>1.6.19-SNAPSHOT</version>
     </parent>
+
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>twitch-int</artifactId>
@@ -14,11 +15,10 @@
             <groupId>com.github.twitch4j</groupId>
             <artifactId>twitch4j</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.apollographql.apollo</groupId>
+            <artifactId>apollo-runtime</artifactId>
+        </dependency>
     </dependencies>
-
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-    </properties>
 
 </project>

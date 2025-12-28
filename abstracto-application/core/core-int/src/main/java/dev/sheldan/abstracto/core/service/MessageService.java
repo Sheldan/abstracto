@@ -6,11 +6,11 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import net.dv8tion.jda.api.components.tree.MessageComponentTree;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
-import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageEditAction;
 
@@ -45,7 +45,6 @@ public interface MessageService {
     MessageEditAction editMessage(Message message, String text, MessageEmbed messageEmbed);
     AuditableRestAction<Void> deleteMessageWithAction(Message message);
     CompletableFuture<Void> deleteMessage(Message message);
-    CompletableFuture<Void> editMessageWithActionRows(Message message, List<ActionRow> rows);
-    CompletableFuture<Message> editMessageWithActionRowsMessage(Message message, List<ActionRow> rows);
+    CompletableFuture<Message> editMessage(Message message, MessageComponentTree componentTree);
     CompletableFuture<Void> pinMessage(Message message);
 }

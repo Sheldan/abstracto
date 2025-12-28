@@ -1,31 +1,20 @@
 package dev.sheldan.abstracto.core.interaction;
 
 import dev.sheldan.abstracto.core.interaction.button.ButtonConfigModel;
-import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MessageService;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
-import net.dv8tion.jda.api.components.ActionComponent;
-import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import net.dv8tion.jda.api.components.buttons.Button;
-import net.dv8tion.jda.api.components.buttons.ButtonStyle;
-import org.apache.commons.collections4.ListUtils;
+import net.dv8tion.jda.api.components.tree.MessageComponentTree;
+import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Component
 public class ComponentServiceBean implements ComponentService {
 
     @Autowired
     private MessageService messageService;
-
-    @Autowired
-    private ChannelService channelService;
 
     @Override
     public String generateComponentId(Long serverId) {
@@ -38,95 +27,48 @@ public class ComponentServiceBean implements ComponentService {
     }
 
     @Override
-    public CompletableFuture<Message> addButtonToMessage(Long messageId, GuildMessageChannel textChannel, String buttonId, String description, String emoteMarkdown, ButtonStyle style) {
-        return channelService.retrieveMessageInChannel(textChannel, messageId).thenCompose(message -> {
-            Button button = Button.of(style, buttonId, description);
-            if(emoteMarkdown != null) {
-                button = button.withEmoji(Emoji.fromFormatted(emoteMarkdown));
-            }
-            List<ActionRow> actionRows;
-            if(message.getActionRows().isEmpty()) {
-                actionRows = Arrays.asList(ActionRow.of(button));
+    public CompletableFuture<Message> clearComponents(Message message) {
+        MessageComponentTree tree = message.getComponentTree().replace(oldComponent -> null);
+        return messageService.editMessage(message, tree);
+    }
+
+    @Override
+    public CompletableFuture<Message> disableAllComponents(Message message) {
+        return setAllComponentStatesTo(message, true);
+    }
+
+    @Override
+    public CompletableFuture<Message> enableAllComponents(Message message) {
+        return setAllComponentStatesTo(message, false);
+    }
+
+    @Override
+    public CompletableFuture<Message> removeComponentById(Message message, String componentId) {
+        MessageComponentTree tree;
+        tree = message.getComponentTree().replace(oldComponent -> {
+            if (oldComponent instanceof Button && componentId.equals(((Button) oldComponent).getCustomId())) {
+                return null;
             } else {
-                ActionRow lastRow = message.getActionRows().get(message.getActionRows().size() - 1);
-                if(lastRow.getComponents().size() < MAX_BUTTONS_PER_ROW) {
-                    lastRow.getButtons().add(button);
-                    actionRows = message.getActionRows();
-                } else {
-                    List<ActionRow> currentActionRows = new ArrayList<>(message.getActionRows());
-                    currentActionRows.add(ActionRow.of(button));
-                    actionRows = currentActionRows;
-                }
+                return oldComponent;
             }
-            return messageService.editMessageWithActionRowsMessage(message, actionRows);
         });
+        return messageService.editMessage(message, tree);
     }
 
-    @Override
-    public CompletableFuture<Void> clearButtons(Message message) {
-        return messageService.editMessageWithActionRows(message, new ArrayList<>());
-    }
-
-    @Override
-    public CompletableFuture<Void> disableAllButtons(Message message) {
-        return setAllButtonStatesTo(message, true);
-    }
-
-    @Override
-    public CompletableFuture<Void> enableAllButtons(Message message) {
-        return setAllButtonStatesTo(message, false);
-    }
-
-    @Override
-    public CompletableFuture<Void> removeComponentWithId(Message message, String componentId) {
-       return removeComponentWithId(message, componentId, false);
-    }
-
-    @Override
-    public CompletableFuture<Void> removeComponentWithId(Message message, String componentId, Boolean rearrange) {
-        List<ActionRow> actionRows = new ArrayList<>();
-        if(Boolean.TRUE.equals(rearrange)) {
-            List<net.dv8tion.jda.api.components.ActionComponent> components = new ArrayList<>();
-            message.getActionRows().forEach(row ->
-                            row
-                                .getComponents()
-                                .stream()
-                                .filter(ActionComponent.class::isInstance)
-                                .map(ActionComponent.class::cast)
-                                .filter(component -> component.getId() == null || !component.getId().equals(componentId))
-                                .forEach(components::add));
-            actionRows = splitIntoActionRowsMax(components);
-        } else {
-            for (ActionRow row : message.getActionRows()) {
-                actionRows.add(ActionRow.of(
-                        row
-                                .getComponents()
-                                .stream()
-                                .filter(ActionComponent.class::isInstance)
-                                .map(ActionComponent.class::cast)
-                                .filter(component -> component.getId() == null || !component.getId().equals(componentId))
-                                .collect(Collectors.toList())));
-            }
-        }
-        return messageService.editMessageWithActionRows(message, actionRows);
-    }
-
-    @Override
-    public List<ActionRow> splitIntoActionRowsMax(List<net.dv8tion.jda.api.components.ActionComponent> allComponents) {
-        List<List<net.dv8tion.jda.api.components.ActionComponent>> actionRows = ListUtils.partition(allComponents, MAX_BUTTONS_PER_ROW);
-        return actionRows.stream().map(ActionRow::of).collect(Collectors.toList());
-    }
 
     @Override
     public ButtonConfigModel createButtonConfigModel() {
         return ButtonConfigModel.builder().buttonId(generateComponentId()).build();
     }
 
-    private CompletableFuture<Void> setAllButtonStatesTo(Message message, Boolean disabled) {
-        List<ActionRow> actionRows = new ArrayList<>();
-
-        message.getActionRows().forEach(row -> actionRows.add(row.withDisabled(disabled)));
-        return messageService.editMessageWithActionRows(message, actionRows);
+    private CompletableFuture<Message> setAllComponentStatesTo(Message message, Boolean disabled) {
+        MessageComponentTree tree;
+        if(disabled) {
+            tree = message.getComponentTree().asDisabled();
+        } else {
+            tree = message.getComponentTree().asEnabled();
+        }
+        return messageService.editMessage(message, tree);
     }
 
 }

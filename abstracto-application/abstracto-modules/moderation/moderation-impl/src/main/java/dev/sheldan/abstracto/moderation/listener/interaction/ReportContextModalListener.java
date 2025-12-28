@@ -43,7 +43,7 @@ public class ReportContextModalListener implements ModalInteractionListener {
                 .getEvent()
                 .getValues()
                 .stream()
-                .filter(modalMapping -> modalMapping.getId().equals(payload.getTextInputId()))
+                .filter(modalMapping -> modalMapping.getCustomId().equals(payload.getTextInputId()))
                 .map(ModalMapping::getAsString)
                 .findFirst()
                 .orElse(null);

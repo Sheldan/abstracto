@@ -31,7 +31,6 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
-import net.dv8tion.jda.api.components.buttons.ButtonStyle;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -59,9 +58,6 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
 
     @Autowired
     private ChannelService channelService;
-
-    @Autowired
-    private GuildService guildService;
 
     @Autowired
     private EmoteService emoteService;
@@ -131,9 +127,18 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
             String buttonId = componentService.generateComponentId();
             String emoteMarkdown = emoji != null ? emoji.getFormatted() : null;
             if (assignableRolePlace.getMessageId() != null) {
+                AssignablePostMessage model = prepareAssignablePostMessageModel(assignableRolePlace);
+                model.getRoles().add(AssignablePostRole
+                    .builder()
+                        .componentId(buttonId)
+                        .emoteMarkDown(emoteMarkdown)
+                        .description(description)
+                    .build());
+                MessageToSend messageToSend = templateService.renderEmbedTemplate(ASSIGNABLE_ROLES_POST_TEMPLATE_KEY, model, assignableRolePlace.getServer().getId());
                 log.debug("Assignable role place {} has already message post with ID {} - updating.", assignableRolePlace.getId(), assignableRolePlace.getMessageId());
-                return componentService.addButtonToMessage(assignableRolePlace.getMessageId(), textChannel, buttonId, description, emoteMarkdown, ButtonStyle.SECONDARY)
-                        .thenAccept(message -> self.persistAssignableRoleAddition(placeId, role, description, emoji, buttonId));
+                return messageService.editMessageInChannel(textChannel, messageToSend, assignableRolePlace.getMessageId()).thenAccept(unused -> {
+                    self.persistAssignableRoleAddition(placeId, role, description, emoji, buttonId);
+                });
             } else {
                 log.info("Assignable role place {} is not yet setup - only adding role to the database.", assignableRolePlace.getId());
                 self.persistAssignableRoleAddition(placeId, role, description, emoji, buttonId);
@@ -174,7 +179,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         return channelService.retrieveMessageInChannel(assignableRolePlace.getServer().getId(), assignableRolePlace.getChannel().getId(), assignableRolePlace.getMessageId())
                 .thenCompose(message -> {
                         log.debug("Updating message {} to remove component with ID {}.", message.getIdLong(), componentId);
-                        return componentService.removeComponentWithId(message, componentId, true);
+                        return componentService.removeComponentById(message, componentId).thenAccept(message1 -> {});
                     }
                 );
     }
@@ -269,8 +274,8 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         log.info("Deactivating assignable role place {} in server {}", place.getId(), place.getServer().getId());
         return channelService.retrieveMessageInChannel(place.getServer().getId(), place.getChannel().getId(), place.getMessageId())
                 .thenCompose(message ->
-                        componentService.disableAllButtons(message)
-                );
+                        componentService.disableAllComponents(message)
+                ).thenAccept(message -> {});
     }
 
     @Override
@@ -283,8 +288,8 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         log.info("Activating assignable role place {} in server {}", place.getId(), place.getServer().getId());
         return channelService.retrieveMessageInChannel(place.getServer().getId(), place.getChannel().getId(), place.getMessageId())
                 .thenCompose(message ->
-                        componentService.enableAllButtons(message)
-                );
+                        componentService.enableAllComponents(message)
+                ).thenAccept(message -> {});
     }
 
     @Override

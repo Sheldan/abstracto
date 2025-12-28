@@ -61,7 +61,9 @@ public class KickServiceBean implements KickService {
     public CompletableFuture<Void> kickMember(Member kickedMember, Member kickingMember, String reason)  {
         Guild guild = kickedMember.getGuild();
         log.info("Kicking user {} from guild {}", kickedMember.getUser().getIdLong(), guild.getIdLong());
-        CompletableFuture<Void> kickFuture = guild.kick(kickedMember, reason).submit();
+        CompletableFuture<Void> kickFuture = guild.kick(kickedMember)
+            .reason(reason)
+            .submit();
         CompletableFuture<Message> logFuture = sendKickLog(kickedMember.getUser(), ServerUser.fromMember(kickedMember), kickingMember.getUser(), ServerUser.fromMember(kickingMember), reason, guild.getIdLong());
         return CompletableFuture.allOf(kickFuture, logFuture)
                 .thenAccept(unused -> self.storeInfraction(kickedMember, kickingMember, reason, logFuture.join(), guild.getIdLong()));

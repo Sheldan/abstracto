@@ -279,9 +279,9 @@ public class ChannelServiceBean implements ChannelService {
                     server = serverManagementService.loadServer(channel.getGuild());
                 }
                 for (ActionRow row : actionRows) {
-                    for (ActionRowChildComponent component : row) {
+                    for (ActionRowChildComponent component : row.getComponents()) {
                         if (component instanceof ActionComponent) {
-                            String id = ((ActionComponent) component).getId();
+                            String id = ((ActionComponent) component).getCustomId();
                             MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
                             if (payload != null && payload.getPersistCallback()) {
                                 componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());

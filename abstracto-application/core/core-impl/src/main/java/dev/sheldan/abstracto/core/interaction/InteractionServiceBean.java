@@ -94,9 +94,9 @@ public class InteractionServiceBean implements InteractionService {
         if(!actionRows.isEmpty()) {
             AServer server = serverManagementService.loadServer(interactionHook.getInteraction().getGuild());
             allMessageActions.set(0, allMessageActions.get(0).addComponents(actionRows));
-            actionRows.forEach(components -> components.forEach(component -> {
+            actionRows.forEach(components -> components.getComponents().forEach(component -> {
                 if(component instanceof ActionComponent) {
-                    String id = ((ActionComponent)component).getId();
+                    String id = ((ActionComponent)component).getCustomId();
                     MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
                     if(payload != null && payload.getPersistCallback()) {
                         componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
@@ -228,9 +228,9 @@ public class InteractionServiceBean implements InteractionService {
                 server = serverManagementService.loadServer(serverId);
             } else {
                 server = null; }
-            actionRows.forEach(components -> components.forEach(component -> {
+            actionRows.forEach(components -> components.getComponents().forEach(component -> {
                 if(component instanceof ActionComponent) {
-                    String id = ((ActionComponent)component).getId();
+                    String id = ((ActionComponent)component).getCustomId();
                     MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
                     if(payload != null && payload.getPersistCallback()) {
                         componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
@@ -301,9 +301,9 @@ public class InteractionServiceBean implements InteractionService {
                 } else {
                     server = null;
                 }
-                actionRows.forEach(components -> components.forEach(component -> {
+                actionRows.forEach(components -> components.getComponents().forEach(component -> {
                     if(component instanceof ActionComponent) {
-                        String id = ((ActionComponent)component).getId();
+                        String id = ((ActionComponent)component).getCustomId();
                         MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
                         if(payload != null && payload.getPersistCallback()) {
                             componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());

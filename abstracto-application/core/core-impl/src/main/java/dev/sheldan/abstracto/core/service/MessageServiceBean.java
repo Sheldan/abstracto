@@ -12,11 +12,11 @@ import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.components.tree.MessageComponentTree;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
-import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageEditAction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -267,14 +267,9 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
-    public CompletableFuture<Void> editMessageWithActionRows(Message message, List<ActionRow> rows) {
-        return editMessageWithActionRowsMessage(message, rows).thenApply(message1 -> null);
-    }
-
-    @Override
-    public CompletableFuture<Message> editMessageWithActionRowsMessage(Message message, List<ActionRow> rows) {
+    public CompletableFuture<Message> editMessage(Message message, MessageComponentTree componentTree) {
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
-        return message.editMessageComponents(rows).submit();
+        return message.editMessageComponents(componentTree.getComponents()).submit();
     }
 
     @Override

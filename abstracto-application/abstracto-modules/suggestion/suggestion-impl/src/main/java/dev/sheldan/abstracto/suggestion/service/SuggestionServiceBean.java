@@ -381,8 +381,8 @@ public class SuggestionServiceBean implements SuggestionService {
         if(useButtons) {
             return messageService.loadMessage(serverId, channelId, messageId).thenCompose(message -> {
                 log.info("Clearing buttons from suggestion {} in with message {} in channel {} in server {}.", suggestionId, message, channelId, serverId);
-                return componentService.clearButtons(message);
-            });
+                return componentService.clearComponents(message);
+            }).thenAccept(message -> {});
         } else {
             return CompletableFuture.completedFuture(null);
         }

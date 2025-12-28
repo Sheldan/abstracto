@@ -47,6 +47,7 @@ import net.dv8tion.jda.api.components.mediagallery.MediaGalleryItem;
 import net.dv8tion.jda.api.components.section.Section;
 import net.dv8tion.jda.api.components.section.SectionAccessoryComponent;
 import net.dv8tion.jda.api.components.section.SectionContentComponent;
+import net.dv8tion.jda.api.components.selections.SelectMenu;
 import net.dv8tion.jda.api.components.separator.Separator;
 import net.dv8tion.jda.api.components.textdisplay.TextDisplay;
 import net.dv8tion.jda.api.components.thumbnail.Thumbnail;
@@ -54,7 +55,6 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.components.actionrow.ActionRow;
-import net.dv8tion.jda.api.interactions.components.ItemComponent;
 import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.components.selections.EntitySelectMenu;
 import net.dv8tion.jda.api.components.selections.SelectOption;
@@ -449,7 +449,7 @@ public class TemplateServiceBean implements TemplateService {
     }
 
     private void addSelectionMenu(List<ActionRow> actionRows, SelectionMenuConfig selectionMenuConfig) {
-        ItemComponent selectionMenu;
+        SelectMenu selectionMenu;
         if (selectionMenuConfig.getType() == SelectionMenuType.STRING) {
             List<SelectOption> selectOptions = selectionMenuConfig.getMenuEntries().stream().map(selectionMenuEntry -> {
                 SelectOption option = SelectOption.of(selectionMenuEntry.getLabel(), selectionMenuEntry.getValue());
