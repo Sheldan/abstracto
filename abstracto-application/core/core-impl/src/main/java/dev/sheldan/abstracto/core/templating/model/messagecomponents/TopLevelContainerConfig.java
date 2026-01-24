@@ -8,6 +8,6 @@ import lombok.experimental.SuperBuilder;
 public class TopLevelContainerConfig extends ContainerConfig implements ComponentConfig {
     @Override
     public ComponentTypeConfig getType() {
-        return ComponentTypeConfig.SECTION;
+        return ComponentTypeConfig.CONTAINER;
     }
 }

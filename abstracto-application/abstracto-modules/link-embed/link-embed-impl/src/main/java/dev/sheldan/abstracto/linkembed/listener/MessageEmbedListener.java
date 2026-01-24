@@ -13,9 +13,13 @@ import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.linkembed.config.LinkEmbedFeatureDefinition;
 import dev.sheldan.abstracto.linkembed.model.MessageEmbedLink;
 import dev.sheldan.abstracto.linkembed.service.MessageEmbedService;
+import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.Event;
@@ -27,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 
 @Component
 @Slf4j
@@ -67,37 +70,51 @@ public class MessageEmbedListener implements MessageReceivedListener {
         }
         String messageRaw = message.getContentRaw();
         List<MessageEmbedLink> links = messageEmbedService.getLinksInMessage(messageRaw);
+        for (MessageEmbedLink messageEmbedLink : links) {
+            messageRaw = messageRaw.replace(messageEmbedLink.getWholeUrl(), "");
+        }
+        boolean deleteMessage = StringUtils.isBlank(messageRaw) && !links.isEmpty() && message.getAttachments().isEmpty();
         if(!links.isEmpty()) {
+            Long messageId = message.getIdLong();
+            Long channelId = message.getChannelIdLong();
+            Long serverId = message.getGuildIdLong();
             log.debug("We found {} links to embed in message {} in channel {} in guild {}.", links.size(), message.getId(), message.getChannel().getId(), message.getGuild().getId());
             Long userEmbeddingUserInServerId = userInServerManagementService.loadOrCreateUser(message.getMember()).getUserInServerId();
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
             for (MessageEmbedLink messageEmbedLink : links) {
-                // potentially support foreign linked servers
+                // potentially support foreign linked servers?
                 if(!messageEmbedLink.getServerId().equals(message.getGuild().getIdLong())) {
                     log.info("Link for message {} was from a foreign server {}. Do not embed.", messageEmbedLink.getMessageId(), messageEmbedLink.getServerId());
                     continue;
                 }
-                messageRaw = messageRaw.replace(messageEmbedLink.getWholeUrl(), "");
-                Consumer<CachedMessage> cachedMessageConsumer = cachedMessage -> self.embedSingleLink(message, userEmbeddingUserInServerId, cachedMessage);
-                messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId())
-                        .thenAccept(cachedMessageConsumer)
-                        .exceptionally(throwable -> {
-                            log.error("Error when embedding link for message {}", message.getId(), throwable);
-                            return null;
-                        });
+                Function<CachedMessage, CompletableFuture<Void>> cachedMessageConsumer = cachedMessage -> self.embedSingleLink(message, userEmbeddingUserInServerId, cachedMessage);
+                futures.add(messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId())
+                        .thenCompose(cachedMessageConsumer));
+            }
+            if(!futures.isEmpty()) {
+                // only delete the message if all futures go through
+                new CompletableFutureList<>(futures).getMainFuture().thenAccept(unused -> {
+                    if(deleteMessage) {
+                        messageService.deleteMessageInChannelInServer(serverId, channelId, messageId);
+                    }
+                }).thenAccept(unused -> {
+                    log.info("Deleted embedding message server {} channel {} message {}.", serverId, channelId, messageId);
+                }).exceptionally(throwable -> {
+                    log.info("Failed to delete embedding message or to embed message server {} channel {} message {}.", serverId, channelId, messageId, throwable);
+                    return null;
+                });
             }
         }
-        if(StringUtils.isBlank(messageRaw) && !links.isEmpty() && message.getAttachments().isEmpty()) {
-            messageService.deleteMessage(message);
+        if(deleteMessage) {
             return ConsumableListenerResult.DELETED;
-        }
-        if(!links.isEmpty()) {
+        } else if(!links.isEmpty()) {
             return ConsumableListenerResult.PROCESSED;
         }
         return ConsumableListenerResult.IGNORED;
     }
 
     @Transactional
-    public void embedSingleLink(Message message, Long cause, CachedMessage cachedMessage) {
+    public CompletableFuture<Void> embedSingleLink(Message message, Long cause, CachedMessage cachedMessage) {
         GuildMemberMessageChannel context = GuildMemberMessageChannel
                 .builder()
                 .guildChannel(message.getGuildChannel())
@@ -107,7 +124,7 @@ public class MessageEmbedListener implements MessageReceivedListener {
                 .build();
         log.info("Embedding link to message {} in channel {} in server {} to channel {} and server {}.",
                 cachedMessage.getMessageId(), cachedMessage.getChannelId(), cachedMessage.getServerId(), message.getChannel().getId(), message.getGuild().getId());
-        messageEmbedService.embedLink(cachedMessage, message.getGuildChannel(), cause , context).thenAccept(unused ->
+        return messageEmbedService.embedLink(cachedMessage, message.getGuildChannel(), cause , context).thenAccept(unused ->
             metricService.incrementCounter(MESSAGE_EMBED_CREATED)
         ).exceptionally(throwable -> {
             log.error("Failed to embed link towards message {} in channel {} in sever {} linked from message {} in channel {} in server {}.", cachedMessage.getMessageId(), cachedMessage.getChannelId(), cachedMessage.getServerId(),
