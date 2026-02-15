@@ -130,13 +130,14 @@ public class RemindServiceBean implements ReminderService {
         if(remindIn.getSeconds() < 60) {
             reminder.setJobTriggerKey(null);
             log.info("Directly scheduling unremind for reminder {}, because it was below the threshold.", reminder.getId());
+            long nanos = Math.max(remindIn.toNanos(), Duration.ofSeconds(5).toNanos()); // should be good enough, if its too small, it doesnt find the reminder
             instantReminderScheduler.schedule(() -> {
                 try {
                     self.executeReminder(reminder.getId());
                 } catch (Exception exception) {
                     log.error("Failed to remind immediately.", exception);
                 }
-            }, remindIn.toNanos(), TimeUnit.NANOSECONDS);
+            }, nanos, TimeUnit.NANOSECONDS);
         } else {
             HashMap<Object, Object> parameters = new HashMap<>();
             parameters.put("reminderId", reminder.getId().toString());

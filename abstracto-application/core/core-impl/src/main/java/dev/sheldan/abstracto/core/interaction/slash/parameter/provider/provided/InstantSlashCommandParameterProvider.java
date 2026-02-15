@@ -15,7 +15,7 @@ public class InstantSlashCommandParameterProvider implements SlashCommandParamet
         return SlashCommandOptionTypeMapping
                 .builder()
                 .type(Instant.class)
-                .optionTypes(Arrays.asList(OptionType.INTEGER))
+                .optionTypes(Arrays.asList(OptionType.STRING))
                 .build();
     }
 }

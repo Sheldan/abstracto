@@ -3,12 +3,18 @@ package dev.sheldan.abstracto.core.utils;
 
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import dev.sheldan.abstracto.core.exception.DurationFormatException;
+import dev.sheldan.abstracto.core.exception.InstantFormatException;
+import java.time.Instant;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.utils.TimeFormat;
+import net.dv8tion.jda.api.utils.Timestamp;
 import net.dv8tion.jda.api.utils.cache.SnowflakeCacheView;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.time.Duration;
@@ -18,40 +24,65 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class ParseUtils {
 
     private ParseUtils() {
 
     }
 
-    private static Pattern messageRegex = Pattern.compile("(?<number>\\d+)(?<unit>[ywdhms]+)");
-    private static List<String> validDuration = Arrays.asList("w", "d", "h", "m", "s");
+    private static final Pattern MESSAGE_REGEX = Pattern.compile("(?<number>\\d+)(?<unit>[ywdhms]+)");
+    private static final List<String> VALID_DURATION = Arrays.asList("w", "d", "h", "m", "s");
 
     public static Duration parseDuration(String textToParseFrom) {
         if(textToParseFrom == null || textToParseFrom.isEmpty()) {
-            throw new DurationFormatException("", validDuration);
+            throw new DurationFormatException("", VALID_DURATION);
         }
-        Matcher matcher = ParseUtils.messageRegex.matcher(textToParseFrom);
-        Duration start = Duration.ZERO;
+        Duration targetDuration;
+        try {
+            Timestamp discordTimeStamp = TimeFormat.parse(textToParseFrom);
+            targetDuration = Duration.between(Instant.now(), discordTimeStamp.toInstant());
+            return targetDuration;
+        } catch (IllegalArgumentException ex) {
+            // ignore
+        }
+        Matcher matcher = ParseUtils.MESSAGE_REGEX.matcher(textToParseFrom);
+        targetDuration = Duration.ZERO;
         String rest = textToParseFrom;
         while(matcher.find()) {
             String unit = matcher.group("unit");
             String number = matcher.group("number");
             rest = rest.replace(matcher.group(0), "");
             long parsed = Long.parseLong(number);
-            switch (unit) {
-                case "w": start = start.plus(Duration.ofDays(parsed *  7)); break;
-                case "d": start = start.plus(Duration.ofDays(parsed)); break;
-                case "h": start = start.plus(Duration.ofHours(parsed)); break;
-                case "m": start = start.plus(Duration.ofMinutes(parsed)); break;
-                case "s": start = start.plus(Duration.ofSeconds(parsed)); break;
-                default: throw new DurationFormatException(unit, validDuration);
-            }
+            targetDuration = switch (unit) {
+                case "w" -> targetDuration.plus(Duration.ofDays(parsed * 7));
+                case "d" -> targetDuration.plus(Duration.ofDays(parsed));
+                case "h" -> targetDuration.plus(Duration.ofHours(parsed));
+                case "m" -> targetDuration.plus(Duration.ofMinutes(parsed));
+                case "s" -> targetDuration.plus(Duration.ofSeconds(parsed));
+                default -> throw new DurationFormatException(unit, VALID_DURATION);
+            };
         }
         if(!rest.equals("")) {
-            throw new DurationFormatException(rest, validDuration);
+            throw new DurationFormatException(rest, VALID_DURATION);
         }
-        return start;
+        return targetDuration;
+    }
+
+    public static Instant parseInstant(String textToParseFrom) {
+        if(textToParseFrom == null || textToParseFrom.isEmpty()) {
+            throw new DurationFormatException("", VALID_DURATION);
+        }
+        try {
+            Timestamp discordTimeStamp = TimeFormat.parse(textToParseFrom);
+            return discordTimeStamp.toInstant();
+        } catch (IllegalArgumentException ex) {
+            // ignore
+        }
+        if(StringUtils.isNumeric(textToParseFrom)) {
+            return Instant.ofEpochSecond(Integer.parseInt(textToParseFrom));
+        }
+        throw new InstantFormatException(textToParseFrom);
     }
 
     public static Role parseRoleFromText(String text, Guild guild) {
