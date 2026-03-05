@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.experience.service;
 
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +40,7 @@ public class RunTimeExperienceService {
 
     public void cleanupRunTimeStorage() {
         Instant now = Instant.now();
+        Set<Long> serverIdsToRemove = new HashSet<>();
         runtimeExperience.forEach((serverId, userInstantMap) -> {
             List<Long> userIdsToRemove = new ArrayList<>();
             userInstantMap.forEach((userId, instant) -> {
@@ -46,6 +49,10 @@ public class RunTimeExperienceService {
                 }
             });
             userIdsToRemove.forEach(userInstantMap::remove);
+            if(userInstantMap.isEmpty()) {
+                serverIdsToRemove.add(serverId);
+            }
         });
+        serverIdsToRemove.forEach(runtimeExperience::remove);
     }
 }
