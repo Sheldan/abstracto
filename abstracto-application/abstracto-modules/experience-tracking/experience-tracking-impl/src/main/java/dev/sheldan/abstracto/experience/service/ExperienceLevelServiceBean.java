@@ -52,7 +52,7 @@ public class ExperienceLevelServiceBean implements ExperienceLevelService {
         if(level < 0) {
             throw new IllegalArgumentException("Level should not be less to 0.");
         }
-        return 5L * (level * level) + 50 * level + 100;
+        return 5L * ((long) level * level) + 50L * level + 100;
     }
 
     @Override

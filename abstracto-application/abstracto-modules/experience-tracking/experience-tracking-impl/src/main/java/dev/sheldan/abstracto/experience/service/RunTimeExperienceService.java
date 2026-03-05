@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.experience.service;
 
+import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -17,11 +18,9 @@ import java.util.concurrent.locks.ReentrantLock;
 @Component
 public class RunTimeExperienceService {
 
-    private Map<Long,Map<Long, Instant>> runtimeExperience = new HashMap<>();
+    @Getter
+    private final Map<Long,Map<Long, Instant>> runtimeExperience = new HashMap<>();
     private static final Lock lock = new ReentrantLock();
-    public Map<Long, Map<Long, Instant>> getRuntimeExperience() {
-        return runtimeExperience;
-    }
 
     /**
      * Acquires the lock of the runtime experience data structure. Operations on it should only be done, while holding the lock

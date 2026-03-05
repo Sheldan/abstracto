@@ -88,7 +88,7 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
     @Override
     public CompletableFuture<Void> unsetRoles(List<ARole> rolesToUnset, GuildMessageChannel messageChannel) {
         List<AExperienceRole> rolesInServer = experienceRoleManagementService.getRolesInServer(rolesToUnset);
-        Integer totalCount = 0;
+        int totalCount = 0;
         for (AExperienceRole aExperienceRole : rolesInServer) {
             totalCount += aExperienceRole.getUsers().size();
         }
