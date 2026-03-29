@@ -74,7 +74,6 @@ public class TransferCredits extends AbstractConditionableCommand {
                 .name(MEMBER_PARAMETER)
                 .templated(true)
                 .type(Member.class)
-                .optional(true)
                 .build();
 
         Parameter amountParameter = Parameter
@@ -82,7 +81,6 @@ public class TransferCredits extends AbstractConditionableCommand {
                 .name(AMOUNT_PARAMETER)
                 .templated(true)
                 .type(Integer.class)
-                .optional(true)
                 .build();
 
         List<Parameter> parameters = Arrays.asList(memberParameter, amountParameter);

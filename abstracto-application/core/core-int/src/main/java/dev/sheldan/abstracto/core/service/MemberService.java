@@ -21,6 +21,7 @@ public interface MemberService {
     CompletableFuture<Member> getMemberInServerAsync(Long serverId, Long memberId);
     CompletableFuture<List<Member>> getMembersInServerAsync(Long serverId, List<Long> memberIds);
     CompletableFuture<Member> retrieveMemberInServer(ServerUser serverUser);
+    List<Member> getMembersWithRole(Long serverId, Long roleId);
     CompletableFuture<User> retrieveUserById(Long userId);
     boolean isUserInGuild(AUserInAServer aUserInAServer);
     boolean isUserInGuild(Guild guild, AUserInAServer aUserInAServer);

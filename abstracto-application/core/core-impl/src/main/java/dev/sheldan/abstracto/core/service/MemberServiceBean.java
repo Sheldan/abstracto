@@ -93,6 +93,13 @@ public class MemberServiceBean implements MemberService {
     }
 
     @Override
+    public List<Member> getMembersWithRole(Long serverId, Long roleId) {
+        Guild guildById = guildService.getGuildById(serverId);
+        Role role = guildById.getRoleById(roleId);
+        return guildById.getMembersWithRoles(List.of(role));
+    }
+
+    @Override
     public CompletableFuture<User> retrieveUserById(Long userId) {
         return botService.getInstance().retrieveUserById(userId).submit();
     }
