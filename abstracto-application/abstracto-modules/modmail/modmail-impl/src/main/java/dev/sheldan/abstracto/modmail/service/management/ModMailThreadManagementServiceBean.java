@@ -90,6 +90,11 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
     }
 
     @Override
+    public List<ModMailThread> getAllOpenThreads() {
+        return modMailThreadRepository.findByStateNot(ModMailThreadState.CLOSED);
+    }
+
+    @Override
     public ModMailThread getLatestModMailThread(AUserInAServer aUserInAServer) {
         return modMailThreadRepository.findTopByUserOrderByClosedDesc(aUserInAServer);
     }
@@ -123,7 +128,11 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
 
     @Override
     public void setModMailThreadState(ModMailThread modMailThread, ModMailThreadState newState) {
-        modMailThread.setState(newState);
+        if(modMailThread.getState().equals(ModMailThreadState.PAUSED)) {
+            modMailThread.setPreviousState(newState);
+        } else {
+            modMailThread.setState(newState);
+        }
         modMailThread.setUpdated(Instant.now());
         modMailThreadRepository.save(modMailThread);
     }

@@ -91,6 +91,7 @@ public interface ModMailThreadManagementService {
      * @return A list of {@link ModMailThread} which contains all the current mod mail threads for the member, should be at most one
      */
     List<ModMailThread> getModMailThreadForUser(AUserInAServer aUserInAServer);
+    List<ModMailThread> getAllOpenThreads();
 
     /**
      * Retrieves the *latest* {@link ModMailThread} of the {@link AUserInAServer}, which means, the latest thread which is in the state

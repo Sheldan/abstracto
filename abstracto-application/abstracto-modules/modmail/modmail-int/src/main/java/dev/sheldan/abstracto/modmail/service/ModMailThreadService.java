@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.modmail.model.ClosingContext;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
+import java.time.Duration;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.interactions.InteractionHook;
@@ -103,6 +104,8 @@ public interface ModMailThreadService {
 
     boolean isModMailThread(AChannel channel);
     boolean isModMailThread(Long channelId);
+    void snoozeThreadReminder(ModMailThread thread, Duration snoozeDuration);
+    void setPauseOfThreadTo(ModMailThread thread, boolean paused);
 
     CompletableFuture<Void> rejectAppeal(ModMailThread modMailThread, String reason, Member memberPerforming);
 }

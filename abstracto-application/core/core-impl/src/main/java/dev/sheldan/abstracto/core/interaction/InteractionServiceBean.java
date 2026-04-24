@@ -67,72 +67,79 @@ public class InteractionServiceBean implements InteractionService {
     @Override
     public List<CompletableFuture<Message>> sendMessageToInteraction(MessageToSend messageToSend, InteractionHook interactionHook) {
         List<CompletableFuture<Message>> futures = new ArrayList<>();
-        List<WebhookMessageCreateAction<Message>> allMessageActions = new ArrayList<>();
-        int iterations = Math.min(messageToSend.getMessages().size(), messageToSend.getEmbeds().size());
-        for (int i = 0; i < iterations; i++) {
-            metricService.incrementCounter(MESSAGE_SEND_METRIC);
-            String text = messageToSend.getMessages().get(i);
-            MessageEmbed embed = messageToSend.getEmbeds().get(i);
-            WebhookMessageCreateAction<Message> messageAction = interactionHook.sendMessage(text).addEmbeds(embed);
-            allMessageActions.add(messageAction);
-        }
-        // one of these loops will get additional iterations, if the number is different, not both
-        for (int i = iterations; i < messageToSend.getMessages().size(); i++) {
-            metricService.incrementCounter(MESSAGE_SEND_METRIC);
-            String text = messageToSend.getMessages().get(i);
-            WebhookMessageCreateAction<Message> messageAction = interactionHook.sendMessage(text);
-            allMessageActions.add(messageAction);
-        }
-        for (int i = iterations; i < messageToSend.getEmbeds().size(); i++) {
-            metricService.incrementCounter(MESSAGE_SEND_METRIC);
-            MessageEmbed embed = messageToSend.getEmbeds().get(i);
-            WebhookMessageCreateAction<Message> messageAction = interactionHook.sendMessageEmbeds(embed);
-            allMessageActions.add(messageAction);
-        }
+        if(messageToSend.getUseComponentsV2()) {
+            WebhookMessageEditAction<Message> action = interactionHook.editOriginalComponents(messageToSend.getComponents()).useComponentsV2();
+            if(messageToSend.getEphemeral() != null) {
+                interactionHook.setEphemeral(messageToSend.getEphemeral());
+            }
+            return List.of(action.submit());
+        } else {
+            List<WebhookMessageCreateAction<Message>> allMessageActions = new ArrayList<>();
+            int iterations = Math.min(messageToSend.getMessages().size(), messageToSend.getEmbeds().size());
+            for (int i = 0; i < iterations; i++) {
+                metricService.incrementCounter(MESSAGE_SEND_METRIC);
+                String text = messageToSend.getMessages().get(i);
+                MessageEmbed embed = messageToSend.getEmbeds().get(i);
+                WebhookMessageCreateAction<Message> messageAction = interactionHook.sendMessage(text).addEmbeds(embed);
+                allMessageActions.add(messageAction);
+            }
+            // one of these loops will get additional iterations, if the number is different, not both
+            for (int i = iterations; i < messageToSend.getMessages().size(); i++) {
+                metricService.incrementCounter(MESSAGE_SEND_METRIC);
+                String text = messageToSend.getMessages().get(i);
+                WebhookMessageCreateAction<Message> messageAction = interactionHook.sendMessage(text);
+                allMessageActions.add(messageAction);
+            }
+            for (int i = iterations; i < messageToSend.getEmbeds().size(); i++) {
+                metricService.incrementCounter(MESSAGE_SEND_METRIC);
+                MessageEmbed embed = messageToSend.getEmbeds().get(i);
+                WebhookMessageCreateAction<Message> messageAction = interactionHook.sendMessageEmbeds(embed);
+                allMessageActions.add(messageAction);
+            }
 
-        List<ActionRow> actionRows = messageToSend.getActionRows();
-        if(!actionRows.isEmpty()) {
-            AServer server = serverManagementService.loadServer(interactionHook.getInteraction().getGuild());
-            allMessageActions.set(0, allMessageActions.get(0).addComponents(actionRows));
-            actionRows.forEach(components -> components.getComponents().forEach(component -> {
-                if(component instanceof ActionComponent) {
-                    String id = ((ActionComponent)component).getCustomId();
-                    MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
-                    if(payload != null && payload.getPersistCallback()) {
-                        componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
+            List<ActionRow> actionRows = messageToSend.getActionRows();
+            if(!actionRows.isEmpty()) {
+                AServer server = serverManagementService.loadServer(interactionHook.getInteraction().getGuild());
+                allMessageActions.set(0, allMessageActions.get(0).addComponents(actionRows));
+                actionRows.forEach(components -> components.getComponents().forEach(component -> {
+                    if(component instanceof ActionComponent) {
+                        String id = ((ActionComponent)component).getCustomId();
+                        MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
+                        if(payload != null && payload.getPersistCallback()) {
+                            componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
+                        }
                     }
-                }
-            }));
-        }
-
-        if(messageToSend.getEphemeral()) {
-            Interaction interaction = interactionHook.getInteraction();
-            interactionHook.setEphemeral(messageToSend.getEphemeral());
-            if(ContextUtils.hasGuild(interaction)) {
-                log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
+                }));
+            }
+            if(messageToSend.getEphemeral()) {
+                Interaction interaction = interactionHook.getInteraction();
+                interactionHook.setEphemeral(messageToSend.getEphemeral());
+                if(ContextUtils.hasGuild(interaction)) {
+                    log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
                         interaction.getGuild().getIdLong(), interaction.getChannel().getId(),
                         interaction.getUser().getIdLong());
+                }
+                metricService.incrementCounter(EPHEMERAL_MESSAGES_SEND);
             }
-            metricService.incrementCounter(EPHEMERAL_MESSAGES_SEND);
-        }
 
-        if(messageToSend.hasFilesToSend()) {
-            List<FileUpload> attachedFiles = messageToSend
+            if(messageToSend.hasFilesToSend()) {
+                List<FileUpload> attachedFiles = messageToSend
                     .getAttachedFiles()
                     .stream()
                     .map(AttachedFile::convertToFileUpload)
                     .collect(Collectors.toList());
-            if(!allMessageActions.isEmpty()) {
-                // in case there has not been a message, we need to increment it
-                allMessageActions.set(0, allMessageActions.get(0).setFiles(attachedFiles));
-            } else {
-                metricService.incrementCounter(MESSAGE_SEND_METRIC);
-                allMessageActions.add(interactionHook.sendFiles(attachedFiles));
+                if(!allMessageActions.isEmpty()) {
+                    // in case there has not been a message, we need to increment it
+                    allMessageActions.set(0, allMessageActions.get(0).setFiles(attachedFiles));
+                } else {
+                    metricService.incrementCounter(MESSAGE_SEND_METRIC);
+                    allMessageActions.add(interactionHook.sendFiles(attachedFiles));
+                }
             }
+            Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(interactionHook.getInteraction().getMessageChannel(), messageToSend);
+            allMessageActions.forEach(messageAction -> futures.add(messageAction.setAllowedMentions(allowedMentions).setEphemeral(messageToSend.getEphemeral()).submit()));
+            return futures;
         }
-        Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(interactionHook.getInteraction().getMessageChannel(), messageToSend);
-        allMessageActions.forEach(messageAction -> futures.add(messageAction.setAllowedMentions(allowedMentions).setEphemeral(messageToSend.getEphemeral()).submit()));
-        return futures;
     }
 
     @Override

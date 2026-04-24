@@ -59,6 +59,9 @@ public class ModMailThread implements Serializable {
     @Column(name = "closed")
     private Instant closed;
 
+    @Column(name = "reminders_snoozed_until")
+    private Instant remindersSnoozedUntil;
+
     @Column(name = "appeal", nullable = false)
     private Boolean appeal;
 
@@ -91,5 +94,9 @@ public class ModMailThread implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "state")
     private ModMailThreadState state;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "previous_state")
+    private ModMailThreadState previousState;
 
 }

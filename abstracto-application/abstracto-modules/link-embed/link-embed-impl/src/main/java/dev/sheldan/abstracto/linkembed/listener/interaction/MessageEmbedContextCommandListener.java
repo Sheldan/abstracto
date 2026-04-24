@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.linkembed.config.LinkEmbedFeatureDefinition;
 import dev.sheldan.abstracto.linkembed.service.MessageEmbedService;
+import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -46,13 +47,27 @@ public class MessageEmbedContextCommandListener implements MessageContextCommand
         Message targetMessage = event.getInteraction().getTarget();
         Member actor = model.getEvent().getMember();
 
+        Long messageId = targetMessage.getIdLong();
         messageCache.getMessageFromCache(targetMessage)
-                .thenAccept(cachedMessage -> self.embedMessage(model, actor, cachedMessage));
+                .thenCompose(cachedMessage -> {
+                    try {
+                        return self.embedMessage(model, actor, cachedMessage);
+                    } catch (Exception ex) {
+                        return CompletableFuture.failedFuture(ex);
+                    }
+                })
+            .thenAccept(unused -> {
+                log.info("Finished embedding message {}.", messageId);
+            })
+            .exceptionally(throwable ->  {
+                log.error("Failed to embed message {}.", messageId, throwable);
+                return null;
+            });
         return DefaultListenerResult.PROCESSED;
     }
 
     @Transactional
-    public void embedMessage(MessageContextInteractionModel model, Member actor, CachedMessage cachedMessage) {
+    public CompletableFuture<Void> embedMessage(MessageContextInteractionModel model, Member actor, CachedMessage cachedMessage) {
         Long userEmbeddingUserInServerId = userInServerManagementService.loadOrCreateUser(actor).getUserInServerId();
         GuildMemberMessageChannel context = GuildMemberMessageChannel
                 .builder()
@@ -61,7 +76,7 @@ public class MessageEmbedContextCommandListener implements MessageContextCommand
                 .member(actor)
                 .guildChannel(model.getEvent().getGuildChannel())
                 .build();
-        messageEmbedService.embedLink(cachedMessage, model.getEvent().getGuildChannel(), userEmbeddingUserInServerId, context, model.getEvent().getInteraction());
+        return messageEmbedService.embedLink(cachedMessage, model.getEvent().getGuildChannel(), userEmbeddingUserInServerId, context, model.getEvent().getInteraction());
     }
 
     @Override

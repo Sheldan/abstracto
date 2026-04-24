@@ -22,6 +22,8 @@ public class ModMailFeatureConfig implements FeatureConfig {
 
     public static final String MOD_MAIL_CLOSING_TEXT_SYSTEM_CONFIG_KEY = "modMailClosingText";
     public static final String MOD_MAIL_APPEAL_SERVER = "modMailAppealServer";
+    public static final String MOD_MAIL_REMINDER_DURATION = "modMailReminderDuration";
+    public static final String MOD_MAIL_AUTO_CLOSE_DURATION = "modMailAutoCloseDuration";
     @Autowired
     private ModMailFeatureValidator modMailFeatureValidator;
 
@@ -55,13 +57,18 @@ public class ModMailFeatureConfig implements FeatureConfig {
         return List.of(ModMailMode.LOGGING,
                 ModMailMode.SEPARATE_MESSAGE,
                 ModMailMode.THREAD_CONTAINER,
-                ModMailMode.MOD_MAIL_APPEALS
+                ModMailMode.MOD_MAIL_APPEALS,
+                ModMailMode.THREAD_AUTO_CLOSE,
+                ModMailMode.THREAD_REMINDER
         );
     }
 
     @Override
     public List<String> getRequiredSystemConfigKeys() {
-        return List.of(MOD_MAIL_CLOSING_TEXT_SYSTEM_CONFIG_KEY, MOD_MAIL_APPEAL_SERVER);
+        return List.of(MOD_MAIL_CLOSING_TEXT_SYSTEM_CONFIG_KEY,
+            MOD_MAIL_APPEAL_SERVER,
+            MOD_MAIL_REMINDER_DURATION,
+            MOD_MAIL_AUTO_CLOSE_DURATION);
     }
 
     @Override

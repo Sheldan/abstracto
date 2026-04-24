@@ -12,6 +12,8 @@ public enum  ModMailMode implements FeatureMode {
     LOGGING("log"),
     SEPARATE_MESSAGE("threadMessage"),
     THREAD_CONTAINER("threadContainer"),
+    THREAD_REMINDER("threadReminder"),
+    THREAD_AUTO_CLOSE("threadAutoClose"),
     MOD_MAIL_APPEALS("modMailAppeals");
 
     private final String key;

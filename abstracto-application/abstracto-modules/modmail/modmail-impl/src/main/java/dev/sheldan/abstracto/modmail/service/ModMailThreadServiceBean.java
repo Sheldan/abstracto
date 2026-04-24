@@ -15,6 +15,7 @@ import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.utils.BeanUtils;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.utils.SnowflakeUtils;
@@ -26,9 +27,11 @@ import dev.sheldan.abstracto.modmail.config.ModMailPostTargets;
 import dev.sheldan.abstracto.modmail.exception.ModMailCategoryIdException;
 import dev.sheldan.abstracto.modmail.exception.ModMailThreadChannelNotFound;
 import dev.sheldan.abstracto.modmail.exception.ModMailThreadNotFoundException;
+import dev.sheldan.abstracto.modmail.listener.ModmailThreadActionListener;
 import dev.sheldan.abstracto.modmail.model.ClosingContext;
 import dev.sheldan.abstracto.modmail.model.dto.ServiceChoicesPayload;
 import dev.sheldan.abstracto.modmail.model.database.*;
+import dev.sheldan.abstracto.modmail.model.listener.ModmailThreadActionListenerModel;
 import dev.sheldan.abstracto.modmail.model.listener.ModmailThreadCreatedSendMessageModel;
 import dev.sheldan.abstracto.modmail.model.template.*;
 import dev.sheldan.abstracto.modmail.service.management.ModMailMessageManagementService;
@@ -166,6 +169,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
+    @Autowired
+    private List<ModmailThreadActionListener> threadActionListeners;
+
     public static final String MODMAIL_THREAD_METRIC = "modmail.threads";
     public static final String MODMAIL_MESSAGE_METRIC = "modmail.messges";
     public static final String ACTION = "action";
@@ -267,6 +273,38 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .userDisplay(UserDisplay.fromUser(user))
                 .build();
         return FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(MODMAIL_THREAD_CREATED_TEMPLATE_KEY, model, interactionHook));
+    }
+
+    @Transactional
+    public void checkModmailActionsForNeededActions() {
+        List<ModMailThread> allOpenThreads = modMailThreadManagementService.getAllOpenThreads();
+        allOpenThreads.forEach(thread -> {
+            ModmailThreadActionListenerModel model = ModmailThreadActionListenerModel
+                .builder()
+                .threadId(thread.getId())
+                .state(thread.getState())
+                .appeal(thread.getAppeal())
+                .serverId(thread.getServer().getId())
+                .serverUser(ServerUser.fromAUserInAServer(thread.getUser()))
+                .messageCount(thread.getMessages() != null ? thread.getMessages().size() : 0)
+                .updated(thread.getUpdated())
+                .created(thread.getCreated())
+                .subscriberCount(thread.getSubscribers() != null ? thread.getSubscribers().size() : 0)
+                .build();
+            for (ModmailThreadActionListener modmailThreadActionListener : threadActionListeners) {
+                try {
+                    log.info("Executing action {} for thread {}.", modmailThreadActionListener.getClass().getSimpleName(), model.getThreadId());
+                    ModmailThreadActionListener.ModmailThreadActionListenerResult result = modmailThreadActionListener.execute(model);
+                    if(ModmailThreadActionListener.ModmailThreadActionListenerResult.FINAL == result) {
+                        log.info("Listener {} terminated for thread {}.", modmailThreadActionListener.getClass().getSimpleName(), model.getThreadId());
+                        break;
+                    }
+                } catch (Exception exception) {
+                    log.error("Action failed to execute.", exception);
+                }
+
+            }
+        });
     }
 
     /**
@@ -808,6 +846,27 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         return isModMailThread(channel);
     }
 
+    @Override
+    public void snoozeThreadReminder(ModMailThread thread, Duration snoozeDuration) {
+        Instant snoozeTargetDate = Instant.now().plus(snoozeDuration);
+        log.info("Snoozing Thread {} until {}.", thread.getId(), snoozeTargetDate);
+        thread.setRemindersSnoozedUntil(snoozeTargetDate);
+    }
+
+    @Override
+    public void setPauseOfThreadTo(ModMailThread thread, boolean paused) {
+        if(thread.getState().equals(ModMailThreadState.PAUSED) && !paused) {
+            thread.setState(thread.getPreviousState());
+            thread.setPreviousState(null);
+        }
+        if(!thread.getState().equals(ModMailThreadState.PAUSED) && paused) {
+            thread.setPreviousState(thread.getState());
+            thread.setState(ModMailThreadState.PAUSED);
+        }
+
+        log.info("Thread {} has state {} and previous state {}.", thread.getId(), thread.getState(), thread.getPreviousState());
+    }
+
     /**
      * This method takes the actively loaded futures, calls the method responsible for logging the messages, and calls the method
      * after the logging has been done.
@@ -1127,5 +1186,6 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         metricService.registerCounter(MODMAIL_THREAD_CLOSED_COUNTER, "Mod mail threads closed");
         metricService.registerCounter(MDOMAIL_THREAD_MESSAGE_RECEIVED, "Mod mail messages received");
         metricService.registerCounter(MDOMAIL_THREAD_MESSAGE_SENT, "Mod mail messages sent");
+        BeanUtils.sortPrioritizedListeners(threadActionListeners);
     }
 }

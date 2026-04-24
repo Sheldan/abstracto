@@ -36,6 +36,7 @@ public interface ModMailThreadRepository extends JpaRepository<ModMailThread, Lo
     boolean existsByUserAndStateNot(AUserInAServer userInAServer, ModMailThreadState state);
 
     List<ModMailThread> findByUserAndState(AUserInAServer userInAServer, ModMailThreadState state);
+    List<ModMailThread> findByStateNot(ModMailThreadState state);
 
     @Override
     Optional<ModMailThread> findById(@NonNull Long aLong);

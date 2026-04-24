@@ -14,6 +14,10 @@ public enum ModMailThreadState {
      */
     MOD_REPLIED,
     /**
+     * Staff member paused the thread to not be closed
+     */
+    PAUSED,
+    /**
      * The thread was closed by a staff member and the channel was removed
      */
     CLOSED, CLOSING;
