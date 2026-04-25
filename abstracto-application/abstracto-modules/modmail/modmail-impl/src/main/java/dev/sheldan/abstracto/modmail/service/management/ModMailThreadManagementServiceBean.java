@@ -116,6 +116,7 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
                 .user(userInAServer)
                 .server(userInAServer.getServerReference())
                 .state(ModMailThreadState.INITIAL)
+                .lastUpdated(Instant.now())
                 .updated(Instant.now())
                 .appeal(appeal)
                 .build();
@@ -133,6 +134,7 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
         } else {
             modMailThread.setState(newState);
         }
+        modMailThread.setLastUpdated(Instant.now());
         modMailThread.setUpdated(Instant.now());
         modMailThreadRepository.save(modMailThread);
     }

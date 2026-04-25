@@ -56,6 +56,9 @@ public class ModMailThread implements Serializable {
     @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
+    @Column(name = "last_updated")
+    private Instant lastUpdated;
+
     @Column(name = "closed")
     private Instant closed;
 

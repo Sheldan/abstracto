@@ -53,6 +53,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
@@ -287,24 +288,31 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .serverId(thread.getServer().getId())
                 .serverUser(ServerUser.fromAUserInAServer(thread.getUser()))
                 .messageCount(thread.getMessages() != null ? thread.getMessages().size() : 0)
-                .updated(thread.getUpdated())
+                .updated(thread.getLastUpdated())
                 .created(thread.getCreated())
                 .subscriberCount(thread.getSubscribers() != null ? thread.getSubscribers().size() : 0)
                 .build();
             for (ModmailThreadActionListener modmailThreadActionListener : threadActionListeners) {
                 try {
                     log.info("Executing action {} for thread {}.", modmailThreadActionListener.getClass().getSimpleName(), model.getThreadId());
-                    ModmailThreadActionListener.ModmailThreadActionListenerResult result = modmailThreadActionListener.execute(model);
+                    ModmailThreadActionListener.ModmailThreadActionListenerResult result =
+                        self.executeThreadAction(modmailThreadActionListener, model);
                     if(ModmailThreadActionListener.ModmailThreadActionListenerResult.FINAL == result) {
                         log.info("Listener {} terminated for thread {}.", modmailThreadActionListener.getClass().getSimpleName(), model.getThreadId());
                         break;
                     }
                 } catch (Exception exception) {
-                    log.error("Action failed to execute.", exception);
+                    log.error("Action failed to execute for thread {}.", thread.getId(), exception);
                 }
 
             }
         });
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public ModmailThreadActionListener.ModmailThreadActionListenerResult executeThreadAction(
+        ModmailThreadActionListener modmailThreadActionListener, ModmailThreadActionListenerModel model) {
+        return modmailThreadActionListener.execute(model);
     }
 
     /**

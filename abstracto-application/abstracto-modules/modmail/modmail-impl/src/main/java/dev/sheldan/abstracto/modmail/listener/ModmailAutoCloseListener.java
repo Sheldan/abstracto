@@ -92,8 +92,8 @@ public class ModmailAutoCloseListener implements ModmailThreadActionListener {
     }
 
     private static Instant getTimeStampToConsider(ModMailThread thread) {
-        if(thread.getUpdated() != null) {
-            return thread.getUpdated();
+        if(thread.getLastUpdated() != null) {
+            return thread.getLastUpdated();
         }
         return thread.getCreated();
     }
