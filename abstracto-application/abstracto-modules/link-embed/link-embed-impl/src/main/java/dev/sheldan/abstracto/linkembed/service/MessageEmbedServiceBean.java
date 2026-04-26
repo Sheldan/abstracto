@@ -26,9 +26,11 @@ import dev.sheldan.abstracto.linkembed.service.management.MessageEmbedPostManage
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import org.apache.commons.lang3.tuple.Pair;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -191,11 +193,20 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
                 .builder()
                 .message(embeddedMessage)
                 .build();
-            MessageToSend messageToSend =
-                templateService.renderEmbedTemplate(MESSAGE_EMBED_CLEANUP_REPLACEMENT_TEMPLATE, model, embeddingMessage.getServerId());
-            return channelService.editMessageInAChannelFuture(messageToSend, embeddingMessage.getServerId(), embeddingMessage.getChannelId(),
-                embeddingMessage.getMessageId());
-        }).toList();
+            Optional<GuildChannel> existingChannel =
+                channelService.getGuildChannelFromServerOptional(embeddingMessage.getServerId(), embeddingMessage.getChannelId());
+            // if the channel doesnt exist, we dont need to cleanup
+            if(existingChannel.isPresent()) {
+                MessageToSend messageToSend =
+                    templateService.renderEmbedTemplate(MESSAGE_EMBED_CLEANUP_REPLACEMENT_TEMPLATE, model, embeddingMessage.getServerId());
+                return channelService.editMessageInAChannelFuture(messageToSend, embeddingMessage.getServerId(), embeddingMessage.getChannelId(),
+                    embeddingMessage.getMessageId());
+            } else {
+                return null;
+            }
+        })
+        .filter(Objects::nonNull)
+        .toList();
         return FutureUtils.toSingleFutureGeneric(editList).whenComplete((unused, throwable) -> {
             if(throwable != null) {
                 log.warn("Failed to cleanup embedded messages..", throwable);

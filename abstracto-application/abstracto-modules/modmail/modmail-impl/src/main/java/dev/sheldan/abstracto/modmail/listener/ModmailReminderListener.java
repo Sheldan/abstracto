@@ -75,7 +75,7 @@ public class ModmailReminderListener implements ModmailThreadActionListener {
                 log.debug("Thread {} is closed - ignoring.", model.getThreadId());
                 return ModmailThreadActionListenerResult.IGNORED;
             }
-            Instant timeStampToConsider = getTimestampToUse(thread);
+            Instant timeStampToConsider = getTimestampToUse(thread, duration);
             boolean mustBeReminded = timeInPastDuration.isAfter(timeStampToConsider);
             if (mustBeReminded) {
                     sendReminder(thread)
@@ -97,9 +97,9 @@ public class ModmailReminderListener implements ModmailThreadActionListener {
     }
 
 
-    private static Instant getTimestampToUse(ModMailThread thread) {
+    private static Instant getTimestampToUse(ModMailThread thread, Duration configuredDuration) {
         if (thread.getRemindersSnoozedUntil() != null) {
-            return thread.getRemindersSnoozedUntil();
+            return thread.getRemindersSnoozedUntil().minus(configuredDuration);
         }
         return getUpdatedOrCrated(thread);
     }
