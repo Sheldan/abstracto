@@ -2,6 +2,5 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                      xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd" >
-    <include file="1.4.27/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.6.25/collection.xml" relativeToChangelogFile="true"/>
+    <include file="stream_session.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

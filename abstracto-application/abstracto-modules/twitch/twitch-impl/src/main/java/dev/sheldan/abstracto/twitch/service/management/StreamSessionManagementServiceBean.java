@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.twitch.model.database.Streamer;
 import dev.sheldan.abstracto.twitch.model.database.StreamSession;
 import dev.sheldan.abstracto.twitch.repository.StreamSessionRepository;
+import java.time.Instant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,7 @@ public class StreamSessionManagementServiceBean implements StreamSessionManageme
                 .id(messageId)
                 .startTime(stream.getStartedAtInstant())
                 .channel(channel)
+                .lastUpdated(Instant.now())
                 .streamer(streamer)
                 .streamId(stream.getId())
                 .build();

@@ -11,6 +11,9 @@ import java.util.List;
 
 @Component
 public class TwitchFeatureConfig implements FeatureConfig {
+
+    public static final String TWITCH_REFRESH_INTERVAL = "twitchRefreshInterval";
+
     @Override
     public FeatureDefinition getFeature() {
         return TwitchFeatureDefinition.TWITCH;
@@ -24,5 +27,10 @@ public class TwitchFeatureConfig implements FeatureConfig {
     @Override
     public List<FeatureMode> getAvailableModes() {
         return Arrays.asList(TwitchFeatureMode.DELETE_NOTIFICATION, TwitchFeatureMode.UPDATE_NOTIFICATION);
+    }
+
+    @Override
+    public List<String> getRequiredSystemConfigKeys() {
+        return List.of(TWITCH_REFRESH_INTERVAL);
     }
 }

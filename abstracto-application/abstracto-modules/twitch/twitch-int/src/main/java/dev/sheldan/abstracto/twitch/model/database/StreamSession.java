@@ -39,6 +39,9 @@ public class StreamSession {
     @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
+    @Column(name = "lastUpdated")
+    private Instant lastUpdated;
+
     @Column(name = "startTime", nullable = false)
     private Instant startTime;
 

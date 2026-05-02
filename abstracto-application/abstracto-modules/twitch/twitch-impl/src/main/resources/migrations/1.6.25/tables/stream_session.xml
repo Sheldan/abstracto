@@ -2,6 +2,11 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                      xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd" >
-    <include file="1.4.27/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.6.25/collection.xml" relativeToChangelogFile="true"/>
+    <changeSet author="Sheldan" id="stream_session-add_last_updated">
+        <addColumn tableName="stream_session">
+            <column name="last_updated" type="TIMESTAMP WITHOUT TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
+import dev.sheldan.abstracto.core.utils.ParseUtils;
 import dev.sheldan.abstracto.twitch.config.TwitchFeatureConfig;
 import dev.sheldan.abstracto.twitch.config.TwitchFeatureDefinition;
 import dev.sheldan.abstracto.twitch.config.TwitchFeatureMode;
@@ -26,6 +27,8 @@ import dev.sheldan.abstracto.twitch.model.template.*;
 import dev.sheldan.abstracto.twitch.service.management.StreamSessionManagementService;
 import dev.sheldan.abstracto.twitch.service.management.StreamSessionSectionManagementService;
 import dev.sheldan.abstracto.twitch.service.management.StreamerManagementService;
+import java.time.Duration;
+import java.time.Instant;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -91,6 +94,9 @@ public class StreamerServiceBean implements StreamerService {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private ConfigService configService;
 
     @Autowired
     private StreamerServiceBean self;
@@ -277,6 +283,8 @@ public class StreamerServiceBean implements StreamerService {
         log.debug("Searching through {} servers for twitch notifications and {} have twitch feature enabled.", servers.size(), serversWithEnabledFeature.size());
         serversWithEnabledFeature.forEach(server -> {
             List<Streamer> streamersInServer = streamerManagementService.getStreamersForServer(server);
+            String refreshDurationString = configService.getStringValueOrConfigDefault(TwitchFeatureConfig.TWITCH_REFRESH_INTERVAL, server.getId());
+            Duration refreshDuration = ParseUtils.parseDuration(refreshDurationString);
             Map<Long, Streamer> streamerIdMap = streamersInServer
                     .stream()
                     .collect(Collectors.toMap(Streamer::getId, Function.identity()));
@@ -295,7 +303,7 @@ public class StreamerServiceBean implements StreamerService {
             List<Stream> streamsOfUsers = twitchService.getStreamsByUserIds(userIds);
             Set<Long> onlineStreamers = new HashSet<>();
             Map<Long, Boolean> updateNotificationFlagValues = new HashMap<>();
-            streamsOfUsers.forEach(stream -> self.processOnlineStreamer(server, streamerMap, onlineStreamers, updateNotificationFlagValues, stream));
+            streamsOfUsers.forEach(stream -> self.processOnlineStreamer(server, streamerMap, onlineStreamers, updateNotificationFlagValues, stream, refreshDuration));
             Set<Long> allStreamersInServer = streamerIdMap.keySet();
             allStreamersInServer.removeAll(onlineStreamers); // then we have those that went offline
             Map<Long, Boolean> deleteFlagValues = new HashMap<>();
@@ -370,7 +378,8 @@ public class StreamerServiceBean implements StreamerService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void processOnlineStreamer(AServer server, Map<String, Streamer> streamerMap, Set<Long> onlineStreamers, Map<Long, Boolean> updateNotificationFlagValues, Stream stream) {
+    public void processOnlineStreamer(AServer server, Map<String, Streamer> streamerMap, Set<Long> onlineStreamers, Map<Long, Boolean> updateNotificationFlagValues,
+                                      Stream stream, Duration refreshDuration) {
         Streamer streamer = streamerMap.get(stream.getUserId());
         Long streamerId = streamer.getId();
         onlineStreamers.add(streamerId);
@@ -378,18 +387,19 @@ public class StreamerServiceBean implements StreamerService {
         // that is the case if you add an online streamer
         User streamerUser = twitchService.getStreamerById(stream.getUserId());
         StreamSession currentSession = streamer.getCurrentSession();
+        Long serverId = streamer.getServer().getId();
         if (Boolean.TRUE.equals(streamer.getOnline()) && currentSession != null) {
             // we already know that this streamer is online
             log.debug("Not notifying for streamer {} in server {} - streamer is already online.", streamerId, server.getId());
             if(!stream.getGameId().equals(streamer.getCurrentGameId())) {
                 log.info("Streamer {} changed game from {} to {} - storing new section.", streamerId, streamer.getCurrentGameId(), stream.getGameId());
                 streamSessionSectionService.createSectionFromStream(currentSession, stream);
+                currentSession.setLastUpdated(Instant.now());
                 if (updateNotificationFlagValues.computeIfAbsent(streamer.getServer().getId(),
                         aLong -> featureModeService.featureModeActive(TwitchFeatureDefinition.TWITCH, aLong, TwitchFeatureMode.UPDATE_NOTIFICATION))) {
                     log.info("Updating notification is enabled - updating notification for streamer {}.", streamer.getId());
                     Long notificationMessageId = currentSession.getId();
                     Long notificationChannelId = currentSession.getChannel().getId();
-                    Long serverId = streamer.getServer().getId();
                     updateExistingNotification(stream, streamer, streamerUser).thenAccept(unused -> {
                         log.info("Updating existing notification {} for server {} in channel {} about streamer {}.",
                                 notificationMessageId, serverId, notificationChannelId, streamerId);
@@ -400,6 +410,20 @@ public class StreamerServiceBean implements StreamerService {
                     });
                 }
                 streamer.setCurrentGameId(stream.getGameId());
+            } else if(currentSession.getLastUpdated().isBefore(Instant.now().minus(refreshDuration)) &&
+                updateNotificationFlagValues.computeIfAbsent(streamer.getServer().getId(),
+                serverIdKey -> featureModeService.featureModeActive(TwitchFeatureDefinition.TWITCH, serverIdKey, TwitchFeatureMode.UPDATE_NOTIFICATION))) {
+                Long notificationMessageId = currentSession.getId();
+                currentSession.setLastUpdated(Instant.now());
+                Long notificationChannelId = currentSession.getChannel().getId();
+                updateExistingNotification(stream, streamer, streamerUser).thenAccept(unused -> {
+                    log.info("Updating existing notification {} for server {} in channel {} about streamer {}.",
+                        notificationMessageId, serverId, notificationChannelId, streamerId);
+                }).exceptionally(throwable -> {
+                    log.error("Failed to update existing notification {} for server {} in channel {} about streamer {}.",
+                        notificationMessageId, serverId, notificationChannelId, streamerId, throwable);
+                    return null;
+                });
             }
         } else if(currentSession == null &&
                 !postTargetService.postTargetUsableInServer(TwitchPostTarget.TWITCH_LIVE_NOTIFICATION, server.getId())) {
