@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.moderation.listener;
+package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.models.ConditionContextInstance;
 import dev.sheldan.abstracto.core.models.ServerUser;
@@ -13,7 +13,6 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.moderation.config.feature.HoneyPotFeatureConfig;
 import dev.sheldan.abstracto.moderation.model.listener.HoneyPotReasonModel;
-import dev.sheldan.abstracto.moderation.service.BanService;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -68,11 +67,33 @@ public class HoneyPotServiceBean {
         return !allowed;
     }
 
+    public boolean fellIntoHoneyPotIgnoringJoinDate(Long serverId, Member member) {
+        Integer levelToSkipBan = configService.getLongValueOrConfigDefault(HoneyPotFeatureConfig.HONEYPOT_IGNORED_LEVEL, serverId).intValue();
+        boolean allowed =  userHasLevel(member, levelToSkipBan);
+        return !allowed;
+    }
+
     public List<Member> getCurrentMembersWithHoneypotRole(Guild guild) {
         return memberService.getMembersWithRole(guild.getIdLong(), getHoneyPotRoleId(guild.getIdLong()));
     }
 
-    public CompletableFuture<Void> banForHoneyPot(Member targetMember, Role role) {
+    public CompletableFuture<Void> banForHoneyPotMessage(Member targetMember, Long channelId) {
+        HoneyPotReasonModel reasonModel = HoneyPotReasonModel
+            .builder()
+            .memberDisplay(MemberDisplay.fromMember(targetMember))
+            .build();
+        ServerUser bannedUser = ServerUser.fromMember(targetMember);
+        String banReason = templateService.renderTemplate(HONEYPOT_BAN_REASON_TEMPLATE, reasonModel, bannedUser.getServerId());
+        return banService.banUserWithNotification(bannedUser, banReason, ServerUser.fromMember(targetMember.getGuild().getSelfMember()),
+            targetMember.getGuild(), Duration.ofDays(7)).thenAccept(banResult -> {
+            log.info("Banned user {} in guild {} due to a message in channel {}.", bannedUser.getUserId(), bannedUser.getServerId(), channelId);
+        }).exceptionally(throwable -> {
+            log.error("Failed to ban user {} in guild {} due to a message in channel {}.", bannedUser.getUserId(), bannedUser.getServerId(), channelId, throwable);
+            return null;
+        });
+    }
+
+    public CompletableFuture<Void> banForHoneyPotRole(Member targetMember, Role role) {
         HoneyPotReasonModel reasonModel = HoneyPotReasonModel
             .builder()
             .memberDisplay(MemberDisplay.fromMember(targetMember))
@@ -91,7 +112,7 @@ public class HoneyPotServiceBean {
     }
 
     private boolean userHasLevel(Member member, Integer level) {
-        log.info("Checking if member {} is ignored to click on the honeypot in server {}.", member.getIdLong(),member.getGuild().getIdLong());
+        log.info("Checking if member {} is ignored by the honeypot in server {}.", member.getIdLong(),member.getGuild().getIdLong());
         Map<String, Object> parameters = new HashMap<>();
         AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(member);
         parameters.put(LEVEL_CONDITION_USER_ID_PARAMETER, userInAServer.getUserInServerId());

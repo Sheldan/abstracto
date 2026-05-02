@@ -2,6 +2,8 @@ package dev.sheldan.abstracto.moderation.config.feature;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.config.FeatureMode;
+import dev.sheldan.abstracto.moderation.config.feature.mode.HoneypotMode;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -12,6 +14,7 @@ public class HoneyPotFeatureConfig implements FeatureConfig {
 
     public static final String HONEYPOT_ROLE_ID = "honeypotRoleId";
     public static final String HONEYPOT_IGNORED_LEVEL = "honeypotIgnoredLevel";
+    public static final String HONEYPOT_CHANNEL = "honeypotChannel";
     public static final String HONEYPOT_IGNORED_JOIN_DURATION_SECONDS = "honeypotIgnoredJoinDurationSeconds";
 
     @Override
@@ -21,6 +24,11 @@ public class HoneyPotFeatureConfig implements FeatureConfig {
 
     @Override
     public List<String> getRequiredSystemConfigKeys() {
-        return Arrays.asList(HONEYPOT_ROLE_ID, HONEYPOT_IGNORED_LEVEL, HONEYPOT_IGNORED_JOIN_DURATION_SECONDS);
+        return Arrays.asList(HONEYPOT_ROLE_ID, HONEYPOT_IGNORED_LEVEL, HONEYPOT_IGNORED_JOIN_DURATION_SECONDS, HONEYPOT_CHANNEL);
+    }
+
+    @Override
+    public List<FeatureMode> getAvailableModes() {
+        return Arrays.asList(HoneypotMode.values());
     }
 }

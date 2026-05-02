@@ -18,7 +18,7 @@ import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.HoneyPotFeatureConfig;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
-import dev.sheldan.abstracto.moderation.listener.HoneyPotServiceBean;
+import dev.sheldan.abstracto.moderation.service.HoneyPotServiceBean;
 import dev.sheldan.abstracto.moderation.model.template.command.HoneyPotBanResponseModel;
 import java.time.Duration;
 import java.time.Instant;
@@ -98,7 +98,7 @@ public class HoneyPotBan extends AbstractConditionableCommand {
             .toList();
         Role honeyPotRole = guild.getRoleById(honeyPotServiceBean.getHoneyPotRoleId(guild.getIdLong()));
         List<CompletableFuture<Void>> futures = currentMembersWithHoneypotRole.stream().map(member ->
-            honeyPotServiceBean.banForHoneyPot(member, honeyPotRole)
+            honeyPotServiceBean.banForHoneyPotRole(member, honeyPotRole)
         ).toList();
         Integer memberCount = currentMembersWithHoneypotRole.size();
         CompletableFutureList<Void> futureList = new CompletableFutureList<>(futures);

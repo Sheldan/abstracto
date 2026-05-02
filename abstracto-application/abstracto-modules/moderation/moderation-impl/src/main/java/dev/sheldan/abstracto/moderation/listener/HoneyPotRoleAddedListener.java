@@ -1,12 +1,15 @@
 package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.sync.jda.RoleAddedListener;
 import dev.sheldan.abstracto.core.models.listener.RoleAddedModel;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
+import dev.sheldan.abstracto.moderation.config.feature.mode.HoneypotMode;
+import dev.sheldan.abstracto.moderation.service.HoneyPotServiceBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,7 +40,7 @@ public class HoneyPotRoleAddedListener implements RoleAddedListener {
             boolean fellIntoHoneyPot = honeyPotServiceBean.fellIntoHoneyPot(model.getServerId(), model.getTargetMember());
             if (fellIntoHoneyPot) {
                 log.info("Banning user {} in guild {} due to role {}.", model.getTargetUser().getUserId(), model.getTargetUser().getServerId(), model.getRoleId());
-                honeyPotServiceBean.banForHoneyPot(model.getTargetMember(), model.getRole());
+                honeyPotServiceBean.banForHoneyPotRole(model.getTargetMember(), model.getRole());
             } else {
                 log.info("User {} in server {}  will not get banned by honeypot. All existing roles besides {} will be removed.",
                         model.getTargetUser().getUserId(), model.getTargetUser().getServerId(), honeyPotRoleId);
@@ -83,4 +86,8 @@ public class HoneyPotRoleAddedListener implements RoleAddedListener {
         return ListenerPriority.MEDIUM;
     }
 
+    @Override
+    public List<FeatureMode> getFeatureModeLimitations() {
+        return List.of(HoneypotMode.ROLE);
+    }
 }
