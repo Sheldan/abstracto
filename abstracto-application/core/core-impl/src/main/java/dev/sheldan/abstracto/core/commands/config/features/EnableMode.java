@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.commands.config.features;
 
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
+import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.interaction.slash.CoreSlashCommandNames;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
@@ -15,9 +16,7 @@ import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandPrivilegeLevels;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandAutoCompleteService;
-import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
-import dev.sheldan.abstracto.core.models.database.AFeatureMode;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
@@ -59,12 +58,6 @@ public class EnableMode extends AbstractConditionableCommand {
     @Autowired
     private FeatureFlagManagementService featureFlagManagementService;
 
-    @Autowired
-    private FeatureModeManagementService featureModeManagementService;
-
-    @Autowired
-    private FeatureManagementService featureManagementService;
-
     private static final String ENABLE_MODE_RESPONSE_KEY = "enableMode_response";
     private static final String FEATURE_PARAMETER = "feature";
     private static final String MODE_PARAMETER = "mode";
@@ -99,11 +92,11 @@ public class EnableMode extends AbstractConditionableCommand {
                 return new ArrayList<>();
             }
             FeatureDefinition featureDefinition = featureConfigService.getFeatureEnum(featureName);
-            AFeature feature = featureManagementService.getFeature(featureDefinition.getKey());
-            List<AFeatureMode> modes = featureModeManagementService.getFeatureModesOfFeatureInServer(server, feature);
+            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(featureDefinition);
+            List<FeatureMode> modes = feature.getAvailableModes();
             return modes
                 .stream()
-                .map(mode -> mode.getFeatureMode().toLowerCase())
+                .map(mode -> mode.getKey().toLowerCase())
                 .filter(string -> string.startsWith(input))
                 .toList();
         }
