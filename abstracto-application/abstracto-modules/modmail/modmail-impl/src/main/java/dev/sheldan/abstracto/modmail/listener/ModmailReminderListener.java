@@ -105,6 +105,9 @@ public class ModmailReminderListener implements ModmailThreadActionListener {
     }
 
     private static Instant getUpdatedOrCrated(ModMailThread thread) {
+        if(thread.getLastUpdated() != null) {
+            return thread.getLastUpdated();
+        }
         if(thread.getUpdated() != null) {
             return thread.getUpdated();
         }
