@@ -174,6 +174,7 @@ public class StreamerServiceBean implements StreamerService {
                 .getCurrentSession()
                 .getSections()
                 .stream()
+                .filter(pastSection -> !pastSection.getTitle().equals(stream.getTitle()) && !pastSection.getGameId().equals(stream.getGameId())) // filter out the current section in case it was refreshed
                 .sorted(Comparator.comparing(StreamSessionSection::getId).reversed())
                 .map(StreamSectionDisplay::fromSection)
                 .toList();
