@@ -27,6 +27,10 @@ public class ImageGenerationServiceBean implements ImageGenerationService {
     @Value("${abstracto.feature.imagegeneration.amongusText.url}")
     private String amongusTextUrl;
 
+
+    @Value("${abstracto.feature.imagegeneration.grrr.url}")
+    private String grrrUrl;
+
     @Autowired
     private HttpService httpService;
 
@@ -65,6 +69,15 @@ public class ImageGenerationServiceBean implements ImageGenerationService {
             throw new AbstractoRunTimeException(String.format("Failed to download amongus text with error %s", text, e.getMessage()));
         } catch (RequestException exception) {
             throw new AmongusTextRequestException(text, exception.getErrorMessage());
+        }
+    }
+
+    @Override
+    public File getGrrrImage(String text) {
+        try {
+            return httpService.downloadFileToTempFile(grrrUrl.replace("{1}", text));
+        } catch (IOException | RequestException e) {
+            throw new AbstractoRunTimeException(String.format("Failed to download grrr image for text %s with error %s", text, e.getMessage()));
         }
     }
 

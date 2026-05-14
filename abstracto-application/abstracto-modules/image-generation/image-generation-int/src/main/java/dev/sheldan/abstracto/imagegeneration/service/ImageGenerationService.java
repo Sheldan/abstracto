@@ -7,4 +7,5 @@ public interface ImageGenerationService {
     File getPatGif(String imageUrl);
     File getBonkGif(String imageUrl);
     File getAmongusTextImage(String text);
+    File getGrrrImage(String text);
 }
