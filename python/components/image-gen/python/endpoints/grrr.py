@@ -18,9 +18,9 @@ def grrr():
         W, H = text_box_size
         font = ImageFont.truetype(f'Impact.ttf', 60)
         _, _, w, h = d1.textbbox((0, 0), text, font=font)
-        d1.text(((W-w)/2 + 120, (H-h)/2 + 330), text, font=font, fill=(255, 255, 255))
+        d1.text(((W-w)/2 + 120, (H-h)/2 + 340), text, font=font, fill=(255, 255, 255))
         _, _, w2, h2 = d1.textbbox((0, 0), 'grrr', font=font)
-        d1.text(((W-w2)/2 + 100, (H-h2)/2 - 90), 'grrr', font=font, fill=(255, 255, 255))
+        d1.text(((W-w2)/2 + 100, (H-h2)/2 - 80), 'grrr', font=font, fill=(255, 255, 255))
         return flask_utils.serve_pil_image(im)
 
 
