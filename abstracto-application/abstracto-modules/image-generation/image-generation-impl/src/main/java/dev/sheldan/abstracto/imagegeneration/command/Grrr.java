@@ -51,7 +51,7 @@ public class Grrr extends AbstractConditionableCommand {
     @Autowired
     private SlashCommandParameterService slashCommandParameterService;
 
-    private static final String GRRR_EMBED_TEMPLATE_KEY = "grr_response";
+    private static final String GRRR_EMBED_TEMPLATE_KEY = "grrr_response";
     public static final String TEXT_PARAMETER_KEY = "text";
 
     @Override
