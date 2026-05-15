@@ -98,6 +98,7 @@ public class Grrr extends AbstractConditionableCommand {
                 .name(TEXT_PARAMETER_KEY)
                 .type(String.class)
                 .templated(true)
+                .remainder(true)
                 .build();
         parameters.add(textParameter);
         HelpInfo helpInfo = HelpInfo
