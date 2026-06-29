@@ -1,0 +1,44 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd" >
+    <changeSet author="Sheldan" id="quick_reply-table">
+        <createTable tableName="quick_reply">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="quick_reply_pkey"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creator_user_in_server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="additional_message" type="VARCHAR(2048)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="anonymous" type="BOOLEAN"/>
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="quick_reply"
+                                 constraintName="fk_quick_reply_server" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="creator_user_in_server_id" baseTableName="quick_reply"
+                                 constraintName="fk_quick_reply_creator" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS quick_reply_update_trigger ON quick_reply;
+            CREATE TRIGGER quick_reply_update_trigger BEFORE UPDATE ON quick_reply FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS quick_reply_insert_trigger ON quick_reply;
+            CREATE TRIGGER quick_reply_insert_trigger BEFORE INSERT ON quick_reply FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

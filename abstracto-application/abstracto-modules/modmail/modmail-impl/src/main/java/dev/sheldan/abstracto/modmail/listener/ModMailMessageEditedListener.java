@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageUpdatedListener;
-import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.listener.MessageUpdatedModel;
@@ -125,7 +124,6 @@ public class ModMailMessageEditedListener implements AsyncMessageUpdatedListener
                     .builder()
                     .text(newText)
                     .modMailThread(modMailMessage.getThreadReference())
-                    .postedMessage(loadedMessage)
                     .attachedImageUrls(imageUrls)
                     .remainingAttachments(otherAttachments)
                     .anonymous(modMailMessage.getAnonymous())

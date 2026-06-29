@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.UserService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
@@ -52,7 +51,7 @@ public class Reply extends AbstractConditionableCommand {
         }
         Long threadId = modMailThread.getId();
         return userService.retrieveUserForId(modMailThread.getUser().getUserReference().getId()).thenCompose(user ->
-            modMailThreadService.loadExecutingMemberAndRelay(threadId, text, commandContext.getMessage(), false, user, commandContext.getGuild())
+            modMailThreadService.relayMessageToDm(threadId, text, commandContext.getMessage(), false, user, commandContext.getGuild(), commandContext.getAuthor())
         ).thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

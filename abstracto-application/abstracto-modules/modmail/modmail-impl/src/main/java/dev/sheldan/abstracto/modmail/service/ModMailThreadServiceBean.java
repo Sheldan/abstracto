@@ -50,6 +50,7 @@ import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -748,34 +749,32 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         }
     }
 
-    @Override
     @Transactional
-    public CompletableFuture<Void> loadExecutingMemberAndRelay(Long modmailThreadId, String text, Message replyCommandMessage, boolean anonymous, User user, Guild guild) {
-        log.info("Relaying message {} to user {} in modmail thread {} on server {}.", replyCommandMessage.getId(), user.getId(), modmailThreadId, guild.getId());
-        return memberService.getMemberInServerAsync(replyCommandMessage.getGuild().getIdLong(), replyCommandMessage.getAuthor().getIdLong())
-                .thenCompose(executingMember -> self.relayMessageToDm(modmailThreadId, text, replyCommandMessage, anonymous, user, executingMember));
+    public CompletableFuture<Void> relayMessageToDm(Long modmailThreadId, String text, Message replyCommandMessage, boolean anonymous, User user, Guild guild, Member executingMember) {
+        List<String> imageUrls = replyCommandMessage
+            .getAttachments()
+            .stream()
+            .filter(Message.Attachment::isImage)
+            .map(Message.Attachment::getProxyUrl)
+            .collect(Collectors.toList());
+        Map<String, String> otherAttachments = replyCommandMessage
+            .getAttachments()
+            .stream()
+            .filter(attachment -> !attachment.isImage())
+            .collect(Collectors.toMap(Message.Attachment::getFileName, Message.Attachment::getUrl));
+        return relayMessageToDMInternal(modmailThreadId, text, replyCommandMessage.getIdLong(), imageUrls, otherAttachments, anonymous, user, guild, executingMember);
     }
 
-    @Transactional
-    public CompletableFuture<Void> relayMessageToDm(Long modmailThreadId, String text, Message replyCommandMessage, boolean anonymous, User user, Member executingMember) {
+    private CompletableFuture<Void> relayMessageToDMInternal(Long modmailThreadId, String text, Long messageId, List<String> imageUrls, Map<String, String> otherAttachments,
+                                                             boolean anonymous, User user, Guild guild, Member executingMember) {
+        log.info("Relaying message {} to user {} in modmail thread {} on server {}.", messageId, user.getId(), modmailThreadId, guild.getId());
         metricService.incrementCounter(MDOMAIL_THREAD_MESSAGE_SENT);
         ModMailThread modMailThread = modMailThreadManagementService.getById(modmailThreadId);
-        List<String> imageUrls = replyCommandMessage
-                .getAttachments()
-                .stream()
-                .filter(Message.Attachment::isImage)
-                .map(Message.Attachment::getProxyUrl)
-                .collect(Collectors.toList());
-        Map<String, String> otherAttachments = replyCommandMessage
-                .getAttachments()
-                .stream()
-                .filter(attachment -> !attachment.isImage())
-                .collect(Collectors.toMap(Message.Attachment::getFileName, Message.Attachment::getUrl));
+
         ModMailModeratorReplyModel.ModMailModeratorReplyModelBuilder modMailModeratorReplyModelBuilder = ModMailModeratorReplyModel
                 .builder()
                 .text(text)
                 .modMailThread(modMailThread)
-                .postedMessage(replyCommandMessage)
                 .remainingAttachments(otherAttachments)
                 .attachedImageUrls(imageUrls)
                 .anonymous(anonymous)
@@ -796,8 +795,15 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             sameThreadMessageFuture = CompletableFuture.completedFuture(null);
         }
         return CompletableFuture.allOf(future, sameThreadMessageFuture).thenAccept(avoid ->
-                self.saveSendMessagesAndUpdateState(modmailThreadId, anonymous, future.join(), replyCommandMessage.getMember(), replyCommandMessage.getIdLong(), sameThreadMessageFuture.join())
+            self.saveSendMessagesAndUpdateState(modmailThreadId, anonymous, future.join(), executingMember, messageId,
+                sameThreadMessageFuture.join())
         );
+    }
+
+    @Override
+    public CompletableFuture<Void> relayMessageToDm(Long threadId, String text, Long uniqueMessageId, boolean anonymous, User targetUser, Guild guild,
+                                                    Member executingMember) {
+        return relayMessageToDMInternal(threadId, text, uniqueMessageId, new ArrayList<>(), new HashMap<>(), anonymous, targetUser, guild, executingMember);
     }
 
     @Override

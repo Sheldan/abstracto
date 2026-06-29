@@ -53,7 +53,7 @@ public class AnonReply extends AbstractConditionableCommand {
         }
         Long threadId = modMailThread.getId();
         return userService.retrieveUserForId(modMailThread.getUser().getUserReference().getId()).thenCompose(user ->
-                modMailThreadService.loadExecutingMemberAndRelay(threadId, text, commandContext.getMessage(), true, user, commandContext.getGuild())
+                modMailThreadService.relayMessageToDm(threadId, text, commandContext.getMessage(), true, user, commandContext.getGuild(), commandContext.getAuthor())
         ).thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

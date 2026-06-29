@@ -72,12 +72,14 @@ public interface ModMailThreadService {
      * @param threadId The id of the {@link ModMailThread} to which the reply was sent to
      * @param text The parsed text of the reply
      * @param message  The pure {@link Message} containing the command which caused the reply
-     * @param anonymous Whether or nor the message should be send anonymous
+     * @param anonymous Whether or nor the message should be sent anonymous
      * @param targetUser The {@link User} the {@link ModMailThread} is about.
      * @param guild The guild the reply is created in
+     * @param executingMember The member that initiates the reply
      * @return A {@link CompletableFuture future} which completes when the message has been relayed to the DM
      */
-    CompletableFuture<Void> loadExecutingMemberAndRelay(Long threadId, String text, Message message, boolean anonymous, User targetUser, Guild guild);
+    CompletableFuture<Void> relayMessageToDm(Long threadId, String text, Message message, boolean anonymous, User targetUser, Guild guild, Member executingMember);
+    CompletableFuture<Void> relayMessageToDm(Long threadId, String content, Long uniqueMessageId, boolean anonymous, User targetUser, Guild guild, Member executingMember);
 
     /**
      * Closes the mod mail thread which means: deletes the {@link net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel} associated with the mod mail thread,
